@@ -71,11 +71,195 @@ git commit -m "test: add unit tests for auth store"
 ```bash
 # Push your branch
 git push origin feature/your-feature-name
+```
 
-# Create a pull request on GitHub
-# - Provide a clear title and description
-# - Reference any related issues
-# - Wait for code review
+#### Option A: Using GitHub Web Interface
+
+1. Navigate to your fork on GitHub
+2. Click "Compare & pull request"
+3. Provide a clear title and description
+4. Reference any related issues
+5. Wait for code review
+
+#### Option B: Using GitHub CLI (Recommended)
+
+GitHub CLI provides a more efficient workflow for creating and managing pull requests:
+
+##### Prerequisites
+
+Install GitHub CLI if you haven't already:
+
+```bash
+# Windows (using Chocolatey)
+choco install gh
+
+# Windows (using Winget)
+winget install GitHub.cli
+
+# macOS (using Homebrew)
+brew install gh
+
+# Linux (Debian/Ubuntu)
+sudo apt install gh
+```
+
+##### Authentication
+
+Authenticate with GitHub (one-time setup):
+
+```bash
+# Login to GitHub
+gh auth login
+
+# Follow the prompts:
+# - Choose GitHub.com
+# - Choose HTTPS
+# - Authenticate via web browser
+# - Choose your preferred protocol for Git operations
+```
+
+##### Creating Pull Requests
+
+```bash
+# Basic pull request creation
+gh pr create --title "feat: add new feature" --body "Description of changes"
+
+# Interactive mode (recommended for beginners)
+gh pr create
+
+# With auto-merge and squash (recommended)
+gh pr create --title "feat: add new feature" --body "Description of changes" \
+  --assignee @me \
+  --label "enhancement" \
+  --auto-merge \
+  --squash
+
+# For bug fixes
+gh pr create --title "fix: resolve authentication issue" \
+  --body "Fixes #123" \
+  --assignee @me \
+  --label "bug" \
+  --auto-merge \
+  --squash
+```
+
+##### Advanced GitHub CLI Options
+
+```bash
+# Create PR with multiple labels and reviewers
+gh pr create \
+  --title "feat: implement advanced search functionality" \
+  --body "Adds filtering and sorting to item search. Closes #456" \
+  --assignee @me \
+  --reviewer maintainer1,maintainer2 \
+  --label "enhancement,feature-request" \
+  --milestone "v1.2.0" \
+  --auto-merge \
+  --squash
+
+# Create draft PR for work in progress
+gh pr create --draft \
+  --title "WIP: refactor authentication system" \
+  --body "Work in progress - do not merge yet"
+
+# Create PR with specific base branch
+gh pr create --base develop \
+  --title "feat: add new component" \
+  --body "Description here"
+```
+
+##### Managing Your Pull Requests
+
+```bash
+# List your open pull requests
+gh pr list --author "@me"
+
+# View PR details
+gh pr view 123
+
+# Check PR status and CI checks
+gh pr status
+
+# Edit PR details
+gh pr edit 123 --title "New title" --body "Updated description"
+
+# Enable auto-merge on existing PR
+gh pr merge 123 --auto --squash
+
+# Add reviewers to existing PR
+gh pr edit 123 --add-reviewer username
+
+# Add labels to existing PR
+gh pr edit 123 --add-label "bug,priority-high"
+```
+
+##### Auto-merge Benefits
+
+When you enable auto-merge with `--auto-merge`, your PR will:
+
+1. **Wait for required checks** - Won't merge until CI passes
+2. **Wait for required reviews** - Waits for approval from maintainers
+3. **Merge automatically** - No need to manually click merge
+4. **Use squash merge** - Keeps git history clean with `--squash`
+
+##### Squash Merge Benefits
+
+Using `--squash` provides:
+
+- **Clean git history** - Multiple commits become one clean commit
+- **Simplified changelog** - Easier to track changes
+- **Atomic changes** - Each merge represents one complete feature/fix
+- **Easier reverting** - Can revert entire features with one revert
+
+##### Example Workflow with GitHub CLI
+
+Complete workflow for a new feature:
+
+```bash
+# 1. Create and switch to feature branch
+git checkout -b feature/user-profile-management
+
+# 2. Make your changes and commit
+git add .
+git commit -m "feat: add user profile management interface"
+
+# 3. Push branch
+git push origin feature/user-profile-management
+
+# 4. Create PR with auto-merge and squash
+gh pr create \
+  --title "feat: add user profile management interface" \
+  --body "Implements user profile viewing and editing functionality. Includes form validation, error handling, and responsive design. Closes #789" \
+  --assignee @me \
+  --label "enhancement" \
+  --auto-merge \
+  --squash
+
+# 5. Monitor PR status
+gh pr status
+
+# 6. The PR will automatically merge once:
+#    - All CI checks pass
+#    - Required reviews are approved
+#    - No conflicts exist
+```
+
+##### Troubleshooting Auto-merge
+
+If auto-merge doesn't work, check:
+
+```bash
+# Check PR status and requirements
+gh pr status
+
+# View detailed PR information
+gh pr view --json statusCheckRollup,reviewDecision
+
+# Common issues:
+# - CI checks failing
+# - Merge conflicts
+# - Missing required reviews
+# - Branch protection rules not met
 ```
 
 ## 🏗️ Coding Guidelines
@@ -293,6 +477,7 @@ Before submitting your PR, review this checklist:
 - [ ] Documentation updated
 - [ ] Commit messages follow convention
 - [ ] Branch is up to date with main
+- [ ] PR created with auto-merge and squash enabled (if using GitHub CLI)
 
 ## 🚫 Common Pitfalls
 
@@ -373,6 +558,96 @@ We especially welcome contributions in these areas:
 - **GitHub Issues** - for bugs and feature requests
 - **GitHub Discussions** - for questions and general discussion
 - **Code Review** - maintainers will provide feedback on PRs
+
+## 📋 GitHub CLI Quick Reference
+
+### Essential Commands
+
+```bash
+# Authentication
+gh auth login                    # Initial setup
+gh auth status                   # Check auth status
+
+# Repository operations
+gh repo clone owner/repo         # Clone repository
+gh repo fork owner/repo          # Fork repository
+gh repo view                     # View current repo info
+
+# Pull request operations
+gh pr create                     # Interactive PR creation
+gh pr create --auto-merge --squash  # Create with auto-merge
+gh pr list                       # List all PRs
+gh pr list --author "@me"        # List your PRs
+gh pr view 123                   # View specific PR
+gh pr status                     # Check PR status
+gh pr edit 123                   # Edit PR details
+gh pr merge 123 --squash         # Merge with squash
+gh pr close 123                  # Close PR
+gh pr reopen 123                 # Reopen PR
+
+# Issue operations
+gh issue create                  # Create new issue
+gh issue list                    # List issues
+gh issue view 123               # View specific issue
+gh issue edit 123               # Edit issue
+
+# Workflow operations
+gh run list                      # List workflow runs
+gh run view 123                  # View specific run
+gh run rerun 123                # Rerun workflow
+```
+
+### Useful Flags
+
+```bash
+# Pull request flags
+--title "Title"                  # Set PR title
+--body "Description"             # Set PR description
+--draft                          # Create as draft
+--auto-merge                     # Enable auto-merge
+--squash                         # Use squash merge
+--assignee @me                   # Assign to yourself
+--reviewer username              # Request review
+--label "bug,priority-high"      # Add labels
+--milestone "v1.2.0"            # Set milestone
+--base develop                   # Set base branch
+
+# List filters
+--author "@me"                   # Filter by author
+--assignee "@me"                 # Filter by assignee
+--label "bug"                    # Filter by label
+--state open                     # Filter by state (open/closed)
+--limit 10                       # Limit results
+```
+
+### Configuration
+
+```bash
+# Set default behavior
+gh config set git_protocol https
+gh config set editor vim
+gh config set browser chrome
+
+# View current config
+gh config list
+
+# Aliases for common operations
+gh alias set prc 'pr create --auto-merge --squash'
+gh alias set prm 'pr list --author "@me"'
+gh alias set prs 'pr status'
+```
+
+### Integration with Git
+
+```bash
+# Complete workflow with aliases
+git checkout -b feature/new-feature
+# ... make changes ...
+git add .
+git commit -m "feat: implement new feature"
+git push origin feature/new-feature
+gh prc --title "feat: implement new feature" --body "Description"
+```
 
 ## 🏆 Recognition
 

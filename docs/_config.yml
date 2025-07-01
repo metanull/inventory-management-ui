@@ -3,8 +3,8 @@ remote_theme: just-the-docs/just-the-docs
 title: Inventory Management UI
 description: A modern Vue.js 3 application for inventory management
 
-url: https://your-org.github.io
-baseurl: /inventory-management-ui
+url: https://metanull.github.io
+baseurl: /inventoy-management-ui
 
 # Logo and favicon
 logo: "/assets/images/logo.png"
@@ -28,12 +28,12 @@ search:
 nav_sort: case_insensitive
 nav_external_links:
   - title: GitHub Repository
-    url: https://github.com/your-org/inventory-management-ui
+    url: https://github.com/metanull/inventoy-management-ui
   - title: API Documentation
-    url: https://github.com/your-org/inventory-app
+    url: https://github.com/metanull/inventoy-management-ui
 
 # Footer
-footer_content: "Copyright &copy; 2025 Your Organization. Made with ❤️ using Vue.js 3 and TypeScript."
+footer_content: "Copyright &copy; 2025 Metanull. Made with ❤️ using Vue.js 3 and TypeScript."
 
 # Back to top
 back_to_top: true
@@ -46,7 +46,7 @@ last_edit_time_format: "%b %e %Y at %I:%M %p"
 # GitHub
 gh_edit_link: true
 gh_edit_link_text: "Edit this page on GitHub"
-gh_edit_repository: "https://github.com/your-org/inventory-management-ui"
+gh_edit_repository: "https://github.com/metanull/inventoy-management-ui"
 gh_edit_branch: "main"
 gh_edit_source: docs
 gh_edit_view_mode: "tree"
@@ -93,4 +93,4 @@ sass:
 # Custom CSS
 aux_links:
   "View on GitHub":
-    - "https://github.com/your-org/inventory-management-ui"
+    - "https://github.com/metanull/inventoy-management-ui"
