@@ -5,12 +5,7 @@
         <h1 class="text-3xl font-bold text-gray-900">Partners</h1>
         <p class="mt-2 text-sm text-gray-600">Manage partner organizations</p>
       </div>
-      <button
-        class="btn-primary"
-        @click="showCreateModal = true"
-      >
-        Add Partner
-      </button>
+      <button class="btn-primary" @click="showCreateModal = true">Add Partner</button>
     </div>
 
     <div v-if="loading" class="text-center py-8">
@@ -78,7 +73,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">
             {{ showCreateModal ? 'Create Partner' : 'Edit Partner' }}
@@ -94,14 +92,10 @@
                 placeholder="Enter partner name"
               />
             </div>
-            
+
             <div>
               <label class="label">Type</label>
-              <select
-                v-model="form.type"
-                required
-                class="input"
-              >
+              <select v-model="form.type" required class="input">
                 <option value="">Select type</option>
                 <option value="museum">Museum</option>
                 <option value="institution">Institution</option>
@@ -110,19 +104,9 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-                :disabled="submitting"
-              >
-                {{ submitting ? 'Saving...' : (showCreateModal ? 'Create' : 'Update') }}
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" class="btn-primary" :disabled="submitting">
+                {{ submitting ? 'Saving...' : showCreateModal ? 'Create' : 'Update' }}
               </button>
             </div>
           </form>
@@ -178,7 +162,7 @@
           type: form.type as 'museum' | 'institution' | 'individual',
         })
       }
-      
+
       await fetchPartners()
       closeModal()
     } catch (err: any) {

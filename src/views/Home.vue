@@ -2,9 +2,7 @@
   <div>
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p class="mt-2 text-sm text-gray-600">
-        Welcome to the Inventory Management System
-      </p>
+      <p class="mt-2 text-sm text-gray-600">Welcome to the Inventory Management System</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -69,7 +67,9 @@
       <div class="card">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Items</h2>
         <div v-if="loading" class="text-center py-4">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"
+          ></div>
         </div>
         <div v-else-if="error" class="text-red-600 text-center py-4">
           {{ error }}

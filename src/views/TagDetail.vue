@@ -12,12 +12,7 @@
           <h1 class="text-3xl font-bold text-gray-900">Tag Details</h1>
         </div>
         <div class="flex space-x-3">
-          <button
-            class="btn-outline"
-            @click="editTag"
-          >
-            Edit Tag
-          </button>
+          <button class="btn-outline" @click="editTag">Edit Tag</button>
           <button
             class="text-red-600 hover:text-red-900 px-3 py-2 text-sm font-medium"
             @click="deleteTag"
@@ -41,9 +36,7 @@
         <h3 class="text-lg leading-6 font-medium text-gray-900">
           {{ tag.internal_name }}
         </h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">
-          Tag information and details
-        </p>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Tag information and details</p>
       </div>
       <div class="border-t border-gray-200">
         <dl>
@@ -75,7 +68,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Tag</h3>
           <form class="space-y-4" @submit.prevent="handleSubmit">
@@ -89,7 +85,7 @@
                 placeholder="Enter tag name"
               />
             </div>
-            
+
             <div>
               <label class="label">Description</label>
               <textarea
@@ -101,18 +97,8 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-                :disabled="submitting"
-              >
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" class="btn-primary" :disabled="submitting">
                 {{ submitting ? 'Saving...' : 'Update' }}
               </button>
             </div>
@@ -173,13 +159,13 @@
       const updateData: Partial<TagResource> = {
         internal_name: form.internal_name,
       }
-      
+
       if (form.description.trim()) {
         updateData.description = form.description
       }
 
       await apiClient.updateTag(tag.value.id, updateData)
-      
+
       await fetchTag()
       closeModal()
     } catch (err: any) {

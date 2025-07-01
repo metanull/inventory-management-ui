@@ -24,19 +24,34 @@
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
+                  >
                     Name
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
+                  >
                     Extension
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
+                  >
                     Size
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
+                  >
                     MIME Type
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
+                  >
                     Uploaded
                   </th>
                   <th scope="col" class="relative px-6 py-3">
@@ -61,7 +76,9 @@
                   <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                     {{ formatDate(upload.created_at) }}
                   </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                  <td
+                    class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
+                  >
                     <button
                       class="text-indigo-600 hover:text-indigo-900 mr-4"
                       @click="viewUpload(upload.id)"
@@ -85,7 +102,11 @@
     </div>
 
     <!-- Upload Modal -->
-    <div v-if="showUploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" data-testid="create-image-upload-modal">
+    <div
+      v-if="showUploadModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+      data-testid="create-image-upload-modal"
+    >
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Image</h3>
@@ -110,8 +131,8 @@
             <div v-if="previewUrl" class="mb-4">
               <label class="label">Preview</label>
               <div class="mt-1 border rounded-lg p-4 bg-gray-50">
-                <img 
-                  :src="previewUrl" 
+                <img
+                  :src="previewUrl"
                   :alt="selectedFile?.name || 'Preview'"
                   class="max-w-full h-48 object-contain mx-auto rounded"
                 />
@@ -127,26 +148,18 @@
             <div v-if="uploadProgress > 0 && uploadProgress < 100" class="mb-4">
               <label class="label">Upload Progress</label>
               <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                <div
+                  class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
                   :style="`width: ${uploadProgress}%`"
                 ></div>
               </div>
               <p class="text-sm text-gray-600 mt-1">{{ uploadProgress }}% uploaded</p>
             </div>
             <div class="flex justify-end space-x-3">
-              <button
-                type="button"
-                class="btn btn-outline"
-                @click="closeUploadModal"
-              >
+              <button type="button" class="btn btn-outline" @click="closeUploadModal">
                 Cancel
               </button>
-              <button
-                type="submit"
-                :disabled="uploading"
-                class="btn btn-primary"
-              >
+              <button type="submit" :disabled="uploading" class="btn btn-primary">
                 {{ uploading ? 'Uploading...' : 'Upload' }}
               </button>
             </div>
@@ -156,20 +169,19 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div
+      v-if="showDeleteModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    >
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3 text-center">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
           <p class="text-sm text-gray-500 mb-4">
-            Are you sure you want to delete "{{ uploadToDelete?.name }}"? This action cannot be undone.
+            Are you sure you want to delete "{{ uploadToDelete?.name }}"? This action cannot be
+            undone.
           </p>
           <div class="flex justify-center space-x-3">
-            <button
-              class="btn btn-outline"
-              @click="showDeleteModal = false"
-            >
-              Cancel
-            </button>
+            <button class="btn btn-outline" @click="showDeleteModal = false">Cancel</button>
             <button
               :disabled="loading"
               class="btn bg-red-600 hover:bg-red-700 text-white"
@@ -185,161 +197,161 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { apiClient, type ImageUploadResource } from '@/api/client'
+  import { ref, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { apiClient, type ImageUploadResource } from '@/api/client'
 
-const router = useRouter()
+  const router = useRouter()
 
-const uploads = ref<ImageUploadResource[]>([])
-const loading = ref(false)
-const uploading = ref(false)
-const showUploadModal = ref(false)
-const showDeleteModal = ref(false)
-const uploadToDelete = ref<ImageUploadResource | null>(null)
-const fileInput = ref<HTMLInputElement | null>(null)
-const selectedFile = ref<File | null>(null)
-const previewUrl = ref<string | null>(null)
-const uploadProgress = ref(0)
+  const uploads = ref<ImageUploadResource[]>([])
+  const loading = ref(false)
+  const uploading = ref(false)
+  const showUploadModal = ref(false)
+  const showDeleteModal = ref(false)
+  const uploadToDelete = ref<ImageUploadResource | null>(null)
+  const fileInput = ref<HTMLInputElement | null>(null)
+  const selectedFile = ref<File | null>(null)
+  const previewUrl = ref<string | null>(null)
+  const uploadProgress = ref(0)
 
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  
-  if (file) {
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-    if (!allowedTypes.includes(file.type)) {
-      alert('Please select a valid image file (JPG, PNG, GIF, or WebP)')
-      target.value = ''
-      return
+  const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPG, PNG, GIF, or WebP)')
+        target.value = ''
+        return
+      }
+
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+      if (file.size > maxSize) {
+        alert('File size must be less than 10MB')
+        target.value = ''
+        return
+      }
+
+      selectedFile.value = file
+
+      // Create preview URL
+      if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value)
+      }
+      previewUrl.value = URL.createObjectURL(file)
+    } else {
+      selectedFile.value = null
+      if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value)
+        previewUrl.value = null
+      }
     }
-    
-    // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
-    if (file.size > maxSize) {
-      alert('File size must be less than 10MB')
-      target.value = ''
-      return
-    }
-    
-    selectedFile.value = file
-    
-    // Create preview URL
-    if (previewUrl.value) {
-      URL.revokeObjectURL(previewUrl.value)
-    }
-    previewUrl.value = URL.createObjectURL(file)
-  } else {
+  }
+
+  const closeUploadModal = () => {
+    showUploadModal.value = false
     selectedFile.value = null
+    uploadProgress.value = 0
+
     if (previewUrl.value) {
       URL.revokeObjectURL(previewUrl.value)
       previewUrl.value = null
     }
+
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
   }
-}
 
-const closeUploadModal = () => {
-  showUploadModal.value = false
-  selectedFile.value = null
-  uploadProgress.value = 0
-  
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value)
-    previewUrl.value = null
+  const fetchUploads = async () => {
+    try {
+      loading.value = true
+      const response = await apiClient.getImageUploads()
+      uploads.value = response.data
+    } catch (error) {
+      console.error('Error fetching uploads:', error)
+    } finally {
+      loading.value = false
+    }
   }
-  
-  if (fileInput.value) {
-    fileInput.value.value = ''
+
+  const viewUpload = (id: string) => {
+    router.push(`/image-uploads/${id}`)
   }
-}
 
-const fetchUploads = async () => {
-  try {
-    loading.value = true
-    const response = await apiClient.getImageUploads()
-    uploads.value = response.data
-  } catch (error) {
-    console.error('Error fetching uploads:', error)
-  } finally {
-    loading.value = false
+  const uploadFile = async () => {
+    if (!selectedFile.value) return
+
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+
+    try {
+      uploading.value = true
+      uploadProgress.value = 0
+
+      // Simulate upload progress for demo (replace with actual progress if API supports it)
+      const progressInterval = setInterval(() => {
+        if (uploadProgress.value < 90) {
+          uploadProgress.value += Math.random() * 10
+        }
+      }, 100)
+
+      await apiClient.createImageUpload(formData)
+
+      clearInterval(progressInterval)
+      uploadProgress.value = 100
+
+      // Small delay to show 100% progress
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      await fetchUploads()
+      closeUploadModal()
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      alert('Error uploading file. Please try again.')
+    } finally {
+      uploading.value = false
+    }
   }
-}
 
-const viewUpload = (id: string) => {
-  router.push(`/image-uploads/${id}`)
-}
-
-const uploadFile = async () => {
-  if (!selectedFile.value) return
-
-  const formData = new FormData()
-  formData.append('file', selectedFile.value)
-
-  try {
-    uploading.value = true
-    uploadProgress.value = 0
-    
-    // Simulate upload progress for demo (replace with actual progress if API supports it)
-    const progressInterval = setInterval(() => {
-      if (uploadProgress.value < 90) {
-        uploadProgress.value += Math.random() * 10
-      }
-    }, 100)
-
-    await apiClient.createImageUpload(formData)
-    
-    clearInterval(progressInterval)
-    uploadProgress.value = 100
-    
-    // Small delay to show 100% progress
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    await fetchUploads()
-    closeUploadModal()
-  } catch (error) {
-    console.error('Error uploading file:', error)
-    alert('Error uploading file. Please try again.')
-  } finally {
-    uploading.value = false
+  const deleteUploadConfirm = (upload: ImageUploadResource) => {
+    uploadToDelete.value = upload
+    showDeleteModal.value = true
   }
-}
 
-const deleteUploadConfirm = (upload: ImageUploadResource) => {
-  uploadToDelete.value = upload
-  showDeleteModal.value = true
-}
+  const deleteUpload = async () => {
+    if (!uploadToDelete.value) return
 
-const deleteUpload = async () => {
-  if (!uploadToDelete.value) return
-  
-  try {
-    loading.value = true
-    await apiClient.deleteImageUpload(uploadToDelete.value.id)
-    await fetchUploads()
-    showDeleteModal.value = false
-    uploadToDelete.value = null
-  } catch (error) {
-    console.error('Error deleting upload:', error)
-  } finally {
-    loading.value = false
+    try {
+      loading.value = true
+      await apiClient.deleteImageUpload(uploadToDelete.value.id)
+      await fetchUploads()
+      showDeleteModal.value = false
+      uploadToDelete.value = null
+    } catch (error) {
+      console.error('Error deleting upload:', error)
+    } finally {
+      loading.value = false
+    }
   }
-}
 
-const formatFileSize = (bytes: number | null) => {
-  if (!bytes) return 'N/A'
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  if (bytes === 0) return '0 Bytes'
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
-}
+  const formatFileSize = (bytes: number | null) => {
+    if (!bytes) return 'N/A'
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    if (bytes === 0) return '0 Bytes'
+    const i = Math.floor(Math.log(bytes) / Math.log(1024))
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i]
+  }
 
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString()
-}
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
+    return new Date(dateString).toLocaleDateString()
+  }
 
-onMounted(() => {
-  fetchUploads()
-})
+  onMounted(() => {
+    fetchUploads()
+  })
 </script>

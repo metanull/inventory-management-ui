@@ -12,12 +12,7 @@
           <h1 class="text-3xl font-bold text-gray-900">Picture Details</h1>
         </div>
         <div class="flex space-x-3">
-          <button
-            class="btn-outline"
-            @click="editPicture"
-          >
-            Edit Picture
-          </button>
+          <button class="btn-outline" @click="editPicture">Edit Picture</button>
           <button
             class="text-red-600 hover:text-red-900 px-3 py-2 text-sm font-medium"
             @click="deletePicture"
@@ -41,11 +36,9 @@
         <h3 class="text-lg leading-6 font-medium text-gray-900">
           {{ picture.internal_name }}
         </h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">
-          Picture information and details
-        </p>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Picture information and details</p>
       </div>
-      
+
       <!-- Picture Preview -->
       <div v-if="picture.path" class="px-4 py-5 sm:px-6">
         <img
@@ -104,7 +97,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Picture</h3>
           <form class="space-y-4" @submit.prevent="handleSubmit">
@@ -118,7 +114,7 @@
                 placeholder="Enter picture name"
               />
             </div>
-            
+
             <div>
               <label class="label">Upload Name</label>
               <input
@@ -160,18 +156,8 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-                :disabled="submitting"
-              >
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" class="btn-primary" :disabled="submitting">
                 {{ submitting ? 'Saving...' : 'Update' }}
               </button>
             </div>
@@ -244,7 +230,7 @@
       }
 
       await apiClient.updatePicture(picture.value.id, pictureData)
-      
+
       await fetchPicture()
       closeModal()
     } catch (err: any) {
@@ -274,7 +260,8 @@
     target.style.display = 'none'
     const parent = target.parentElement
     if (parent) {
-      parent.innerHTML = '<div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center"><span class="text-gray-400">Image not found</span></div>'
+      parent.innerHTML =
+        '<div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center"><span class="text-gray-400">Image not found</span></div>'
     }
   }
 

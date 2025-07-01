@@ -13,9 +13,7 @@
         ← Back to Items
       </RouterLink>
       <h1 class="mt-2 text-3xl font-bold text-gray-900">{{ item.internal_name }}</h1>
-      <p class="mt-2 text-sm text-gray-600">
-        Item Details
-      </p>
+      <p class="mt-2 text-sm text-gray-600">Item Details</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -31,8 +29,13 @@
               <dt class="text-sm font-medium text-gray-500">Type</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 <span
-class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      :class="item.type === 'object' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  :class="
+                    item.type === 'object'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-green-100 text-green-800'
+                  "
+                >
                   {{ item.type }}
                 </span>
               </dd>
@@ -79,8 +82,13 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
               <dt class="text-sm font-medium text-gray-500">Status</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 <span
-class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      :class="item.project.is_enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  :class="
+                    item.project.is_enabled
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  "
+                >
                   {{ item.project.is_enabled ? 'Active' : 'Inactive' }}
                 </span>
               </dd>
@@ -99,10 +107,7 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
         <div class="card">
           <h2 class="text-lg font-medium text-gray-900 mb-4">Actions</h2>
           <div class="space-y-3">
-            <button
-              class="block w-full text-center btn-primary"
-              @click="editItem"
-            >
+            <button class="block w-full text-center btn-primary" @click="editItem">
               Edit Item
             </button>
             <button
@@ -117,16 +122,9 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
         <div class="card mt-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-medium text-gray-900">Tags</h2>
-            <button
-              class="btn-outline text-sm"
-              @click="showTagModal = true"
-            >
-              Manage Tags
-            </button>
+            <button class="btn-outline text-sm" @click="showTagModal = true">Manage Tags</button>
           </div>
-          <div v-if="tags.length === 0" class="text-gray-500 text-sm">
-            No tags assigned
-          </div>
+          <div v-if="tags.length === 0" class="text-gray-500 text-sm">No tags assigned</div>
           <div v-else class="flex flex-wrap gap-2">
             <span
               v-for="tag in tags"
@@ -140,7 +138,11 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                 @click="removeTag(tag.id)"
               >
                 <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                  <path
+                    fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd"
+                  ></path>
                 </svg>
               </button>
             </span>
@@ -155,22 +157,18 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeTagModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-h-96 overflow-y-auto" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-h-96 overflow-y-auto"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Manage Tags</h3>
-          
+
           <div class="mb-4">
             <label class="label">Add Tag</label>
-            <select
-              v-model="selectedTagId"
-              class="input"
-            >
+            <select v-model="selectedTagId" class="input">
               <option value="">Select a tag to add</option>
-              <option
-                v-for="tag in availableTags"
-                :key="tag.id"
-                :value="tag.id"
-              >
+              <option v-for="tag in availableTags" :key="tag.id" :value="tag.id">
                 {{ tag.internal_name }}
               </option>
             </select>
@@ -204,13 +202,7 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
           </div>
 
           <div class="flex justify-end pt-4">
-            <button
-              type="button"
-              class="btn-outline"
-              @click="closeTagModal"
-            >
-              Close
-            </button>
+            <button type="button" class="btn-outline" @click="closeTagModal">Close</button>
           </div>
         </div>
       </div>
@@ -237,7 +229,9 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
 
   // Available tags are those not already assigned to the item
   const availableTags = computed(() => {
-    return allTags.value.filter((tag: TagResource) => !tags.value.some((itemTag: TagResource) => itemTag.id === tag.id))
+    return allTags.value.filter(
+      (tag: TagResource) => !tags.value.some((itemTag: TagResource) => itemTag.id === tag.id)
+    )
   })
 
   const fetchItem = async () => {
@@ -288,13 +282,13 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     addingTag.value = true
     try {
       await apiClient.addTagToItem(item.value.id, selectedTagId.value)
-      
+
       // Add the tag to the local list
       const tagToAdd = allTags.value.find((tag: TagResource) => tag.id === selectedTagId.value)
       if (tagToAdd) {
         tags.value.push(tagToAdd)
       }
-      
+
       selectedTagId.value = ''
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to add tag'
@@ -309,7 +303,7 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     removingTagId.value = tagId
     try {
       await apiClient.removeTagFromItem(item.value.id, tagId)
-      
+
       // Remove the tag from the local list
       tags.value = tags.value.filter((tag: TagResource) => tag.id !== tagId)
     } catch (err: any) {

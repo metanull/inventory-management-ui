@@ -12,12 +12,7 @@
           <h1 class="text-3xl font-bold text-gray-900">Project Details</h1>
         </div>
         <div class="flex space-x-3">
-          <button
-            class="btn-outline"
-            @click="editProject"
-          >
-            Edit Project
-          </button>
+          <button class="btn-outline" @click="editProject">Edit Project</button>
           <button
             class="text-red-600 hover:text-red-900 px-3 py-2 text-sm font-medium"
             @click="deleteProject"
@@ -41,9 +36,7 @@
         <h3 class="text-lg leading-6 font-medium text-gray-900">
           {{ project.internal_name }}
         </h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">
-          Project information and details
-        </p>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Project information and details</p>
       </div>
       <div class="border-t border-gray-200">
         <dl>
@@ -56,7 +49,10 @@
           <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt class="text-sm font-medium text-gray-500">Status</dt>
             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <span :class="project.is_enabled ? 'text-green-600' : 'text-red-600'" class="font-medium">
+              <span
+                :class="project.is_enabled ? 'text-green-600' : 'text-red-600'"
+                class="font-medium"
+              >
                 {{ project.is_enabled ? 'Active' : 'Inactive' }}
               </span>
             </dd>
@@ -64,7 +60,9 @@
           <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {{ project.launch_date ? new Date(project.launch_date).toLocaleDateString() : 'Not set' }}
+              {{
+                project.launch_date ? new Date(project.launch_date).toLocaleDateString() : 'Not set'
+              }}
             </dd>
           </div>
           <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -83,7 +81,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Project</h3>
           <form class="space-y-4" @submit.prevent="handleSubmit">
@@ -97,14 +98,10 @@
                 placeholder="Enter project name"
               />
             </div>
-            
+
             <div>
               <label class="label">Launch Date</label>
-              <input
-                v-model="form.launch_date"
-                type="date"
-                class="input"
-              />
+              <input v-model="form.launch_date" type="date" class="input" />
             </div>
 
             <div class="flex items-center">
@@ -113,24 +110,12 @@
                 type="checkbox"
                 class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <label class="ml-2 block text-sm text-gray-900">
-                Project is active
-              </label>
+              <label class="ml-2 block text-sm text-gray-900"> Project is active </label>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-                :disabled="submitting"
-              >
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" class="btn-primary" :disabled="submitting">
                 {{ submitting ? 'Saving...' : 'Update' }}
               </button>
             </div>
@@ -197,7 +182,7 @@
       }
 
       await apiClient.updateProject(project.value.id, projectData)
-      
+
       await fetchProject()
       closeModal()
     } catch (err: any) {

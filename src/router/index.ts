@@ -1,4 +1,9 @@
-import { createRouter, createWebHistory, type RouteLocationNormalized, type NavigationGuardNext } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteLocationNormalized,
+  type NavigationGuardNext,
+} from 'vue-router'
 import Home from '@/views/Home.vue'
 import Items from '@/views/Items.vue'
 import Partners from '@/views/Partners.vue'
@@ -138,16 +143,22 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  const authStore = useAuthStore()
-  
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else if (to.name === 'login' && authStore.isAuthenticated) {
-    next('/')
-  } else {
-    next()
+router.beforeEach(
+  async (
+    to: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
+    next: NavigationGuardNext
+  ) => {
+    const authStore = useAuthStore()
+
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+      next('/login')
+    } else if (to.name === 'login' && authStore.isAuthenticated) {
+      next('/')
+    } else {
+      next()
+    }
   }
-})
+)
 
 export default router

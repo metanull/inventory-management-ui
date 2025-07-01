@@ -18,7 +18,9 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = authToken
       localStorage.setItem('auth_token', authToken)
     } catch (err: unknown) {
-      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Login failed'
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Login failed'
       error.value = errorMessage
       throw err
     } finally {

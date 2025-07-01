@@ -5,12 +5,7 @@
         <h1 class="text-3xl font-bold text-gray-900">Pictures</h1>
         <p class="mt-2 text-sm text-gray-600">Manage item pictures and images</p>
       </div>
-      <button
-        class="btn-primary"
-        @click="showCreateModal = true"
-      >
-        Add Picture
-      </button>
+      <button class="btn-primary" @click="showCreateModal = true">Add Picture</button>
     </div>
 
     <div v-if="loading" class="text-center py-8">
@@ -42,22 +37,16 @@
             @error="handleImageError"
           />
         </div>
-        
+
         <div>
           <h3 class="text-sm font-medium text-gray-900 mb-1">
             {{ picture.internal_name }}
           </h3>
-          
+
           <div class="text-xs text-gray-500 space-y-1">
-            <div v-if="picture.upload_name">
-              Original: {{ picture.upload_name }}
-            </div>
-            <div v-if="picture.upload_size">
-              Size: {{ formatFileSize(picture.upload_size) }}
-            </div>
-            <div v-if="picture.copyright_text">
-              © {{ picture.copyright_text }}
-            </div>
+            <div v-if="picture.upload_name">Original: {{ picture.upload_name }}</div>
+            <div v-if="picture.upload_size">Size: {{ formatFileSize(picture.upload_size) }}</div>
+            <div v-if="picture.copyright_text">© {{ picture.copyright_text }}</div>
           </div>
 
           <div class="flex items-center space-x-2 mt-3">
@@ -84,7 +73,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">
             {{ showCreateModal ? 'Add Picture' : 'Edit Picture' }}
@@ -100,7 +92,7 @@
                 placeholder="Enter picture name"
               />
             </div>
-            
+
             <div>
               <label class="label">Upload Name</label>
               <input
@@ -142,19 +134,9 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-                :disabled="submitting"
-              >
-                {{ submitting ? 'Saving...' : (showCreateModal ? 'Add' : 'Update') }}
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" class="btn-primary" :disabled="submitting">
+                {{ submitting ? 'Saving...' : showCreateModal ? 'Add' : 'Update' }}
               </button>
             </div>
           </form>
@@ -212,7 +194,7 @@
         if (form.path) formData.append('path', form.path)
         if (form.copyright_text) formData.append('copyright_text', form.copyright_text)
         if (form.upload_size) formData.append('upload_size', form.upload_size.toString())
-        
+
         await apiClient.createPicture(formData)
       } else if (editingPicture.value) {
         // For updating pictures, only send allowed fields according to API spec
@@ -224,7 +206,7 @@
         }
         await apiClient.updatePicture(editingPicture.value.id, pictureData)
       }
-      
+
       await fetchPictures()
       closeModal()
     } catch (err: any) {
@@ -264,7 +246,8 @@
     target.style.display = 'none'
     const parent = target.parentElement
     if (parent) {
-      parent.innerHTML = '<div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center"><span class="text-gray-400">Image not found</span></div>'
+      parent.innerHTML =
+        '<div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center"><span class="text-gray-400">Image not found</span></div>'
     }
   }
 

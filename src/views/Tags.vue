@@ -5,12 +5,7 @@
         <h1 class="text-3xl font-bold text-gray-900">Tags</h1>
         <p class="mt-2 text-sm text-gray-600">Manage item tags and categories</p>
       </div>
-      <button
-        class="btn-primary"
-        @click="showCreateModal = true"
-      >
-        Add Tag
-      </button>
+      <button class="btn-primary" @click="showCreateModal = true">Add Tag</button>
     </div>
 
     <div v-if="loading" class="text-center py-8">
@@ -32,7 +27,9 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <div
+                    class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center"
+                  >
                     <span class="text-orange-600 font-medium text-sm">T</span>
                   </div>
                 </div>
@@ -77,7 +74,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">
             {{ showCreateModal ? 'Create Tag' : 'Edit Tag' }}
@@ -93,7 +93,7 @@
                 placeholder="Enter tag name"
               />
             </div>
-            
+
             <div>
               <label class="label">Description</label>
               <textarea
@@ -105,19 +105,9 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-                :disabled="submitting"
-              >
-                {{ submitting ? 'Saving...' : (showCreateModal ? 'Create' : 'Update') }}
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" class="btn-primary" :disabled="submitting">
+                {{ submitting ? 'Saving...' : showCreateModal ? 'Create' : 'Update' }}
               </button>
             </div>
           </form>
@@ -173,7 +163,7 @@
           description: form.description || '',
         })
       }
-      
+
       await fetchTags()
       closeModal()
     } catch (err: any) {

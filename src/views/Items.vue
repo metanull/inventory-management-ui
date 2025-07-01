@@ -3,16 +3,9 @@
     <div class="mb-8 flex justify-between items-center">
       <div>
         <h1 class="text-3xl font-bold text-gray-900">Items</h1>
-        <p class="mt-2 text-sm text-gray-600">
-          Manage your inventory items
-        </p>
+        <p class="mt-2 text-sm text-gray-600">Manage your inventory items</p>
       </div>
-      <button
-        class="btn-primary"
-        @click="showCreateModal = true"
-      >
-        Add Item
-      </button>
+      <button class="btn-primary" @click="showCreateModal = true">Add Item</button>
     </div>
 
     <div v-if="loading" class="text-center py-8">
@@ -44,7 +37,7 @@
                   {{ item.internal_name }}
                 </div>
                 <div class="text-sm text-gray-500">
-                  Type: {{ item.type }} | 
+                  Type: {{ item.type }} |
                   {{ item.partner ? `Partner: ${item.partner.internal_name}` : 'No partner' }}
                 </div>
               </div>
@@ -80,7 +73,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">
             {{ showCreateModal ? 'Create Item' : 'Edit Item' }}
@@ -96,7 +92,7 @@
                 placeholder="Enter internal name"
               />
             </div>
-            
+
             <div>
               <label class="label">Type</label>
               <select v-model="form.type" required class="input">
@@ -117,19 +113,9 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="submitting"
-                class="btn-primary"
-              >
-                {{ submitting ? 'Saving...' : (showCreateModal ? 'Create' : 'Update') }}
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" :disabled="submitting" class="btn-primary">
+                {{ submitting ? 'Saving...' : showCreateModal ? 'Create' : 'Update' }}
               </button>
             </div>
           </form>
@@ -189,7 +175,7 @@
           backward_compatibility: form.backward_compatibility || null,
         })
       }
-      
+
       await fetchItems()
       closeModal()
     } catch (err: any) {

@@ -5,12 +5,7 @@
         <h1 class="text-3xl font-bold text-gray-900">Projects</h1>
         <p class="mt-2 text-sm text-gray-600">Manage active projects</p>
       </div>
-      <button
-        class="btn-primary"
-        @click="showCreateModal = true"
-      >
-        Add Project
-      </button>
+      <button class="btn-primary" @click="showCreateModal = true">Add Project</button>
     </div>
 
     <div v-if="loading" class="text-center py-8">
@@ -40,11 +35,15 @@
                   {{ project.internal_name }}
                 </div>
                 <div class="text-sm text-gray-500">
-                  Status: 
+                  Status:
                   <span :class="project.is_enabled ? 'text-green-600' : 'text-red-600'">
                     {{ project.is_enabled ? 'Active' : 'Inactive' }}
                   </span>
-                  {{ project.launch_date ? ` | Launched: ${new Date(project.launch_date).toLocaleDateString()}` : '' }}
+                  {{
+                    project.launch_date
+                      ? ` | Launched: ${new Date(project.launch_date).toLocaleDateString()}`
+                      : ''
+                  }}
                 </div>
               </div>
             </div>
@@ -79,7 +78,10 @@
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click="closeModal"
     >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        @click.stop
+      >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 mb-4">
             {{ showCreateModal ? 'Create Project' : 'Edit Project' }}
@@ -95,14 +97,10 @@
                 placeholder="Enter project name"
               />
             </div>
-            
+
             <div>
               <label class="label">Launch Date</label>
-              <input
-                v-model="form.launch_date"
-                type="date"
-                class="input"
-              />
+              <input v-model="form.launch_date" type="date" class="input" />
             </div>
 
             <div class="flex items-center">
@@ -111,25 +109,13 @@
                 type="checkbox"
                 class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <label class="ml-2 block text-sm text-gray-900">
-                Project is active
-              </label>
+              <label class="ml-2 block text-sm text-gray-900"> Project is active </label>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                class="btn-outline"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-                :disabled="submitting"
-              >
-                {{ submitting ? 'Saving...' : (showCreateModal ? 'Create' : 'Update') }}
+              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
+              <button type="submit" class="btn-primary" :disabled="submitting">
+                {{ submitting ? 'Saving...' : showCreateModal ? 'Create' : 'Update' }}
               </button>
             </div>
           </form>
@@ -186,7 +172,7 @@
       } else if (editingProject.value) {
         await apiClient.updateProject(editingProject.value.id, projectData)
       }
-      
+
       await fetchProjects()
       closeModal()
     } catch (err: any) {
