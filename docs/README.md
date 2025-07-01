@@ -54,20 +54,26 @@ To run the documentation site locally:
 
 ### Blog Post Generation
 
-The site automatically generates daily blog posts from Git commit history:
+The site automatically generates daily blog posts from Git commit history via GitHub Actions:
 
-- **Trigger**: Runs daily at 00:00 UTC via GitHub Actions
-- **Source**: Git commits from the last 30 days
-- **Format**: Organized by date with commit details
-- **Emojis**: Conventional commit types get appropriate emojis
+- **Trigger**: Runs daily at 6 AM UTC, on pushes to main, or manual dispatch
+- **Source**: Git commits from the main branch, processed by date
+- **Format**: Organized daily summaries with commit details, statistics, and contributor information
+- **Content**: Includes PR merges, direct commits, GitHub references, and file change statistics
+- **Output**: Jekyll-compatible markdown posts in the `_posts/` directory
 
 ### GitHub Pages Deployment
 
-The site is automatically deployed to GitHub Pages:
+The site is automatically deployed to GitHub Pages via the `.github/workflows/deploy-pages.yml` workflow:
 
-- **Trigger**: On push to main branch or daily schedule
-- **Build**: Jekyll builds the static site
-- **Deploy**: GitHub Actions deploys to GitHub Pages
+- **Trigger**: On push to main branch, daily at 6 AM UTC, or manual dispatch
+- **Blog Generation**: Extracts commit history from the main branch and generates daily summary posts
+- **Jekyll Build**: Uses Ruby 3.1 and Jekyll to build the static site
+- **Deploy**: Automatically deploys to GitHub Pages using the official actions
+
+The workflow performs two main jobs:
+1. **generate-daily-posts**: Creates daily blog posts from Git commits with statistics and GitHub references
+2. **build-and-deploy**: Builds the Jekyll site and deploys it to GitHub Pages
 
 ## Customization
 
@@ -109,23 +115,25 @@ To add new documentation pages:
 
 ## Maintenance
 
-### Updating Dependencies
-
-To update Ruby gems:
-
-```bash
-cd docs
-bundle update
-```
-
 ### Modifying Blog Generation
 
-The blog post generation script is located at `scripts/generate-blog-posts.js`. Modify this file to change:
+The blog post generation logic is embedded in the `.github/workflows/deploy-pages.yml` workflow file. To modify the blog generation behavior:
 
-- Commit history depth
-- Blog post format
-- Emoji mappings
-- Content structure
+1. **Edit the workflow file**: `.github/workflows/deploy-pages.yml`
+2. **Modify the generation script**: Look for the "Setup gh-pages branch and generate daily posts" step
+3. **Customize the following aspects**:
+   - Commit history processing logic
+   - Daily post format and structure
+   - GitHub reference extraction
+   - Date range for processing commits
+   - Post metadata and categorization
+
+The workflow automatically:
+- Processes commits from the main branch
+- Groups commits by date
+- Extracts GitHub issue/PR references
+- Calculates file statistics and contributor information
+- Generates Jekyll-compatible markdown posts
 
 ### Theme Customization
 
