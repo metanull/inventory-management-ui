@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
-      - name: Checkout
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,24 +35,33 @@ jobs:
           cache: 'npm'
 
       - name: Generate Blog Posts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Run the blog post generation script
           node scripts/generate-blog-posts.js
 
-      - name: Commit and push blog posts
+      - name: Checkout gh-pages branch
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          # Create or checkout gh-pages branch
+          git fetch origin gh-pages:gh-pages 2>/dev/null || git checkout --orphan gh-pages
+          git checkout gh-pages
           
-          if [ -n "$(git status --porcelain docs/_posts/)" ]; then
-            git add docs/_posts/
-            git commit -m "docs: update daily blog posts [skip ci]"
-            git push
-          else
-            echo "No new blog posts to commit"
+          # Copy docs directory from main
+          git checkout main -- docs/
+          
+          # Copy generated blog posts
+          if [ -d "docs/_posts" ]; then
+            mkdir -p docs/_posts
+            cp -r docs/_posts/* docs/_posts/ 2>/dev/null || true
           fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages
+          force_orphan: true
 
   build-and-deploy:
     needs: generate-blog-posts
@@ -62,10 +71,10 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
+      - name: Checkout gh-pages branch
         uses: actions/checkout@v4
         with:
-          ref: main # Always use the latest main after blog post generation
+          ref: gh-pages
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
