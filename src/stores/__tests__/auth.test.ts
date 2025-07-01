@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
 // Mock the API client before importing the store
-const mockApiClient = {
-  login: vi.fn(),
-  logout: vi.fn()
-}
-
 vi.mock('@/api/client', () => ({
-  apiClient: mockApiClient
+  apiClient: {
+    login: vi.fn(),
+    logout: vi.fn(),
+  },
 }))
+
+import { useAuthStore } from '../auth'
 
 // Mock localStorage
 const localStorageMock = {
@@ -19,20 +19,20 @@ const localStorageMock = {
   clear: vi.fn(),
 }
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 })
 
 describe('Auth Store', () => {
-  let authStore: any
+  let authStore: ReturnType<typeof useAuthStore>
 
   beforeEach(async () => {
     // Clear all mocks first
     vi.clearAllMocks()
     localStorageMock.getItem.mockReturnValue(null)
-    
+
     // Setup Pinia
     setActivePinia(createPinia())
-    
+
     // Import the store after setting up mocks
     const { useAuthStore } = await import('../auth')
     authStore = useAuthStore()
@@ -59,11 +59,14 @@ describe('Auth Store', () => {
   describe('Login', () => {
     it('should login successfully', async () => {
       const mockToken = 'new-auth-token'
-      mockApiClient.login.mockResolvedValueOnce(mockToken)
+      const { apiClient } = (await vi.importMock('@/api/client')) as {
+        apiClient: { login: ReturnType<typeof vi.fn> }
+      }
+      apiClient.login.mockResolvedValueOnce(mockToken)
 
       await authStore.login('test@example.com', 'password')
 
-      expect(mockApiClient.login).toHaveBeenCalledWith(
+      expect(apiClient.login).toHaveBeenCalledWith(
         'test@example.com',
         'password',
         'Inventory Management UI'
@@ -78,14 +81,16 @@ describe('Auth Store', () => {
       const mockError = {
         response: {
           data: {
-            message: 'Invalid credentials'
-          }
-        }
+            message: 'Invalid credentials',
+          },
+        },
       }
-      mockApiClient.login.mockRejectedValueOnce(mockError)
+      const { apiClient } = (await vi.importMock('@/api/client')) as {
+        apiClient: { login: ReturnType<typeof vi.fn> }
+      }
+      apiClient.login.mockRejectedValueOnce(mockError)
 
-      await expect(authStore.login('test@example.com', 'wrong-password'))
-        .rejects.toThrow()
+      await expect(authStore.login('test@example.com', 'wrong-password')).rejects.toThrow()
 
       expect(authStore.token).toBeNull()
       expect(authStore.loading).toBe(false)
@@ -100,11 +105,14 @@ describe('Auth Store', () => {
     })
 
     it('should logout successfully', async () => {
-      mockApiClient.logout.mockResolvedValueOnce(undefined)
+      const { apiClient } = (await vi.importMock('@/api/client')) as {
+        apiClient: { logout: ReturnType<typeof vi.fn> }
+      }
+      apiClient.logout.mockResolvedValueOnce(undefined)
 
       await authStore.logout()
 
-      expect(mockApiClient.logout).toHaveBeenCalled()
+      expect(apiClient.logout).toHaveBeenCalled()
       expect(authStore.token).toBeNull()
       expect(authStore.error).toBeNull()
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('auth_token')

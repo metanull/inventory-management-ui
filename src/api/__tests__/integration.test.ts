@@ -1,43 +1,41 @@
 /**
  * Integration Tests for API Client
- * 
+ *
  * These tests run against a live API server and perform actual HTTP requests.
  * They are designed to test the complete integration between the frontend
  * and backend APIs.
- * 
- * IMPORTANT: 
+ *
+ * IMPORTANT:
  * - These tests require a running API server
  * - They will create, modify, and delete real data
  * - Run these tests against a development/test database only
  * - Tests run sequentially to avoid conflicts
- * 
+ *
  * To run these tests:
  * npm run test:integration
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { apiClient } from '../client'
-import type { 
-  CountryResource, 
-  LanguageResource, 
-  ContextResource,
-  PartnerResource,
-  ItemResource,
-  ProjectResource,
-  TagResource,
-  PictureResource,
-  ImageUploadResource
-} from '../client'
 
 // Test configuration
+interface ProcessEnv {
+  VITE_RUN_DESTRUCTIVE_TESTS?: string
+  VITE_API_BASE_URL?: string
+  VITE_TEST_EMAIL?: string
+  VITE_TEST_PASSWORD?: string
+}
+
+const env = (globalThis as { process?: { env?: ProcessEnv } }).process?.env || {}
+
 const TEST_CONFIG = {
   // Set to true to run destructive tests (create/update/delete)
-  RUN_DESTRUCTIVE_TESTS: process.env.VITE_RUN_DESTRUCTIVE_TESTS === 'true',
+  RUN_DESTRUCTIVE_TESTS: env.VITE_RUN_DESTRUCTIVE_TESTS === 'true',
   // API base URL - should point to test environment
-  API_BASE_URL: process.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
+  API_BASE_URL: env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
   // Test user credentials
-  TEST_EMAIL: process.env.VITE_TEST_EMAIL || 'test@example.com',
-  TEST_PASSWORD: process.env.VITE_TEST_PASSWORD || 'password123',
+  TEST_EMAIL: env.VITE_TEST_EMAIL || 'test@example.com',
+  TEST_PASSWORD: env.VITE_TEST_PASSWORD || 'password123',
 }
 
 // Store created resources for cleanup
@@ -58,14 +56,20 @@ describe('API Integration Tests', () => {
     // Authenticate first if credentials are provided
     if (TEST_CONFIG.TEST_EMAIL && TEST_CONFIG.TEST_PASSWORD) {
       try {
-        const token = await apiClient.login(TEST_CONFIG.TEST_EMAIL, TEST_CONFIG.TEST_PASSWORD, 'integration-test')
+        const token = await apiClient.login(
+          TEST_CONFIG.TEST_EMAIL,
+          TEST_CONFIG.TEST_PASSWORD,
+          'integration-test'
+        )
         console.log('✅ Authentication successful')
-        
+
         // Set the token for subsequent requests
         apiClient.setAuthToken(token)
       } catch (error) {
         console.error('❌ Authentication failed:', error)
-        throw new Error('Authentication failed. Please check your credentials and ensure the API server is running.')
+        throw new Error(
+          'Authentication failed. Please check your credentials and ensure the API server is running.'
+        )
       }
     }
 
@@ -75,7 +79,9 @@ describe('API Integration Tests', () => {
       console.log('✅ API server is accessible')
     } catch (error) {
       console.error('❌ API server is not accessible:', error)
-      throw new Error('API server is not accessible. Please ensure the API server is running and authentication is working.')
+      throw new Error(
+        'API server is not accessible. Please ensure the API server is running and authentication is working.'
+      )
     }
   })
 
@@ -84,7 +90,11 @@ describe('API Integration Tests', () => {
     if (TEST_CONFIG.TEST_EMAIL && TEST_CONFIG.TEST_PASSWORD) {
       // Only re-authenticate if we don't have a token
       if (!apiClient.getAuthToken()) {
-        const token = await apiClient.login(TEST_CONFIG.TEST_EMAIL, TEST_CONFIG.TEST_PASSWORD, 'integration-test')
+        const token = await apiClient.login(
+          TEST_CONFIG.TEST_EMAIL,
+          TEST_CONFIG.TEST_PASSWORD,
+          'integration-test'
+        )
         apiClient.setAuthToken(token)
       }
     }
@@ -94,7 +104,7 @@ describe('API Integration Tests', () => {
     // Cleanup created resources if destructive tests were run
     if (TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
       console.log('🧹 Cleaning up created test resources...')
-      
+
       // Clean up in reverse order to handle dependencies
       for (const pictureId of createdResources.pictures) {
         try {
@@ -184,7 +194,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Test Country',
         backward_compatibility: null,
       }
-      
+
       const createResponse = await apiClient.createCountry(createData)
       expect(createResponse.data).toBeDefined()
       expect(createResponse.data.id).toBe('TST')
@@ -203,7 +213,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Updated Test Country',
         backward_compatibility: 'TC',
       }
-      
+
       const updateResponse = await apiClient.updateCountry('TST', updateData)
       expect(updateResponse.data).toBeDefined()
       expect(updateResponse.data.internal_name).toBe('Updated Test Country')
@@ -219,8 +229,8 @@ describe('API Integration Tests', () => {
       try {
         await apiClient.getCountry('TST')
         throw new Error('Country should have been deleted')
-      } catch (error: any) {
-        expect(error.response?.status).toBe(404)
+      } catch (error: unknown) {
+        expect((error as { response?: { status?: number } }).response?.status).toBe(404)
         console.log('✅ Country deletion verified')
       }
     })
@@ -250,7 +260,7 @@ describe('API Integration Tests', () => {
         backward_compatibility: null,
         is_default: false,
       }
-      
+
       const createResponse = await apiClient.createLanguage(createData)
       expect(createResponse.data).toBeDefined()
       expect(createResponse.data.id).toBe(uniqueId)
@@ -270,7 +280,7 @@ describe('API Integration Tests', () => {
         backward_compatibility: 'tl',
         is_default: false,
       }
-      
+
       const updateResponse = await apiClient.updateLanguage(uniqueId, updateData)
       expect(updateResponse.data).toBeDefined()
       expect(updateResponse.data.internal_name).toBe('Updated Test Language')
@@ -288,8 +298,8 @@ describe('API Integration Tests', () => {
         expect(response.data).toBeDefined()
         expect(response.data.is_default).toBe(true)
         console.log('✅ Default language retrieved:', response.data.id)
-      } catch (error: any) {
-        if (error.response?.status === 404) {
+      } catch (error: unknown) {
+        if ((error as { response?: { status?: number } }).response?.status === 404) {
           console.log('ℹ️ No default language found')
         } else {
           throw error
@@ -302,8 +312,8 @@ describe('API Integration Tests', () => {
         const response = await apiClient.getEnglishLanguage()
         expect(response.data).toBeDefined()
         console.log('✅ English language retrieved:', response.data.id)
-      } catch (error: any) {
-        if (error.response?.status === 404) {
+      } catch (error: unknown) {
+        if ((error as { response?: { status?: number } }).response?.status === 404) {
           console.log('ℹ️ No English language found')
         } else {
           throw error
@@ -332,7 +342,7 @@ describe('API Integration Tests', () => {
         backward_compatibility: null,
         is_default: false,
       }
-      
+
       const createResponse = await apiClient.createContext(createData)
       expect(createResponse.data).toBeDefined()
       expect(createResponse.data.internal_name).toBe('Test Context')
@@ -351,7 +361,7 @@ describe('API Integration Tests', () => {
         backward_compatibility: 'tc',
         is_default: false,
       }
-      
+
       const updateResponse = await apiClient.updateContext(createResponse.data.id, updateData)
       expect(updateResponse.data).toBeDefined()
       expect(updateResponse.data.internal_name).toBe('Updated Test Context')
@@ -359,7 +369,9 @@ describe('API Integration Tests', () => {
 
       // Delete
       await apiClient.deleteContext(createResponse.data.id)
-      createdResources.contexts = createdResources.contexts.filter(id => id !== createResponse.data.id)
+      createdResources.contexts = createdResources.contexts.filter(
+        id => id !== createResponse.data.id
+      )
       console.log('✅ Context deleted:', createResponse.data.id)
     })
   })
@@ -383,7 +395,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Test Museum',
         type: 'museum' as const,
       }
-      
+
       const createResponse = await apiClient.createPartner(createData)
       expect(createResponse.data).toBeDefined()
       expect(createResponse.data.internal_name).toBe('Test Museum')
@@ -402,7 +414,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Updated Test Museum',
         type: 'institution' as const,
       }
-      
+
       const updateResponse = await apiClient.updatePartner(createResponse.data.id, updateData)
       expect(updateResponse.data).toBeDefined()
       expect(updateResponse.data.internal_name).toBe('Updated Test Museum')
@@ -411,7 +423,9 @@ describe('API Integration Tests', () => {
 
       // Delete
       await apiClient.deletePartner(createResponse.data.id)
-      createdResources.partners = createdResources.partners.filter(id => id !== createResponse.data.id)
+      createdResources.partners = createdResources.partners.filter(
+        id => id !== createResponse.data.id
+      )
       console.log('✅ Partner deleted:', createResponse.data.id)
     })
   })
@@ -435,7 +449,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Test Artifact',
         type: 'object' as const,
       }
-      
+
       const createResponse = await apiClient.createItem(createData)
       expect(createResponse.data).toBeDefined()
       expect(createResponse.data.internal_name).toBe('Test Artifact')
@@ -454,7 +468,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Updated Test Artifact',
         type: 'monument' as const,
       }
-      
+
       const updateResponse = await apiClient.updateItem(createResponse.data.id, updateData)
       expect(updateResponse.data).toBeDefined()
       expect(updateResponse.data.internal_name).toBe('Updated Test Artifact')
@@ -494,7 +508,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Test Project',
         is_enabled: true,
       }
-      
+
       const createResponse = await apiClient.createProject(createData)
       expect(createResponse.data).toBeDefined()
       expect(createResponse.data.internal_name).toBe('Test Project')
@@ -513,7 +527,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Updated Test Project',
         is_enabled: false,
       }
-      
+
       const updateResponse = await apiClient.updateProject(createResponse.data.id, updateData)
       expect(updateResponse.data).toBeDefined()
       expect(updateResponse.data.internal_name).toBe('Updated Test Project')
@@ -522,7 +536,9 @@ describe('API Integration Tests', () => {
 
       // Delete
       await apiClient.deleteProject(createResponse.data.id)
-      createdResources.projects = createdResources.projects.filter(id => id !== createResponse.data.id)
+      createdResources.projects = createdResources.projects.filter(
+        id => id !== createResponse.data.id
+      )
       console.log('✅ Project deleted:', createResponse.data.id)
     })
   })
@@ -546,7 +562,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Test Tag',
         description: 'A test tag for integration testing',
       }
-      
+
       const createResponse = await apiClient.createTag(createData)
       expect(createResponse.data).toBeDefined()
       expect(createResponse.data.internal_name).toBe('Test Tag')
@@ -565,7 +581,7 @@ describe('API Integration Tests', () => {
         internal_name: 'Updated Test Tag',
         description: 'An updated test tag for integration testing',
       }
-      
+
       const updateResponse = await apiClient.updateTag(createResponse.data.id, updateData)
       expect(updateResponse.data).toBeDefined()
       expect(updateResponse.data.internal_name).toBe('Updated Test Tag')
@@ -608,7 +624,7 @@ describe('API Integration Tests', () => {
       if (TEST_CONFIG.TEST_EMAIL && TEST_CONFIG.TEST_PASSWORD) {
         await apiClient.logout()
         console.log('✅ Logout successful')
-        
+
         // Re-authenticate for remaining tests
         await apiClient.login(TEST_CONFIG.TEST_EMAIL, TEST_CONFIG.TEST_PASSWORD, 'integration-test')
         console.log('✅ Re-authentication successful')
@@ -623,8 +639,8 @@ describe('API Integration Tests', () => {
       try {
         await apiClient.getCountry('NONEXISTENT')
         throw new Error('Should have thrown 404 error')
-      } catch (error: any) {
-        expect(error.response?.status).toBe(404)
+      } catch (error: unknown) {
+        expect((error as { response?: { status?: number } }).response?.status).toBe(404)
         console.log('✅ 404 error handled correctly')
       }
     })
@@ -643,9 +659,10 @@ describe('API Integration Tests', () => {
           backward_compatibility: null,
         })
         throw new Error('Should have thrown validation error')
-      } catch (error: any) {
-        expect(error.response?.status).toBe(422)
-        expect(error.response?.data?.errors).toBeDefined()
+      } catch (error: unknown) {
+        const axiosError = error as { response?: { status?: number; data?: { errors?: unknown } } }
+        expect(axiosError.response?.status).toBe(422)
+        expect(axiosError.response?.data?.errors).toBeDefined()
         console.log('✅ Validation error handled correctly')
       }
     })

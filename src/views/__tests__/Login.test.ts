@@ -11,8 +11,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', component: { template: '<div>Home</div>' } },
-    { path: '/login', component: { template: '<div>Login</div>' } }
-  ]
+    { path: '/login', component: { template: '<div>Login</div>' } },
+  ],
 })
 
 const mockPush = vi.fn()
@@ -23,8 +23,8 @@ vi.mock('vue-router', async () => {
   return {
     ...actual,
     useRouter: () => ({
-      push: mockPush
-    })
+      push: mockPush,
+    }),
   }
 })
 
@@ -38,8 +38,8 @@ vi.mock('../../stores/auth', () => ({
     clearError: mockClearError,
     loading: false,
     error: '',
-    isAuthenticated: false
-  }))
+    isAuthenticated: false,
+  })),
 }))
 
 describe('Login.vue', () => {
@@ -56,17 +56,17 @@ describe('Login.vue', () => {
       loading: false,
       error: '',
       isAuthenticated: false,
-      ...authStoreOverrides
+      ...authStoreOverrides,
     }
 
-    vi.mocked(useAuthStore).mockReturnValue(mockStore as any)
+    vi.mocked(useAuthStore).mockReturnValue(mockStore as ReturnType<typeof useAuthStore>)
 
     return mount(Login, {
       global: {
         plugins: [
           createTestingPinia({
             createSpy: vi.fn,
-            stubActions: false
+            stubActions: false,
           }),
           router,
         ],
@@ -111,7 +111,7 @@ describe('Login.vue', () => {
 
       // Submit the form
       await form.trigger('submit.prevent')
-      
+
       // Wait for the async login to complete and for Vue to update
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 0))

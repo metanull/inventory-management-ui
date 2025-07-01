@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import type { AxiosResponse } from 'axios'
-import type { 
-  ItemResource, 
-  PartnerResource, 
-  ProjectResource, 
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import type {
+  ItemResource,
+  PartnerResource,
+  ProjectResource,
   PictureResource,
-  ApiResponse 
+  ApiResponse,
 } from '../client'
 
 // Mock axios completely
@@ -17,18 +17,18 @@ vi.mock('axios', () => {
     delete: vi.fn(),
     interceptors: {
       request: {
-        use: vi.fn()
+        use: vi.fn(),
       },
       response: {
-        use: vi.fn()
-      }
-    }
+        use: vi.fn(),
+      },
+    },
   }
-  
+
   return {
     default: {
-      create: vi.fn(() => mockAxiosInstance)
-    }
+      create: vi.fn(() => mockAxiosInstance),
+    },
   }
 })
 
@@ -40,35 +40,45 @@ const localStorageMock = {
   clear: vi.fn(),
 }
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 })
 
 // Mock window.location
 Object.defineProperty(window, 'location', {
   value: {
-    href: ''
+    href: '',
   },
-  writable: true
+  writable: true,
 })
 
 describe('ApiClient', () => {
-  let mockAxiosInstance: any
-  let ApiClient: any
+  let mockAxiosInstance: {
+    get: ReturnType<typeof vi.fn>
+    post: ReturnType<typeof vi.fn>
+    put: ReturnType<typeof vi.fn>
+    patch: ReturnType<typeof vi.fn>
+    delete: ReturnType<typeof vi.fn>
+    interceptors: {
+      request: { use: ReturnType<typeof vi.fn> }
+      response: { use: ReturnType<typeof vi.fn> }
+    }
+  }
+  let ApiClient: typeof import('../client').apiClient
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    
+
     // Get the mocked axios instance
     const axios = await import('axios')
-    mockAxiosInstance = (axios.default.create as any)()
-    
+    mockAxiosInstance = (axios.default.create as ReturnType<typeof vi.fn>)()
+
     // Ensure all HTTP methods are mocked
     mockAxiosInstance.get = vi.fn()
     mockAxiosInstance.post = vi.fn()
     mockAxiosInstance.put = vi.fn()
     mockAxiosInstance.patch = vi.fn()
     mockAxiosInstance.delete = vi.fn()
-    
+
     localStorageMock.getItem.mockReturnValue('mock-token')
 
     // Dynamically import the client after setting up mocks
@@ -84,7 +94,7 @@ describe('ApiClient', () => {
     it('should login successfully', async () => {
       const mockToken = 'mock-auth-token'
       mockAxiosInstance.post.mockResolvedValueOnce({
-        data: mockToken
+        data: mockToken,
       })
 
       const result = await ApiClient.login('test@example.com', 'password', 'test-device')
@@ -92,7 +102,8 @@ describe('ApiClient', () => {
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/mobile/acquire-token', {
         email: 'test@example.com',
         password: 'password',
-        device_name: 'test-device'
+        device_name: 'test-device',
+        wipe_tokens: true,
       })
       expect(result).toBe(mockToken)
     })
@@ -109,8 +120,9 @@ describe('ApiClient', () => {
       const mockError = new Error('Login failed')
       mockAxiosInstance.post.mockRejectedValueOnce(mockError)
 
-      await expect(ApiClient.login('test@example.com', 'wrong-password', 'test-device'))
-        .rejects.toThrow('Login failed')
+      await expect(
+        ApiClient.login('test@example.com', 'wrong-password', 'test-device')
+      ).rejects.toThrow('Login failed')
     })
   })
 
@@ -121,11 +133,11 @@ describe('ApiClient', () => {
       backward_compatibility: null,
       type: 'object',
       created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z'
+      updated_at: '2023-01-01T00:00:00Z',
     }
 
     const mockApiResponse: ApiResponse<ItemResource[]> = {
-      data: [mockItem]
+      data: [mockItem],
     }
 
     it('should get items successfully', async () => {
@@ -134,7 +146,7 @@ describe('ApiClient', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
@@ -147,14 +159,14 @@ describe('ApiClient', () => {
 
     it('should get single item successfully', async () => {
       const mockSingleResponse: ApiResponse<ItemResource> = {
-        data: mockItem
+        data: mockItem,
       }
       const mockResponse: AxiosResponse<ApiResponse<ItemResource>> = {
         data: mockSingleResponse,
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
@@ -168,14 +180,14 @@ describe('ApiClient', () => {
     it('should create item successfully', async () => {
       const newItem: Partial<ItemResource> = {
         internal_name: 'New Item',
-        type: 'object'
+        type: 'object',
       }
       const mockResponse: AxiosResponse<ApiResponse<ItemResource>> = {
         data: { data: { ...mockItem, ...newItem } },
         status: 201,
         statusText: 'Created',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.post.mockResolvedValueOnce(mockResponse)
@@ -188,7 +200,7 @@ describe('ApiClient', () => {
 
     it('should update item successfully', async () => {
       const updates: Partial<ItemResource> = {
-        internal_name: 'Updated Item'
+        internal_name: 'Updated Item',
       }
       const updatedItem = { ...mockItem, ...updates }
       const mockResponse: AxiosResponse<ApiResponse<ItemResource>> = {
@@ -196,7 +208,7 @@ describe('ApiClient', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.put.mockResolvedValueOnce(mockResponse)
@@ -218,7 +230,7 @@ describe('ApiClient', () => {
     it('should get item tags successfully', async () => {
       const mockTags = [
         { id: '1', internal_name: 'Tag 1', created_at: null, updated_at: null },
-        { id: '2', internal_name: 'Tag 2', created_at: null, updated_at: null }
+        { id: '2', internal_name: 'Tag 2', created_at: null, updated_at: null },
       ]
       const mockResponse = { data: mockTags }
       mockAxiosInstance.get.mockResolvedValueOnce({ data: mockResponse })
@@ -260,7 +272,7 @@ describe('ApiClient', () => {
       backward_compatibility: null,
       type: 'museum',
       created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z'
+      updated_at: '2023-01-01T00:00:00Z',
     }
 
     it('should get partners successfully', async () => {
@@ -269,7 +281,7 @@ describe('ApiClient', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
@@ -284,14 +296,14 @@ describe('ApiClient', () => {
     it('should create partner successfully', async () => {
       const newPartner: Partial<PartnerResource> = {
         internal_name: 'New Museum',
-        type: 'museum'
+        type: 'museum',
       }
       const mockResponse: AxiosResponse<ApiResponse<PartnerResource>> = {
         data: { data: { ...mockPartner, ...newPartner } },
         status: 201,
         statusText: 'Created',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.post.mockResolvedValueOnce(mockResponse)
@@ -320,7 +332,7 @@ describe('ApiClient', () => {
       is_launched: true,
       is_enabled: true,
       created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z'
+      updated_at: '2023-01-01T00:00:00Z',
     }
 
     it('should get projects successfully', async () => {
@@ -329,7 +341,7 @@ describe('ApiClient', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
@@ -346,7 +358,7 @@ describe('ApiClient', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
@@ -371,7 +383,7 @@ describe('ApiClient', () => {
       upload_mime_type: 'image/jpeg',
       upload_size: 12345,
       created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z'
+      updated_at: '2023-01-01T00:00:00Z',
     }
 
     it('should get pictures successfully', async () => {
@@ -380,7 +392,7 @@ describe('ApiClient', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
@@ -401,7 +413,7 @@ describe('ApiClient', () => {
         status: 201,
         statusText: 'Created',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
 
       mockAxiosInstance.post.mockResolvedValueOnce(mockResponse)
@@ -410,8 +422,8 @@ describe('ApiClient', () => {
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/picture', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       })
       expect(result.data.upload_name).toBe('test.jpg')
     })
@@ -430,12 +442,14 @@ describe('ApiClient', () => {
 
   describe('Countries', () => {
     it('should fetch countries', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any[]>> = {
-        data: { data: [{ id: 'USA', internal_name: 'United States', backward_compatibility: null }] },
+      const mockResponse: AxiosResponse<ApiResponse<unknown[]>> = {
+        data: {
+          data: [{ id: 'USA', internal_name: 'United States', backward_compatibility: null }],
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
 
@@ -448,12 +462,12 @@ describe('ApiClient', () => {
 
     it('should create a country', async () => {
       const countryData = { id: 'USA', internal_name: 'United States' }
-      const mockResponse: AxiosResponse<ApiResponse<any>> = {
+      const mockResponse: AxiosResponse<ApiResponse<unknown>> = {
         data: { data: { id: 'USA', internal_name: 'United States', backward_compatibility: null } },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.post.mockResolvedValueOnce(mockResponse)
 
@@ -465,12 +479,18 @@ describe('ApiClient', () => {
 
     it('should update a country', async () => {
       const countryData = { internal_name: 'United States of America' }
-      const mockResponse: AxiosResponse<ApiResponse<any>> = {
-        data: { data: { id: 'USA', internal_name: 'United States of America', backward_compatibility: null } },
+      const mockResponse: AxiosResponse<ApiResponse<unknown>> = {
+        data: {
+          data: {
+            id: 'USA',
+            internal_name: 'United States of America',
+            backward_compatibility: null,
+          },
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.put.mockResolvedValueOnce(mockResponse)
 
@@ -486,7 +506,7 @@ describe('ApiClient', () => {
         status: 204,
         statusText: 'No Content',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.delete.mockResolvedValueOnce(mockResponse)
 
@@ -498,12 +518,16 @@ describe('ApiClient', () => {
 
   describe('Languages', () => {
     it('should fetch languages', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any[]>> = {
-        data: { data: [{ id: 'eng', internal_name: 'English', is_default: true, backward_compatibility: null }] },
+      const mockResponse: AxiosResponse<ApiResponse<unknown[]>> = {
+        data: {
+          data: [
+            { id: 'eng', internal_name: 'English', is_default: true, backward_compatibility: null },
+          ],
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
 
@@ -515,12 +539,19 @@ describe('ApiClient', () => {
     })
 
     it('should fetch default language', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any>> = {
-        data: { data: { id: 'eng', internal_name: 'English', is_default: true, backward_compatibility: null } },
+      const mockResponse: AxiosResponse<ApiResponse<unknown>> = {
+        data: {
+          data: {
+            id: 'eng',
+            internal_name: 'English',
+            is_default: true,
+            backward_compatibility: null,
+          },
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
 
@@ -531,30 +562,48 @@ describe('ApiClient', () => {
     })
 
     it('should set default language', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any>> = {
-        data: { data: { id: 'eng', internal_name: 'English', is_default: true, backward_compatibility: null } },
+      const mockResponse: AxiosResponse<ApiResponse<unknown>> = {
+        data: {
+          data: {
+            id: 'eng',
+            internal_name: 'English',
+            is_default: true,
+            backward_compatibility: null,
+          },
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.patch.mockResolvedValueOnce(mockResponse)
 
       const result = await ApiClient.setDefaultLanguage('eng', true)
 
-      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/language/eng/default', { is_default: true })
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/language/eng/default', {
+        is_default: true,
+      })
       expect(result.data.is_default).toBe(true)
     })
   })
 
   describe('Contexts', () => {
     it('should fetch contexts', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any[]>> = {
-        data: { data: [{ id: '1', internal_name: 'Default Context', is_default: true, backward_compatibility: null }] },
+      const mockResponse: AxiosResponse<ApiResponse<unknown[]>> = {
+        data: {
+          data: [
+            {
+              id: '1',
+              internal_name: 'Default Context',
+              is_default: true,
+              backward_compatibility: null,
+            },
+          ],
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
 
@@ -566,30 +615,39 @@ describe('ApiClient', () => {
     })
 
     it('should set default context', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any>> = {
-        data: { data: { id: '1', internal_name: 'Default Context', is_default: true, backward_compatibility: null } },
+      const mockResponse: AxiosResponse<ApiResponse<unknown>> = {
+        data: {
+          data: {
+            id: '1',
+            internal_name: 'Default Context',
+            is_default: true,
+            backward_compatibility: null,
+          },
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.patch.mockResolvedValueOnce(mockResponse)
 
       const result = await ApiClient.setDefaultContext('1', true)
 
-      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/context/1/default', { is_default: true })
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/context/1/default', {
+        is_default: true,
+      })
       expect(result.data.is_default).toBe(true)
     })
   })
 
   describe('Image Uploads', () => {
     it('should fetch image uploads', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any[]>> = {
+      const mockResponse: AxiosResponse<ApiResponse<unknown[]>> = {
         data: { data: [{ id: '1', name: 'test.jpg', size: 1024, mime_type: 'image/jpeg' }] },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
 
@@ -603,20 +661,20 @@ describe('ApiClient', () => {
     it('should create image upload', async () => {
       const formData = new FormData()
       formData.append('file', new File(['test'], 'test.jpg'))
-      
-      const mockResponse: AxiosResponse<ApiResponse<any>> = {
+
+      const mockResponse: AxiosResponse<ApiResponse<unknown>> = {
         data: { data: { id: '1', name: 'test.jpg', size: 1024, mime_type: 'image/jpeg' } },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.post.mockResolvedValueOnce(mockResponse)
 
       const result = await ApiClient.createImageUpload(formData)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/image-upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
       })
       expect(result.data.name).toBe('test.jpg')
     })
@@ -624,12 +682,12 @@ describe('ApiClient', () => {
 
   describe('Available Images', () => {
     it('should fetch available images', async () => {
-      const mockResponse: AxiosResponse<ApiResponse<any[]>> = {
+      const mockResponse: AxiosResponse<ApiResponse<unknown[]>> = {
         data: { data: [{ id: '1', path: '/path/to/image.jpg', comment: 'Test comment' }] },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
 
@@ -642,12 +700,12 @@ describe('ApiClient', () => {
 
     it('should update available image', async () => {
       const updateData = { comment: 'Updated comment' }
-      const mockResponse: AxiosResponse<ApiResponse<any>> = {
+      const mockResponse: AxiosResponse<ApiResponse<unknown>> = {
         data: { data: { id: '1', path: '/path/to/image.jpg', comment: 'Updated comment' } },
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {} as any
+        config: {} as InternalAxiosRequestConfig,
       }
       mockAxiosInstance.put.mockResolvedValueOnce(mockResponse)
 

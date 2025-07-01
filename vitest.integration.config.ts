@@ -1,12 +1,15 @@
 import { defineConfig } from 'vitest/config'
 import { loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ mode }) => {
   // Load environment variables from .env.integration.local
-  const env = loadEnv(mode, process.cwd(), ['VITE_'])
-  
+  const env = loadEnv(mode, globalThis.process?.cwd?.() || '.', ['VITE_'])
+
   return {
     plugins: [vue()],
     test: {
@@ -20,25 +23,25 @@ export default defineConfig(({ mode }) => {
       pool: 'forks',
       poolOptions: {
         forks: {
-          singleFork: true
-        }
+          singleFork: true,
+        },
       },
       // Longer timeout for network requests
       testTimeout: 30000,
       // Load integration test environment variables
       env: {
         NODE_ENV: 'test',
-        ...env
+        ...env,
       },
       // Detailed output for integration tests
-      reporters: ['verbose']
+      reporters: ['verbose'],
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src')
-      }
+        '@': resolve(__dirname, './src'),
+      },
     },
     envDir: './',
-    envPrefix: 'VITE_'
+    envPrefix: 'VITE_',
   }
 })

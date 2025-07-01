@@ -123,7 +123,7 @@ export interface ContextualizationResource {
   context_id: string
   item_id: string | null
   detail_id: string | null
-  extra: any[] | null
+  extra: unknown[] | null
   internal_name: string
   backward_compatibility: string | null
   created_at: string | null
@@ -179,7 +179,7 @@ class ApiClient {
       error => {
         // Let ErrorHandler manage the error display and authentication redirects
         ErrorHandler.handleError(error, 'API Request')
-        
+
         // Still reject the promise so individual methods can handle it if needed
         return Promise.reject(error)
       }
@@ -194,7 +194,7 @@ class ApiClient {
       device_name: deviceName,
       wipe_tokens: true, // Remove older tokens during login
     })
-    
+
     // Parse the response format: "tokenCount;actualToken"
     const responseData = response.data
     if (typeof responseData === 'string' && responseData.includes(';')) {
@@ -202,7 +202,7 @@ class ApiClient {
       console.log(`Authentication successful. Active tokens: ${tokenCount}`)
       return token
     }
-    
+
     // Fallback for different response formats
     return responseData
   }
@@ -270,7 +270,8 @@ class ApiClient {
 
   // Partners
   async getPartners(): Promise<ApiResponse<PartnerResource[]>> {
-    const response: AxiosResponse<ApiResponse<PartnerResource[]>> = await this.client.get('/partner')
+    const response: AxiosResponse<ApiResponse<PartnerResource[]>> =
+      await this.client.get('/partner')
     return response.data
   }
 
@@ -306,14 +307,14 @@ class ApiClient {
 
   // Projects
   async getProjects(): Promise<ApiResponse<ProjectResource[]>> {
-    const response: AxiosResponse<ApiResponse<ProjectResource[]>> = await this.client.get('/project')
+    const response: AxiosResponse<ApiResponse<ProjectResource[]>> =
+      await this.client.get('/project')
     return response.data
   }
 
   async getEnabledProjects(): Promise<ApiResponse<ProjectResource[]>> {
-    const response: AxiosResponse<ApiResponse<ProjectResource[]>> = await this.client.get(
-      '/project/enabled'
-    )
+    const response: AxiosResponse<ApiResponse<ProjectResource[]>> =
+      await this.client.get('/project/enabled')
     return response.data
   }
 
@@ -377,7 +378,8 @@ class ApiClient {
 
   // Pictures
   async getPictures(): Promise<ApiResponse<PictureResource[]>> {
-    const response: AxiosResponse<ApiResponse<PictureResource[]>> = await this.client.get('/picture')
+    const response: AxiosResponse<ApiResponse<PictureResource[]>> =
+      await this.client.get('/picture')
     return response.data
   }
 
@@ -401,7 +403,10 @@ class ApiClient {
     return response.data
   }
 
-  async updatePicture(id: string, data: Partial<PictureResource>): Promise<ApiResponse<PictureResource>> {
+  async updatePicture(
+    id: string,
+    data: Partial<PictureResource>
+  ): Promise<ApiResponse<PictureResource>> {
     const response: AxiosResponse<ApiResponse<PictureResource>> = await this.client.put(
       `/picture/${id}`,
       data
@@ -415,22 +420,34 @@ class ApiClient {
 
   // Countries
   async getCountries(): Promise<ApiResponse<CountryResource[]>> {
-    const response: AxiosResponse<ApiResponse<CountryResource[]>> = await this.client.get('/country')
+    const response: AxiosResponse<ApiResponse<CountryResource[]>> =
+      await this.client.get('/country')
     return response.data
   }
 
   async getCountry(id: string): Promise<ApiResponse<CountryResource>> {
-    const response: AxiosResponse<ApiResponse<CountryResource>> = await this.client.get(`/country/${id}`)
+    const response: AxiosResponse<ApiResponse<CountryResource>> = await this.client.get(
+      `/country/${id}`
+    )
     return response.data
   }
 
   async createCountry(data: Partial<CountryResource>): Promise<ApiResponse<CountryResource>> {
-    const response: AxiosResponse<ApiResponse<CountryResource>> = await this.client.post('/country', data)
+    const response: AxiosResponse<ApiResponse<CountryResource>> = await this.client.post(
+      '/country',
+      data
+    )
     return response.data
   }
 
-  async updateCountry(id: string, data: Partial<CountryResource>): Promise<ApiResponse<CountryResource>> {
-    const response: AxiosResponse<ApiResponse<CountryResource>> = await this.client.put(`/country/${id}`, data)
+  async updateCountry(
+    id: string,
+    data: Partial<CountryResource>
+  ): Promise<ApiResponse<CountryResource>> {
+    const response: AxiosResponse<ApiResponse<CountryResource>> = await this.client.put(
+      `/country/${id}`,
+      data
+    )
     return response.data
   }
 
@@ -440,43 +457,62 @@ class ApiClient {
 
   // Languages
   async getLanguages(): Promise<ApiResponse<LanguageResource[]>> {
-    const response: AxiosResponse<ApiResponse<LanguageResource[]>> = await this.client.get('/language')
+    const response: AxiosResponse<ApiResponse<LanguageResource[]>> =
+      await this.client.get('/language')
     return response.data
   }
 
   async getLanguage(id: string): Promise<ApiResponse<LanguageResource>> {
-    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.get(`/language/${id}`)
+    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.get(
+      `/language/${id}`
+    )
     return response.data
   }
 
   async getDefaultLanguage(): Promise<ApiResponse<LanguageResource>> {
-    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.get('/language/default')
+    const response: AxiosResponse<ApiResponse<LanguageResource>> =
+      await this.client.get('/language/default')
     return response.data
   }
 
   async getEnglishLanguage(): Promise<ApiResponse<LanguageResource>> {
-    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.get('/language/english')
+    const response: AxiosResponse<ApiResponse<LanguageResource>> =
+      await this.client.get('/language/english')
     return response.data
   }
 
   async createLanguage(data: Partial<LanguageResource>): Promise<ApiResponse<LanguageResource>> {
     // Remove forbidden fields for creation
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { is_default, ...createData } = data
-    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.post('/language', createData)
+    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.post(
+      '/language',
+      createData
+    )
     return response.data
   }
 
-  async updateLanguage(id: string, data: Partial<LanguageResource>): Promise<ApiResponse<LanguageResource>> {
+  async updateLanguage(
+    id: string,
+    data: Partial<LanguageResource>
+  ): Promise<ApiResponse<LanguageResource>> {
     // Remove forbidden fields for update
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { is_default, ...updateData } = data
-    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.put(`/language/${id}`, updateData)
+    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.put(
+      `/language/${id}`,
+      updateData
+    )
     return response.data
   }
 
   async setDefaultLanguage(id: string, isDefault: boolean): Promise<ApiResponse<LanguageResource>> {
-    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.patch(`/language/${id}/default`, {
-      is_default: isDefault
-    })
+    const response: AxiosResponse<ApiResponse<LanguageResource>> = await this.client.patch(
+      `/language/${id}/default`,
+      {
+        is_default: isDefault,
+      }
+    )
     return response.data
   }
 
@@ -486,38 +522,56 @@ class ApiClient {
 
   // Contexts
   async getContexts(): Promise<ApiResponse<ContextResource[]>> {
-    const response: AxiosResponse<ApiResponse<ContextResource[]>> = await this.client.get('/context')
+    const response: AxiosResponse<ApiResponse<ContextResource[]>> =
+      await this.client.get('/context')
     return response.data
   }
 
   async getContext(id: string): Promise<ApiResponse<ContextResource>> {
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.get(`/context/${id}`)
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.get(
+      `/context/${id}`
+    )
     return response.data
   }
 
   async getDefaultContext(): Promise<ApiResponse<ContextResource>> {
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.get('/context/default')
+    const response: AxiosResponse<ApiResponse<ContextResource>> =
+      await this.client.get('/context/default')
     return response.data
   }
 
   async createContext(data: Partial<ContextResource>): Promise<ApiResponse<ContextResource>> {
     // Remove forbidden fields for creation
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { is_default, ...createData } = data
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.post('/context', createData)
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.post(
+      '/context',
+      createData
+    )
     return response.data
   }
 
-  async updateContext(id: string, data: Partial<ContextResource>): Promise<ApiResponse<ContextResource>> {
+  async updateContext(
+    id: string,
+    data: Partial<ContextResource>
+  ): Promise<ApiResponse<ContextResource>> {
     // Remove forbidden fields for update
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { is_default, ...updateData } = data
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.put(`/context/${id}`, updateData)
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.put(
+      `/context/${id}`,
+      updateData
+    )
     return response.data
   }
 
   async setDefaultContext(id: string, isDefault: boolean): Promise<ApiResponse<ContextResource>> {
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.patch(`/context/${id}/default`, {
-      is_default: isDefault
-    })
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.patch(
+      `/context/${id}/default`,
+      {
+        is_default: isDefault,
+      }
+    )
     return response.data
   }
 
@@ -527,42 +581,64 @@ class ApiClient {
 
   // Contextualizations
   async getContextualizations(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> = await this.client.get('/contextualization')
+    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
+      await this.client.get('/contextualization')
     return response.data
   }
 
   async getContextualizationsForItems(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> = await this.client.get('/contextualization/for-items')
+    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
+      await this.client.get('/contextualization/for-items')
     return response.data
   }
 
   async getContextualizationsForDetails(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> = await this.client.get('/contextualization/for-details')
+    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
+      await this.client.get('/contextualization/for-details')
     return response.data
   }
 
   async getDefaultContextualizations(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> = await this.client.get('/contextualization/default-context')
+    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
+      await this.client.get('/contextualization/default-context')
     return response.data
   }
 
   async getContextualization(id: string): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.get(`/contextualization/${id}`)
+    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.get(
+      `/contextualization/${id}`
+    )
     return response.data
   }
 
-  async createContextualization(data: Partial<ContextualizationResource>): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.post('/contextualization', data)
+  async createContextualization(
+    data: Partial<ContextualizationResource>
+  ): Promise<ApiResponse<ContextualizationResource>> {
+    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.post(
+      '/contextualization',
+      data
+    )
     return response.data
   }
 
-  async createContextualizationWithDefaultContext(data: Partial<ContextualizationResource>): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.post('/contextualization/with-default-context', data)
+  async createContextualizationWithDefaultContext(
+    data: Partial<ContextualizationResource>
+  ): Promise<ApiResponse<ContextualizationResource>> {
+    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.post(
+      '/contextualization/with-default-context',
+      data
+    )
     return response.data
   }
 
-  async updateContextualization(id: string, data: Partial<ContextualizationResource>): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.put(`/contextualization/${id}`, data)
+  async updateContextualization(
+    id: string,
+    data: Partial<ContextualizationResource>
+  ): Promise<ApiResponse<ContextualizationResource>> {
+    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.put(
+      `/contextualization/${id}`,
+      data
+    )
     return response.data
   }
 
@@ -577,17 +653,30 @@ class ApiClient {
   }
 
   async getDetail(id: string): Promise<ApiResponse<DetailResource>> {
-    const response: AxiosResponse<ApiResponse<DetailResource>> = await this.client.get(`/detail/${id}`)
+    const response: AxiosResponse<ApiResponse<DetailResource>> = await this.client.get(
+      `/detail/${id}`
+    )
     return response.data
   }
 
-  async createDetail(data: Partial<DetailResource & { item_id: string }>): Promise<ApiResponse<DetailResource>> {
-    const response: AxiosResponse<ApiResponse<DetailResource>> = await this.client.post('/detail', data)
+  async createDetail(
+    data: Partial<DetailResource & { item_id: string }>
+  ): Promise<ApiResponse<DetailResource>> {
+    const response: AxiosResponse<ApiResponse<DetailResource>> = await this.client.post(
+      '/detail',
+      data
+    )
     return response.data
   }
 
-  async updateDetail(id: string, data: Partial<DetailResource & { item_id: string }>): Promise<ApiResponse<DetailResource>> {
-    const response: AxiosResponse<ApiResponse<DetailResource>> = await this.client.put(`/detail/${id}`, data)
+  async updateDetail(
+    id: string,
+    data: Partial<DetailResource & { item_id: string }>
+  ): Promise<ApiResponse<DetailResource>> {
+    const response: AxiosResponse<ApiResponse<DetailResource>> = await this.client.put(
+      `/detail/${id}`,
+      data
+    )
     return response.data
   }
 
@@ -597,17 +686,26 @@ class ApiClient {
 
   // Available Images
   async getAvailableImages(): Promise<ApiResponse<AvailableImageResource[]>> {
-    const response: AxiosResponse<ApiResponse<AvailableImageResource[]>> = await this.client.get('/available-image')
+    const response: AxiosResponse<ApiResponse<AvailableImageResource[]>> =
+      await this.client.get('/available-image')
     return response.data
   }
 
   async getAvailableImage(id: string): Promise<ApiResponse<AvailableImageResource>> {
-    const response: AxiosResponse<ApiResponse<AvailableImageResource>> = await this.client.get(`/available-image/${id}`)
+    const response: AxiosResponse<ApiResponse<AvailableImageResource>> = await this.client.get(
+      `/available-image/${id}`
+    )
     return response.data
   }
 
-  async updateAvailableImage(id: string, data: { comment?: string | null }): Promise<ApiResponse<AvailableImageResource>> {
-    const response: AxiosResponse<ApiResponse<AvailableImageResource>> = await this.client.put(`/available-image/${id}`, data)
+  async updateAvailableImage(
+    id: string,
+    data: { comment?: string | null }
+  ): Promise<ApiResponse<AvailableImageResource>> {
+    const response: AxiosResponse<ApiResponse<AvailableImageResource>> = await this.client.put(
+      `/available-image/${id}`,
+      data
+    )
     return response.data
   }
 
@@ -622,21 +720,28 @@ class ApiClient {
 
   // Image Uploads
   async getImageUploads(): Promise<ApiResponse<ImageUploadResource[]>> {
-    const response: AxiosResponse<ApiResponse<ImageUploadResource[]>> = await this.client.get('/image-upload')
+    const response: AxiosResponse<ApiResponse<ImageUploadResource[]>> =
+      await this.client.get('/image-upload')
     return response.data
   }
 
   async getImageUpload(id: string): Promise<ApiResponse<ImageUploadResource>> {
-    const response: AxiosResponse<ApiResponse<ImageUploadResource>> = await this.client.get(`/image-upload/${id}`)
+    const response: AxiosResponse<ApiResponse<ImageUploadResource>> = await this.client.get(
+      `/image-upload/${id}`
+    )
     return response.data
   }
 
   async createImageUpload(formData: FormData): Promise<ApiResponse<ImageUploadResource>> {
-    const response: AxiosResponse<ApiResponse<ImageUploadResource>> = await this.client.post('/image-upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const response: AxiosResponse<ApiResponse<ImageUploadResource>> = await this.client.post(
+      '/image-upload',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
     return response.data
   }
 

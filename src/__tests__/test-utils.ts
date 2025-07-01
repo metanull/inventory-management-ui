@@ -1,13 +1,14 @@
 import { vi } from 'vitest'
-import type { 
-  ItemResource, 
-  PartnerResource, 
-  ProjectResource, 
-  TagResource, 
+import type {
+  ItemResource,
+  PartnerResource,
+  ProjectResource,
+  TagResource,
   PictureResource,
   CountryResource,
-  ApiResponse 
+  ApiResponse,
 } from '../api/client'
+import type { RouteRecordRaw } from 'vue-router'
 
 // Mock data factories
 export const createMockItem = (overrides: Partial<ItemResource> = {}): ItemResource => ({
@@ -17,7 +18,7 @@ export const createMockItem = (overrides: Partial<ItemResource> = {}): ItemResou
   type: 'object',
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  ...overrides
+  ...overrides,
 })
 
 export const createMockPartner = (overrides: Partial<PartnerResource> = {}): PartnerResource => ({
@@ -27,7 +28,7 @@ export const createMockPartner = (overrides: Partial<PartnerResource> = {}): Par
   type: 'museum',
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  ...overrides
+  ...overrides,
 })
 
 export const createMockProject = (overrides: Partial<ProjectResource> = {}): ProjectResource => ({
@@ -39,7 +40,7 @@ export const createMockProject = (overrides: Partial<ProjectResource> = {}): Pro
   is_enabled: true,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  ...overrides
+  ...overrides,
 })
 
 export const createMockTag = (overrides: Partial<TagResource> = {}): TagResource => ({
@@ -49,7 +50,7 @@ export const createMockTag = (overrides: Partial<TagResource> = {}): TagResource
   description: 'Test tag description',
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  ...overrides
+  ...overrides,
 })
 
 export const createMockPicture = (overrides: Partial<PictureResource> = {}): PictureResource => ({
@@ -65,7 +66,7 @@ export const createMockPicture = (overrides: Partial<PictureResource> = {}): Pic
   upload_size: 12345,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  ...overrides
+  ...overrides,
 })
 
 export const createMockCountry = (overrides: Partial<CountryResource> = {}): CountryResource => ({
@@ -74,12 +75,12 @@ export const createMockCountry = (overrides: Partial<CountryResource> = {}): Cou
   backward_compatibility: null,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  ...overrides
+  ...overrides,
 })
 
 // API Response helpers
 export const createApiResponse = <T>(data: T): ApiResponse<T> => ({
-  data
+  data,
 })
 
 export const createAxiosResponse = <T>(data: T, status = 200, statusText = 'OK') => ({
@@ -87,7 +88,7 @@ export const createAxiosResponse = <T>(data: T, status = 200, statusText = 'OK')
   status,
   statusText,
   headers: {},
-  config: {} as any
+  config: {} as Record<string, unknown>,
 })
 
 // Mock localStorage
@@ -106,26 +107,26 @@ export const createMockAxiosInstance = () => ({
   delete: vi.fn(),
   interceptors: {
     request: {
-      use: vi.fn()
+      use: vi.fn(),
     },
     response: {
-      use: vi.fn()
-    }
-  }
+      use: vi.fn(),
+    },
+  },
 })
 
 // Common test setup utilities
 export const setupApiClientMocks = () => {
   const mockAxiosInstance = createMockAxiosInstance()
   const localStorageMock = createLocalStorageMock()
-  
+
   Object.defineProperty(window, 'localStorage', {
-    value: localStorageMock
+    value: localStorageMock,
   })
-  
+
   return {
     mockAxiosInstance,
-    localStorageMock
+    localStorageMock,
   }
 }
 
@@ -133,15 +134,14 @@ export const setupApiClientMocks = () => {
 export const createApiError = (message: string, status = 400) => ({
   response: {
     data: {
-      message
+      message,
     },
     status,
-    statusText: status === 400 ? 'Bad Request' : 'Error'
-  }
+    statusText: status === 400 ? 'Bad Request' : 'Error',
+  },
 })
 
-export const createNetworkError = (message = 'Network Error') => 
-  new Error(message)
+export const createNetworkError = (message = 'Network Error') => new Error(message)
 
 // Form data helpers for testing
 export const createMockFormData = (fields: Record<string, string | Blob> = {}) => {
@@ -157,18 +157,18 @@ export const createMockFormData = (fields: Record<string, string | Blob> = {}) =
 }
 
 // Mock file for upload testing
-export const createMockFile = (_name = 'test.jpg', type = 'image/jpeg', content = 'test content') => 
+export const createMockFile = (_name = 'test.jpg', type = 'image/jpeg', content = 'test content') =>
   new Blob([content], { type })
 
 // Router helpers for component testing
-export const createTestRouter = async (routes: any[] = []) => {
+export const createTestRouter = async (routes: RouteRecordRaw[] = []) => {
   const { createRouter, createWebHistory } = await import('vue-router')
   return createRouter({
     history: createWebHistory(),
     routes: [
       { path: '/', component: { template: '<div>Home</div>' } },
       { path: '/login', component: { template: '<div>Login</div>' } },
-      ...routes
-    ]
+      ...routes,
+    ],
   })
 }

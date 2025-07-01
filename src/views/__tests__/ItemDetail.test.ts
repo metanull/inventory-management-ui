@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type Router } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
 import ItemDetail from '../ItemDetail.vue'
 import { apiClient } from '@/api/client'
@@ -14,14 +14,14 @@ vi.mock('@/api/client', () => ({
     addTagToItem: vi.fn(),
     removeTagFromItem: vi.fn(),
     deleteItem: vi.fn(),
-  }
+  },
 }))
 
-const mockApiClient = apiClient as any
+const mockApiClient = apiClient as typeof apiClient
 
 describe('ItemDetail.vue', () => {
-  let pinia: any
-  let router: any
+  let pinia: ReturnType<typeof createPinia>
+  let router: Router
 
   const mockItem = {
     id: '1',
@@ -29,17 +29,17 @@ describe('ItemDetail.vue', () => {
     type: 'object' as const,
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2023-01-01T00:00:00Z',
-    backward_compatibility: null
+    backward_compatibility: null,
   }
 
   const mockTags = [
     { id: 'tag1', internal_name: 'Tag 1', created_at: null, updated_at: null },
-    { id: 'tag2', internal_name: 'Tag 2', created_at: null, updated_at: null }
+    { id: 'tag2', internal_name: 'Tag 2', created_at: null, updated_at: null },
   ]
 
   const mockAllTags = [
     ...mockTags,
-    { id: 'tag3', internal_name: 'Tag 3', created_at: null, updated_at: null }
+    { id: 'tag3', internal_name: 'Tag 3', created_at: null, updated_at: null },
   ]
 
   beforeEach(() => {
@@ -50,8 +50,8 @@ describe('ItemDetail.vue', () => {
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div>Home</div>' } },
-        { path: '/items/:id', component: ItemDetail }
-      ]
+        { path: '/items/:id', component: ItemDetail },
+      ],
     })
 
     // Mock API responses
@@ -67,11 +67,11 @@ describe('ItemDetail.vue', () => {
 
   it('should display item details correctly', async () => {
     await router.push('/items/1')
-    
+
     const wrapper = mount(ItemDetail, {
       global: {
-        plugins: [router, pinia]
-      }
+        plugins: [router, pinia],
+      },
     })
 
     // Wait for component to load
@@ -84,11 +84,11 @@ describe('ItemDetail.vue', () => {
 
   it('should display current tags', async () => {
     await router.push('/items/1')
-    
+
     const wrapper = mount(ItemDetail, {
       global: {
-        plugins: [router, pinia]
-      }
+        plugins: [router, pinia],
+      },
     })
 
     // Wait for component to load
@@ -101,11 +101,11 @@ describe('ItemDetail.vue', () => {
 
   it('should open tag management modal', async () => {
     await router.push('/items/1')
-    
+
     const wrapper = mount(ItemDetail, {
       global: {
-        plugins: [router, pinia]
-      }
+        plugins: [router, pinia],
+      },
     })
 
     // Wait for component to load
@@ -114,11 +114,11 @@ describe('ItemDetail.vue', () => {
 
     const manageTagsButtons = wrapper.findAll('button')
     const manageTagsButton = manageTagsButtons.find(btn => btn.text().includes('Manage Tags'))
-    
+
     if (manageTagsButton) {
       await manageTagsButton.trigger('click')
       await wrapper.vm.$nextTick()
-      
+
       expect(wrapper.text()).toContain('Manage Tags')
       expect(wrapper.text()).toContain('Add Tag')
     }
@@ -126,11 +126,11 @@ describe('ItemDetail.vue', () => {
 
   it('should call addTagToItem when adding a tag', async () => {
     await router.push('/items/1')
-    
+
     const wrapper = mount(ItemDetail, {
       global: {
-        plugins: [router, pinia]
-      }
+        plugins: [router, pinia],
+      },
     })
 
     // Wait for component to load
@@ -140,13 +140,13 @@ describe('ItemDetail.vue', () => {
     // Open modal
     const manageTagsButtons = wrapper.findAll('button')
     const manageTagsButton = manageTagsButtons.find(btn => btn.text().includes('Manage Tags'))
-    
+
     if (manageTagsButton) {
       await manageTagsButton.trigger('click')
       await wrapper.vm.$nextTick()
 
       // Select a tag and add it
-      const vm = wrapper.vm as any
+      const vm = wrapper.vm as unknown as { selectedTagId: string; addTag: () => Promise<void> }
       vm.selectedTagId = 'tag3'
       await vm.addTag()
 
@@ -156,11 +156,11 @@ describe('ItemDetail.vue', () => {
 
   it('should call removeTagFromItem when removing a tag', async () => {
     await router.push('/items/1')
-    
+
     const wrapper = mount(ItemDetail, {
       global: {
-        plugins: [router, pinia]
-      }
+        plugins: [router, pinia],
+      },
     })
 
     // Wait for component to load
@@ -168,7 +168,7 @@ describe('ItemDetail.vue', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
 
     // Call remove tag directly
-    const vm = wrapper.vm as any
+    const vm = wrapper.vm as unknown as { removeTag: (tagId: string) => Promise<void> }
     await vm.removeTag('tag1')
 
     expect(mockApiClient.removeTagFromItem).toHaveBeenCalledWith('1', 'tag1')
