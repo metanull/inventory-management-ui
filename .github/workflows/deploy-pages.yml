@@ -3,8 +3,6 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   schedule:
     # Run daily at 00:00 UTC to update the blog with latest changes
     - cron: '0 0 * * *'

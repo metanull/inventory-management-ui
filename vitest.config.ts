@@ -9,6 +9,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  define: {
+    global: 'globalThis',
+  },
   test: {
     globals: true,
     environment: 'jsdom',
@@ -16,6 +19,19 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+    },
+    setupFiles: ['./src/__tests__/test-utils.ts'],
+    // Fix for Node.js crypto compatibility in tests
+    pool: 'forks',
+    // Additional environment setup for better Node.js compatibility
+    env: {
+      NODE_ENV: 'test',
+    },
+    // Ensure proper jsdom configuration
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable',
+      },
     },
   },
 })
