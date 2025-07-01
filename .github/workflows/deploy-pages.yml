@@ -116,7 +116,7 @@ jobs:
             fi
             
             # Remove docs/ prefix from config if present
-            sed -i 's|baseurl: "/inventoy-management-ui"|baseurl: "/inventoy-management-ui"|g' _config.yml || true
+            sed -i 's|baseurl: "/inventory-management-ui"|baseurl: "/inventory-management-ui"|g' _config.yml || true
           fi
           
           # Ensure _posts directory exists
