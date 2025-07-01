@@ -34,20 +34,6 @@ jobs:
     - name: Run unit tests with coverage
       run: npm run test:unit:coverage
     
-    - name: Check test coverage threshold
-      run: |
-        npm run test:unit:coverage -- --reporter=json --outputFile=coverage.json
-        node -e "
-          const coverage = require('./coverage.json');
-          const threshold = 80;
-          const actual = coverage.total.lines.pct;
-          if (actual < threshold) {
-            console.error(\`Coverage \${actual}% is below threshold \${threshold}%\`);
-            process.exit(1);
-          }
-          console.log(\`Coverage \${actual}% meets threshold \${threshold}%\`);
-        "
-    
     - name: Build application
       run: npm run build
     

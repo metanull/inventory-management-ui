@@ -27,7 +27,31 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       // Exclude integration tests from coverage as well
-      exclude: ['node_modules/**', '**/*.integration.test.ts', '**/integration.test.ts'],
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'scripts/**',
+        'docs/**',
+        '.github/**',
+        '**/*.config.{js,ts}',
+        '**/*.d.ts',
+        '**/*.integration.test.ts',
+        '**/integration.test.ts',
+        'src/__tests__/**',
+        '**/__tests__/**',
+        '**/test-utils.ts',
+      ],
+      // Only include src files for coverage
+      include: ['src/**/*.{ts,vue}'],
+      // Exclude specific files that don't need coverage
+      thresholds: {
+        global: {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
+        },
+      },
     },
     setupFiles: ['./vitest.setup.ts', './src/__tests__/test-utils.ts'],
   },
