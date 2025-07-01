@@ -9,7 +9,7 @@ nav_order: 1
 A modern Vue.js 3 application built with TypeScript for managing inventory items, partners, projects, and more. This application provides a user-friendly interface for the inventory management API.
 
 {: .highlight }
-> This is a Vue.js 3 client application that interfaces with the [Inventory Management API](https://github.com/your-org/inventory-app) to provide a modern, responsive web interface for inventory management.
+> This is a Vue.js 3 client application that interfaces with the [Inventory Management API](https://github.com/metanull/inventory-app) to provide a modern, responsive web interface for inventory management.
 
 ## ✨ Features
 
@@ -96,11 +96,11 @@ The application will be available at `http://localhost:3000`.
 
 ## 🔗 Related Projects
 
-- [Inventory Management API](https://github.com/your-org/inventory-app) - The backend API that powers this application
+- [Inventory Management API](https://github.com/metanull/inventory-app) - The backend API that powers this application
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/your-org/inventory-management-ui/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/metanull/inventory-management-ui/blob/main/LICENSE) file for details.
 
 ---
 
