@@ -64,7 +64,7 @@ The application follows modern Vue.js best practices:
 
 ### Prerequisites
 - Node.js 22.17.0 or higher (latest LTS)
-- npm 10.0.0 or higher
+- npm 10.9.2 or higher
 
 ### Installation
 
