@@ -31,12 +31,12 @@ jobs:
     - name: Run formatting check
       run: npm run format:check
     
-    - name: Run tests with coverage
-      run: npm run test:coverage
+    - name: Run unit tests with coverage
+      run: npm run test:unit:coverage
     
     - name: Check test coverage threshold
       run: |
-        npm run test:coverage -- --reporter=json --outputFile=coverage.json
+        npm run test:unit:coverage -- --reporter=json --outputFile=coverage.json
         node -e "
           const coverage = require('./coverage.json');
           const threshold = 80;

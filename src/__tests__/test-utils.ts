@@ -10,59 +10,6 @@ import type {
 } from '../api/client'
 import type { RouteRecordRaw } from 'vue-router'
 
-// Comprehensive polyfill for crypto in Node.js environments for Vue's SSR hash function
-if (typeof globalThis.crypto === 'undefined') {
-  try {
-    const { webcrypto } = eval('require')('node:crypto')
-    globalThis.crypto = webcrypto as Crypto
-  } catch {
-    // Fallback for environments without webcrypto
-    globalThis.crypto = {
-      subtle: {} as SubtleCrypto,
-      getRandomValues: (array: Uint8Array) => {
-        for (let i = 0; i < array.length; i++) {
-          array[i] = Math.floor(Math.random() * 256)
-        }
-        return array
-      },
-    } as Crypto
-  }
-}
-
-// Additional polyfill for crypto.hash function used by Vite's Vue plugin
-if (typeof (globalThis.crypto as unknown as { hash?: unknown })?.hash !== 'function') {
-  try {
-    const crypto = eval('require')('node:crypto')
-    if (!globalThis.crypto) {
-      globalThis.crypto = {} as Crypto
-    }
-    // Add the hash function that Vite expects
-    ;(
-      globalThis.crypto as unknown as {
-        hash: (algorithm: string, data: string | ArrayBuffer, encoding?: string) => string
-      }
-    ).hash = (algorithm: string, data: string | ArrayBuffer, encoding?: string) => {
-      return crypto
-        .createHash(algorithm)
-        .update(data)
-        .digest(encoding || 'hex')
-    }
-  } catch {
-    // Fallback hash function
-    if (!globalThis.crypto) {
-      globalThis.crypto = {} as Crypto
-    }
-    ;(
-      globalThis.crypto as unknown as {
-        hash: (algorithm: string, data: string | ArrayBuffer) => string
-      }
-    ).hash = (_algorithm: string, _data: string | ArrayBuffer) => {
-      // Simple fallback that returns a deterministic string
-      return 'mock-hash-' + Math.random().toString(36).substring(2)
-    }
-  }
-}
-
 // Mock data factories
 export const createMockItem = (overrides: Partial<ItemResource> = {}): ItemResource => ({
   id: '1',

@@ -7,10 +7,13 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
+    "test": "vitest run --exclude='**/*.integration.test.ts'",
+    "test:unit": "vitest run --exclude='**/*.integration.test.ts'",
+    "test:unit:watch": "vitest --exclude='**/*.integration.test.ts'",
+    "test:unit:coverage": "vitest run --coverage --exclude='**/*.integration.test.ts'",
+    "test:watch": "vitest --exclude='**/*.integration.test.ts'",
+    "test:coverage": "vitest run --coverage --exclude='**/*.integration.test.ts'",
+    "test:ui": "vitest --ui --exclude='**/*.integration.test.ts'",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:integration:watch": "vitest --config vitest.integration.config.ts",
     "test:integration:destructive": "VITE_RUN_DESTRUCTIVE_TESTS=true vitest run --config vitest.integration.config.ts",
@@ -64,7 +67,7 @@
     ]
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "npm": ">=9.0.0"
   }
 }

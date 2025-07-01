@@ -16,22 +16,19 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     watch: false,
+    // Explicitly exclude integration tests
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/*.integration.test.ts',
+      '**/integration.test.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      // Exclude integration tests from coverage as well
+      exclude: ['node_modules/**', '**/*.integration.test.ts', '**/integration.test.ts'],
     },
     setupFiles: ['./vitest.setup.ts', './src/__tests__/test-utils.ts'],
-    // Fix for Node.js crypto compatibility in tests
-    pool: 'forks',
-    // Additional environment setup for better Node.js compatibility
-    env: {
-      NODE_ENV: 'test',
-    },
-    // Ensure proper jsdom configuration
-    environmentOptions: {
-      jsdom: {
-        resources: 'usable',
-      },
-    },
   },
 })
