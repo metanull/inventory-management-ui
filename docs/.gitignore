@@ -3,9 +3,6 @@ _site/
 .jekyll-cache/
 .sass-cache/
 
-# Generated commit documentation
-_docs/
-
 # Bundler
 .bundle/
 vendor/
@@ -23,3 +20,5 @@ Thumbs.db
 
 # Logs
 *.log
+
+/_docs/*.md

@@ -57,21 +57,22 @@ jobs:
       run: |
         python docs/generate-commit-docs.py
     
-    - name: Check for changes
-      id: check_changes
-      run: |
-        if git diff --quiet docs/_docs/; then
-          echo "has_changes=false" >> $GITHUB_OUTPUT
-        else
-          echo "has_changes=true" >> $GITHUB_OUTPUT
-        fi
-    
-    - name: Commit and push changes
-      if: steps.check_changes.outputs.has_changes == 'true'
-      run: |
-        git add docs/_docs/
-        git commit -m "docs: auto-generate commit documentation [skip ci]"
-        git push
+    # - name: Check for changes
+    #   id: check_changes
+    #   run: |
+    #     git add docs/_docs/
+    #     if git diff --cached --quiet docs/_docs/; then
+    #       echo "has_changes=false" >> $GITHUB_OUTPUT
+    #     else
+    #       echo "has_changes=true" >> $GITHUB_OUTPUT
+    #     fi
+
+    # - name: Commit and push changes
+    #   if: steps.check_changes.outputs.has_changes == 'true'
+    #   run: |
+    #     git add docs/_docs/
+    #     git commit -m "docs: auto-generate commit documentation [skip ci]"
+    #     git push
     
     - name: Setup Pages
       if: steps.check_changes.outputs.has_changes == 'true'

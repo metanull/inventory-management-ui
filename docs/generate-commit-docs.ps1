@@ -13,9 +13,9 @@
 
 param()
 
-$DOCS_DIR = "_docs",
+$DOCS_DIR = "docs/_docs",
 $BRANCH = "main",
-$LOG_FILE = ".commit-docs.log"
+$LOG_FILE = "docs/.commit-docs.log"
 
 if(-not (test-path $DOCS_DIR)) {
     New-Item -Path $DOCS_DIR -ItemType Directory | Out-Null
