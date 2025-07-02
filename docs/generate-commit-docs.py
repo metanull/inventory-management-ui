@@ -15,7 +15,7 @@ from pathlib import Path
 import logging
 
 # Configuration
-DOCS_DIR = "_docs"
+DOCS_DIR = "docs/_docs"
 BRANCH = "main"
 LOG_FILE = ".commit-docs.log"
 

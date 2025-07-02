@@ -37,14 +37,12 @@ jobs:
     
     - name: Generate commit documentation
       run: |
-        cd docs
-        python generate-commit-docs.py
+        python docs/generate-commit-docs.py
     
     - name: Check for changes
       id: check_changes
       run: |
-        cd docs
-        if git diff --quiet _docs/; then
+        if git diff --quiet docs/_docs/; then
           echo "has_changes=false" >> $GITHUB_OUTPUT
         else
           echo "has_changes=true" >> $GITHUB_OUTPUT
@@ -53,8 +51,7 @@ jobs:
     - name: Commit and push changes
       if: steps.check_changes.outputs.has_changes == 'true'
       run: |
-        cd docs
-        git add _docs/
+        git add docs/_docs/
         git commit -m "docs: auto-generate commit documentation [skip ci]"
         git push
     
