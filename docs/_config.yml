@@ -3,7 +3,7 @@ remote_theme: just-the-docs/just-the-docs
 title: Inventory Management UI
 description: A modern Vue.js 3 application for inventory management
 
-url: https://your-org.github.io
+url: https://metanull.github.io
 baseurl: /inventory-management-ui
 
 # Logo and favicon
@@ -28,12 +28,12 @@ search:
 nav_sort: case_insensitive
 nav_external_links:
   - title: GitHub Repository
-    url: https://github.com/your-org/inventory-management-ui
+    url: https://github.com/metanull/inventory-management-ui
   - title: API Documentation
-    url: https://github.com/your-org/inventory-app
+    url: https://metanull.github.io/inventory-app
 
 # Footer
-footer_content: "Copyright &copy; 2025 Your Organization. Made with ❤️ using Vue.js 3 and TypeScript."
+footer_content: "Copyright &copy; 2025 Pascal Havelange. Made with ❤️ using 💎 Ruby and 🐍 Python."
 
 # Back to top
 back_to_top: true
@@ -46,16 +46,19 @@ last_edit_time_format: "%b %e %Y at %I:%M %p"
 # GitHub
 gh_edit_link: true
 gh_edit_link_text: "Edit this page on GitHub"
-gh_edit_repository: "https://github.com/your-org/inventory-management-ui"
+gh_edit_repository: "https://github.com/metanull/inventory-management-ui"
 gh_edit_branch: "main"
 gh_edit_source: docs
 gh_edit_view_mode: "tree"
 
-# Collections for blog posts
+# Collections for blog posts and commit documentation
 collections:
   posts:
     output: true
     permalink: /blog/:year/:month/:day/:title/
+  docs:
+    output: true
+    permalink: /commits/:name/
 
 # Plugins
 plugins:
@@ -78,6 +81,11 @@ exclude:
   - bin/
   - README.md
   - Rakefile
+  - COMMIT_DOCS_README.md
+  - generate-commit-docs.py
+  - generate-commit-docs.ps1
+  - commit-docs.log
+  - contributing-new.md
 
 # Markdown settings
 markdown: kramdown
@@ -93,4 +101,4 @@ sass:
 # Custom CSS
 aux_links:
   "View on GitHub":
-    - "https://github.com/your-org/inventory-management-ui"
+    - "https://github.com/metanull/inventory-management-ui"

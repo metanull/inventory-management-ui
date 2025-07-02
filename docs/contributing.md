@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Contributing Guidelines
-nav_order: 2
+title: Contributing
+nav_order: 3
 ---
 
 # Contributing Guidelines
@@ -35,6 +35,26 @@ cp .env.example .env
 npm run dev
 ```
 
+## 📋 Essential Guidelines
+
+Before contributing, please review our development guidelines:
+
+### [📖 Coding Guidelines](guidelines/coding-guidelines/)
+- Vue.js & TypeScript standards
+- Component structure and organization
+- Styling with Tailwind CSS
+- Quality controls and best practices
+- Architecture patterns
+
+### [🧪 Testing Guidelines](guidelines/testing/)
+- Testing requirements and coverage
+- Unit and component testing standards
+- Code review criteria
+
+### [🔗 API Integration Guidelines](guidelines/api-integration/)
+- Backend API integration patterns
+- Authentication and error handling
+
 ## 📝 Contribution Process
 
 ### 1. Create a Feature Branch
@@ -49,8 +69,8 @@ git checkout -b fix/bug-description
 
 ### 2. Make Your Changes
 
-- Write clear, concise code following our coding standards
-- Add tests for new functionality
+- Write clear, concise code following our [coding standards](guidelines/coding-guidelines/)
+- Add tests for new functionality (see [testing guidelines](guidelines/testing/))
 - Update documentation as needed
 - Follow the existing project structure
 
@@ -71,197 +91,72 @@ git commit -m "test: add unit tests for auth store"
 ```bash
 # Push your branch
 git push origin feature/your-feature-name
-
-# Create a pull request on GitHub
-# - Provide a clear title and description
-# - Reference any related issues
-# - Wait for code review
 ```
 
-## 🏗️ Coding Guidelines
+#### Option A: Using GitHub Web Interface
 
-### Vue.js & TypeScript Standards
+1. Navigate to your fork on GitHub
+2. Click "Compare & pull request"
+3. Provide a clear title and description
+4. Reference any related issues
+5. Wait for code review
 
-- **Use `<script setup>` syntax** for all new components
-- **TypeScript strict mode** - all code must be properly typed
-- **Composition API** over Options API for new components
-- **Single File Components** with proper separation of concerns
-
-```vue
-<!-- Good: Proper SFC structure -->
-<template>
-  <div class="component-container">
-    <!-- Template content -->
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { ApiResponse } from '@/api/client'
-
-// Proper TypeScript typing
-const loading = ref<boolean>(false)
-const data = ref<ApiResponse | null>(null)
-
-onMounted(() => {
-  // Component logic
-})
-</script>
-
-<style scoped>
-/* Component-specific styles */
-</style>
-```
-
-### Code Organization
-
-- **Keep components focused** - one responsibility per component
-- **Use composables** for reusable logic
-- **Proper naming** - PascalCase for components, camelCase for functions
-- **Type safety** - define interfaces for all API responses and props
-
-### Styling Guidelines
-
-- **Tailwind CSS** for styling - use utility classes
-- **Responsive design** - mobile-first approach
-- **Consistent spacing** - use Tailwind's spacing scale
-- **Accessibility** - ensure components are accessible
-
-```vue
-<!-- Good: Proper Tailwind usage -->
-<template>
-  <div class="bg-white shadow rounded-lg p-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">
-      Component Title
-    </h2>
-    <p class="text-sm text-gray-600">
-      Component description
-    </p>
-  </div>
-</template>
-```
-
-## ✅ Quality Controls
-
-Before submitting a pull request, ensure all quality controls pass:
-
-### 1. Code Quality
+#### Option B: Using GitHub CLI (Recommended)
 
 ```bash
-# Run linting
-npm run lint
+# Install GitHub CLI
+# Windows: choco install gh
+# macOS: brew install gh
+# Linux: sudo apt install gh
 
-# Run type checking
-npm run type-check
+# Authenticate (one-time setup)
+gh auth login
 
-# Format code
-npm run format
+# Create PR with auto-merge and squash
+gh pr create --title "feat: add new feature" --body "Description of changes" \
+  --assignee @me \
+  --label "enhancement" \
+  --auto-merge \
+  --squash
 ```
 
-### 2. Testing Requirements
+## ✅ Pre-Submission Checklist
 
-- **Write tests** for all new functionality
-- **Update existing tests** when modifying code
-- **Minimum 80% test coverage** for new code
+Before submitting your PR, ensure you've followed our guidelines:
 
-```bash
-# Run tests
-npm run test
+### Code Quality
+- [ ] Code follows our [coding standards](guidelines/coding-guidelines/)
+- [ ] All [quality controls](guidelines/coding-guidelines/#quality-controls) pass
+- [ ] No linting errors
+- [ ] TypeScript compilation successful
+- [ ] Build completes without errors
 
-# Run tests with coverage
-npm run test:coverage
-```
+### Testing
+- [ ] Tests written for new functionality (see [testing guidelines](guidelines/testing/))
+- [ ] All tests pass
+- [ ] Test coverage meets requirements (80%+ for new code)
 
-### 3. Build Verification
+### Documentation
+- [ ] Code is self-documenting
+- [ ] Complex logic is commented
+- [ ] Documentation updated if needed
 
-```bash
-# Ensure the application builds successfully
-npm run build
-
-# Test the production build
-npm run preview
-```
-
-### 4. Security & Dependencies
-
-```bash
-# Check for vulnerabilities
-npm audit
-
-# Fix vulnerabilities if found
-npm audit fix
-
-# Update dependencies (if needed)
-npm update
-```
-
-### 5. Git Hygiene
-
-```bash
-# Ensure your branch is up to date
-git fetch upstream
-git rebase upstream/main
-
-# Squash commits if needed
-git rebase -i HEAD~n
-```
-
-## 🧪 Testing Guidelines
-
-### Unit Tests
-
-- **Test business logic** thoroughly
-- **Mock external dependencies** (API calls, etc.)
-- **Use descriptive test names**
-
-```typescript
-// Good: Descriptive test structure
-describe('AuthStore', () => {
-  describe('login', () => {
-    it('should set user data when login succeeds', async () => {
-      // Test implementation
-    })
-
-    it('should handle login errors gracefully', async () => {
-      // Test implementation
-    })
-  })
-})
-```
-
-### Component Tests
-
-- **Test user interactions**
-- **Verify component behavior**
-- **Mock router and stores**
-
-```typescript
-// Good: Component test example
-describe('ItemDetail.vue', () => {
-  it('should display item information correctly', async () => {
-    const wrapper = mount(ItemDetail, {
-      global: {
-        plugins: [router, pinia]
-      }
-    })
-    
-    expect(wrapper.text()).toContain('Expected Item Name')
-  })
-})
-```
+### Git
+- [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)
+- [ ] Branch is up to date with main
+- [ ] No merge conflicts
 
 ## 🔍 Code Review Process
 
 ### What We Look For
 
 1. **Code Quality**
-   - Follows TypeScript best practices
+   - Follows our [coding guidelines](guidelines/coding-guidelines/)
    - Proper error handling
    - Clean, readable code structure
 
 2. **Testing**
-   - Adequate test coverage
-   - Tests pass consistently
+   - Meets our [testing requirements](guidelines/testing/)
    - Edge cases covered
 
 3. **Performance**
@@ -274,87 +169,7 @@ describe('ItemDetail.vue', () => {
    - Proper ARIA labels
    - Keyboard navigation support
 
-5. **Documentation**
-   - Code is self-documenting
-   - Complex logic is commented
-   - README updated if needed
-
-### Review Checklist
-
-Before submitting your PR, review this checklist:
-
-- [ ] Code follows project conventions
-- [ ] All tests pass
-- [ ] Test coverage meets requirements
-- [ ] No linting errors
-- [ ] TypeScript compilation successful
-- [ ] Build completes without errors
-- [ ] No security vulnerabilities
-- [ ] Documentation updated
-- [ ] Commit messages follow convention
-- [ ] Branch is up to date with main
-
-## 🚫 Common Pitfalls
-
-### Avoid These Mistakes
-
-1. **Not following TypeScript strict mode**
-2. **Missing tests for new functionality**
-3. **Using `any` type instead of proper typing**
-4. **Not handling loading and error states**
-5. **Ignoring accessibility requirements**
-6. **Not updating documentation**
-7. **Committing without linting**
-
-## �️ Application Architecture
-
-### Entity Management
-
-The application manages several core entities:
-
-#### Primary Entities
-- **Items** - Inventory objects and monuments
-- **Partners** - Museums, institutions, and individuals
-- **Projects** - Collections with launch dates and status
-- **Tags** - Categorization system
-- **Pictures** - Image management
-
-#### Reference Data
-- **Countries** - Geographic reference data with names and codes
-- **Languages** - Language reference data with names and codes
-- **Contexts** - Content organization and categorization
-- **ImageUploads** - File upload management for images
-
-#### Content Management
-- **Contextualizations** - Links between contexts and content
-- **Details** - Detailed information records
-- **AvailableImages** - Available image resources
-
-### Adding New Entities
-
-When adding new entities to the application:
-
-1. **API Client** - Add interfaces and CRUD methods to `src/api/client.ts`
-2. **Views** - Create list and detail views in `src/views/`
-3. **Routes** - Add routes to `src/router/index.ts`
-4. **Navigation** - Update `src/components/layout/AppHeader.vue`
-5. **Tests** - Add comprehensive tests for new functionality
-6. **Documentation** - Update this guide and API documentation
-
-### Entity View Pattern
-
-Each entity follows a consistent pattern:
-
-```
-src/views/
-├── EntityName.vue          # List view with CRUD operations
-├── EntityNameDetail.vue    # Detail view for single entity
-└── __tests__/
-    ├── EntityName.test.ts  # Tests for list view
-    └── EntityNameDetail.test.ts # Tests for detail view
-```
-
-## �🎯 Areas for Contribution
+## 🎯 Areas for Contribution
 
 We especially welcome contributions in these areas:
 
@@ -373,6 +188,8 @@ We especially welcome contributions in these areas:
 - **GitHub Issues** - for bugs and feature requests
 - **GitHub Discussions** - for questions and general discussion
 - **Code Review** - maintainers will provide feedback on PRs
+
+For technical questions about our development practices, please refer to our [guidelines section](guidelines/).
 
 ## 🏆 Recognition
 

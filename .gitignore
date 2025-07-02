@@ -26,6 +26,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Generated documentation logs
+docs/commit-docs.log
+
 # Runtime data
 pids
 *.pid
@@ -159,3 +162,11 @@ vite.config.ts.timestamp-*
 COMMIT-MESSAGE.md
 PR-DESCRIPTION.md
 ISSUE-DESCRIPTION.md
+GITHUB_PAGES_FIX.md
+
+# docs generated files
+docs/*.log
+docs/_docs/*.md
+
+# Ruby/Jekyll dependencies
+docs/Gemfile.lock

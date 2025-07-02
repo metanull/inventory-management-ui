@@ -1,12 +1,12 @@
 ---
 layout: default
-title: Development Blog
+title: Development Archive
 nav_order: 4
 ---
 
-# Development Blog
+# Development Archive
 
-Welcome to the Inventory Management UI development blog! Here you'll find the latest updates, changes, and improvements to the application.
+Welcome to the Inventory Management UI development archive! Here you'll find the latest updates, changes, and improvements to the application throughout its development history.
 
 {: .highlight }
 > This page is automatically updated with the latest changes from our GitHub repository. Each entry represents a day's worth of development activity.
@@ -20,6 +20,27 @@ Welcome to the Inventory Management UI development blog! Here you'll find the la
 
 ---
 {% endfor %}
+
+{% if site.docs %}
+## Recent Commits
+
+{% assign sorted_docs = site.docs | sort: 'date' | reverse %}
+{% for doc in sorted_docs limit:10 %}
+### [{{ doc.title }}]({{ doc.url }})
+**{{ doc.date | date: "%B %d, %Y at %I:%M %p" }}** by {{ doc.author }}
+
+{% if doc.commit_hash %}
+**Commit:** `{{ doc.commit_hash }}`
+{% endif %}
+
+{% assign content_preview = doc.content | strip_html | truncatewords: 75 %}
+{{ content_preview }}
+
+[View full commit details]({{ doc.url }})
+
+---
+{% endfor %}
+{% endif %}
 
 ## Getting Started
 

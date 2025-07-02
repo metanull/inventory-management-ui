@@ -9,7 +9,7 @@ nav_order: 1
 A modern Vue.js 3 application built with TypeScript for managing inventory items, partners, projects, and more. This application provides a user-friendly interface for the inventory management API.
 
 {: .highlight }
-> This is a Vue.js 3 client application that interfaces with the [Inventory Management API](https://github.com/your-org/inventory-app) to provide a modern, responsive web interface for inventory management.
+> This is a Vue.js 3 client application that interfaces with the [Inventory Management API](https://github.com/metanull/inventory-app) to provide a modern, responsive web interface for inventory management.
 
 ## ✨ Features
 
@@ -64,7 +64,7 @@ The application follows modern Vue.js best practices:
 
 ### Prerequisites
 - Node.js 22.17.0 or higher (latest LTS)
-- npm 10.0.0 or higher
+- npm 10.9.2 or higher
 
 ### Installation
 
@@ -86,21 +86,24 @@ npm run dev
 
 The application will be available at `http://localhost:3000`.
 
-## 📚 Documentation
-
-- [Contributing Guidelines](./contributing.html) - How to contribute to the project
-- [Testing Guide](./TESTING.html) - Comprehensive testing documentation including unit and integration tests
-- [Integration Testing](./integration-testing.html) - Detailed guide for running tests against live APIs
-- [Development Blog](./blog.html) - Latest updates and changes
-- [API Integration](./api-integration.html) - How the app integrates with the backend API
-
 ## 🔗 Related Projects
 
-- [Inventory Management API](https://github.com/your-org/inventory-app) - The backend API that powers this application
+- [Inventory Management API](https://github.com/metanull/inventory-app) - Backend API for this application
+
+## 📚 Documentation Sections
+
+### [Guidelines](guidelines/)
+Comprehensive development guidelines covering API integration, coding standards, and testing practices.
+
+### [Contributing](contributing)
+Guidelines for contributing to the project, including development setup and workflow.
+
+### [Development Archive](development-archive)
+Historical development updates and project evolution.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/your-org/inventory-management-ui/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/metanull/inventory-management-ui/blob/main/LICENSE) file for details.
 
 ---
 

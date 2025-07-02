@@ -76,14 +76,14 @@ The backend API provides RESTful endpoints for managing cultural heritage data w
 
 ### Prerequisites
 - Node.js 22.17.0 or higher (latest LTS)
-- npm 10.0.0 or higher
+- npm 10.9.2 or higher
 - Access to the [Inventory Management API](https://github.com/metanull/inventory-app)
 
 ### Quick Start
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/your-org/inventory-management-ui.git
+git clone https://github.com/metanull/inventory-management-ui.git
 cd inventory-management-ui
 ```
 

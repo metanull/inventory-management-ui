@@ -1,12 +1,13 @@
 ---
 layout: default
 title: API Integration
-nav_order: 5
+nav_order: 1
+parent: Guidelines
 ---
 
 # API Integration
 
-The Inventory Management UI is designed to work seamlessly with the [Inventory Management API](https://github.com/your-org/inventory-app). This page documents how the frontend application integrates with the backend services.
+The Inventory Management UI is designed to work seamlessly with the [Inventory Management API](https://github.com/metanull/inventory-app). This page documents how the frontend application integrates with the backend services.
 
 ## 🔗 API Overview
 
@@ -286,12 +287,10 @@ For local development without the API:
 
 ## 📚 Related Documentation
 
-- [Backend API Documentation](https://github.com/your-org/inventory-app/docs)
-- [Authentication Guide](./auth.html)
-- [Error Handling Best Practices](./error-handling.html)
+- [Backend API Documentation](https://metanull.github.io/inventory-app)
 
 ---
 
-*For more detailed API documentation, see the [Backend API Repository](https://github.com/your-org/inventory-app).*
+*For more detailed API documentation, see the [Backend API Repository](https://github.com/metanull/inventory-app).*
 
 *Last updated: {{ site.time | date: "%B %d, %Y" }}*
