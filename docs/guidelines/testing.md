@@ -1,12 +1,96 @@
 ---
 layout: default
-title: Testing Guide
+title: Testing
 nav_order: 3
+parent: Guidelines
+has_children: true
 ---
 
 # Testing Guide
 
 This document provides comprehensive guidance on running tests in the Inventory Management UI application, including both unit tests and integration tests against live APIs.
+
+## 🧪 Testing Requirements
+
+- **Write tests** for all new functionality
+- **Update existing tests** when modifying code
+- **Minimum 80% test coverage** for new code
+
+### Running Tests
+
+```bash
+# Run tests
+npm run test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+## 📋 Testing Guidelines
+
+### Unit Tests
+
+- **Test business logic** thoroughly
+- **Mock external dependencies** (API calls, etc.)
+- **Use descriptive test names**
+
+```typescript
+// ✅ Good: Descriptive test structure
+describe('AuthStore', () => {
+  describe('login', () => {
+    it('should set user data when login succeeds', async () => {
+      // Test implementation
+    })
+
+    it('should handle login errors gracefully', async () => {
+      // Test implementation
+    })
+  })
+})
+```
+
+### Component Tests
+
+- **Test user interactions**
+- **Verify component behavior**
+- **Mock router and stores**
+
+```typescript
+// ✅ Good: Component test example
+describe('ItemDetail.vue', () => {
+  it('should display item information correctly', async () => {
+    const wrapper = mount(ItemDetail, {
+      global: {
+        plugins: [router, pinia]
+      }
+    })
+    
+    expect(wrapper.text()).toContain('Expected Item Name')
+  })
+})
+```
+
+## 🔍 Code Review Testing Criteria
+
+### What We Look For
+
+1. **Testing Coverage**
+   - Adequate test coverage
+   - Tests pass consistently
+   - Edge cases covered
+
+2. **Test Quality**
+   - Tests are maintainable
+   - Clear test descriptions
+   - Proper mocking strategies
+
+3. **Performance Testing**
+   - No unnecessary re-renders
+   - Efficient API calls
+   - Proper loading states
 
 ## Table of Contents
 

@@ -1,7 +1,8 @@
 ---
 layout: default
 title: API Integration
-nav_order: 5
+nav_order: 1
+parent: Guidelines
 ---
 
 # API Integration
@@ -286,7 +287,7 @@ For local development without the API:
 
 ## 📚 Related Documentation
 
-- [Backend API Documentation](https://github.com/metanull/inventory-app/docs)
+- [Backend API Documentation](https://metanull.github.io/inventory-app)
 - [Authentication Guide](./auth.html)
 - [Error Handling Best Practices](./error-handling.html)
 

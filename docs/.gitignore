@@ -1,0 +1,25 @@
+# Jekyll build artifacts
+_site/
+.jekyll-cache/
+.sass-cache/
+
+# Generated commit documentation
+_docs/
+
+# Bundler
+.bundle/
+vendor/
+
+# Temporary files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
