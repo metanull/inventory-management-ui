@@ -36,10 +36,18 @@ class CommitDocGenerator:
         self.docs_dir = Path(DOCS_DIR)
         self.repo_root = Path(".")
         
+    def sanitize_title(self, text):
+        """Sanitize text for use in titles"""
+        sanitized = re.sub(r'[^a-zA-Z0-9\s-]', '', text)
+        sanitized = re.sub(r'\s+', ' ', sanitized)
+        sanitized = sanitized.strip()
+        return sanitized
     def sanitize_filename(self, text):
         """Sanitize text for use in filenames"""
         sanitized = re.sub(r'[^a-zA-Z0-9._-]', '_', text)
         sanitized = re.sub(r'_+', '_', sanitized)
+        if len(sanitized) > 127:
+            sanitized = sanitized[:127]
         return sanitized.strip('_')
     
     def run_git_command(self, command):
@@ -179,11 +187,13 @@ class CommitDocGenerator:
         safe_title = self.sanitize_filename(commit['title'])
         short_hash = commit['hash'][:7]
         filename = f"{file_date}-{short_hash}-{safe_title}.md"
+
+        safe_title_text = self.sanitize_title(commit['title'])
         
         # Generate content
         content = f"""---
 layout: default
-title: "{commit['title']}"
+title: "{safe_title_text}"
 date: {commit['date']}
 author: {commit['author']}
 commit_hash: {commit['hash']}

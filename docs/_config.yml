@@ -6,6 +6,15 @@ description: A modern Vue.js 3 application for inventory management
 url: https://metanull.github.io
 baseurl: /inventory-management-ui
 
+# Social links
+github_username: metanull
+repository: metanull/inventory-management-ui
+
+# SEO
+author:
+  name: Pascal Havelange
+  email: "havelangep [at] hotmail [dot] com"
+
 # Logo and favicon
 logo: "/assets/images/logo.png"
 favicon_ico: "/assets/images/favicon.ico"
