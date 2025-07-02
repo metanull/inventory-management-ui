@@ -86,17 +86,20 @@ npm run dev
 
 The application will be available at `http://localhost:3000`.
 
-## 📚 Documentation
-
-- [Contributing Guidelines](./contributing.html) - How to contribute to the project
-- [Testing Guide](./TESTING.html) - Comprehensive testing documentation including unit and integration tests
-- [Integration Testing](./integration-testing.html) - Detailed guide for running tests against live APIs
-- [Development Blog](./blog.html) - Latest updates and changes
-- [API Integration](./api-integration.html) - How the app integrates with the backend API
-
 ## 🔗 Related Projects
 
-- [Inventory Management API](https://github.com/metanull/inventory-app) - The backend API that powers this application
+- [Inventory Management API](https://github.com/metanull/inventory-app) - Backend API for this application
+
+## 📚 Documentation Sections
+
+### [Guidelines](guidelines/)
+Comprehensive development guidelines covering API integration, coding standards, and testing practices.
+
+### [Contributing](contributing/)
+Guidelines for contributing to the project, including development setup and workflow.
+
+### [Development Archive](development-archive/)
+Historical development updates and project evolution.
 
 ## 📄 License
 

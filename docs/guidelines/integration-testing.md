@@ -1,8 +1,9 @@
 ---
 layout: default
 title: Integration Testing
-nav_order: 6
-parent: Testing Guide
+nav_order: 1
+parent: Testing
+grand_parent: Guidelines
 ---
 
 # Integration Testing Guide

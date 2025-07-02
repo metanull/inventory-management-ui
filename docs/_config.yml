@@ -30,10 +30,10 @@ nav_external_links:
   - title: GitHub Repository
     url: https://github.com/metanull/inventory-management-ui
   - title: API Documentation
-    url: https://github.com/metanull/inventory-management-ui
+    url: https://metanull.github.io/inventory-app
 
 # Footer
-footer_content: "Copyright &copy; 2025 Metanull. Made with ❤️ using Vue.js 3 and TypeScript."
+footer_content: "Copyright &copy; 2025 Pascal Havelange. Made with ❤️ using Vue.js 3 and TypeScript."
 
 # Back to top
 back_to_top: true
@@ -51,11 +51,14 @@ gh_edit_branch: "main"
 gh_edit_source: docs
 gh_edit_view_mode: "tree"
 
-# Collections for blog posts
+# Collections for blog posts and commit documentation
 collections:
   posts:
     output: true
     permalink: /blog/:year/:month/:day/:title/
+  docs:
+    output: true
+    permalink: /commits/:name/
 
 # Plugins
 plugins:
@@ -78,6 +81,10 @@ exclude:
   - bin/
   - README.md
   - Rakefile
+  - COMMIT_DOCS_README.md
+  - generate-commit-docs.py
+  - generate-commit-docs.ps1
+  - commit-docs.log
 
 # Markdown settings
 markdown: kramdown

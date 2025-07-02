@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Documentation Site
-nav_order: 7
+nav_order: 5
 ---
 
 # Documentation Site
@@ -12,7 +12,20 @@ This directory contains the source files for the GitHub Pages documentation site
 
 ```
 docs/
-├── _config.yml           # Jekyll configuration
+├── _config.yml                    # Jekyll configuration
+├── index.md                       # Homepage
+├── contributing.md                # Contributing guidelines
+├── development-archive.md         # Development history/blog
+├── guidelines/                    # Development guidelines section
+│   ├── index.md                  # Guidelines overview
+│   ├── api-integration.md        # API integration guidelines
+│   ├── coding-guidelines.md      # Code style and best practices
+│   ├── testing.md               # Testing overview
+│   └── integration-testing.md    # Integration testing guide
+└── assets/                       # Static assets
+    └── css/
+        └── custom.scss           # Custom styles
+```
 ├── _posts/              # Blog posts (auto-generated)
 ├── Gemfile              # Ruby dependencies
 ├── index.md             # Home page
