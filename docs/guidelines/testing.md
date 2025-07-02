@@ -591,6 +591,6 @@ npm run test:integration
 ---
 
 For more detailed information, see:
-- [Integration Testing Guide](integration-testing.md)
-- [Contributing Guide](contributing.md)
-- [API Integration Documentation](api-integration.md)
+- [Integration Testing Guide](integration-testing)
+- [Contributing Guide](../contributing)
+- [API Integration Documentation](api-integration)

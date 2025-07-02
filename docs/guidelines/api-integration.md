@@ -288,8 +288,6 @@ For local development without the API:
 ## 📚 Related Documentation
 
 - [Backend API Documentation](https://metanull.github.io/inventory-app)
-- [Authentication Guide](./auth.html)
-- [Error Handling Best Practices](./error-handling.html)
 
 ---
 

@@ -33,7 +33,7 @@ nav_external_links:
     url: https://metanull.github.io/inventory-app
 
 # Footer
-footer_content: "Copyright &copy; 2025 Pascal Havelange. Made with ❤️ using Vue.js 3 and TypeScript."
+footer_content: "Copyright &copy; 2025 Pascal Havelange. Made with ❤️ using 💎 Ruby and 🐍 Python."
 
 # Back to top
 back_to_top: true
@@ -85,6 +85,7 @@ exclude:
   - generate-commit-docs.py
   - generate-commit-docs.ps1
   - commit-docs.log
+  - contributing-new.md
 
 # Markdown settings
 markdown: kramdown

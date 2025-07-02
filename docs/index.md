@@ -95,10 +95,10 @@ The application will be available at `http://localhost:3000`.
 ### [Guidelines](guidelines/)
 Comprehensive development guidelines covering API integration, coding standards, and testing practices.
 
-### [Contributing](contributing/)
+### [Contributing](contributing)
 Guidelines for contributing to the project, including development setup and workflow.
 
-### [Development Archive](development-archive/)
+### [Development Archive](development-archive)
 Historical development updates and project evolution.
 
 ## 📄 License
