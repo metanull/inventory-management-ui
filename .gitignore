@@ -167,3 +167,6 @@ GITHUB_PAGES_FIX.md
 # docs generated files
 docs/*.log
 docs/_docs/*.md
+
+# Ruby/Jekyll dependencies
+docs/Gemfile.lock

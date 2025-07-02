@@ -56,8 +56,12 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.2.3'
-        bundler-cache: true
         working-directory: docs
+    
+    - name: Install Ruby dependencies
+      run: |
+        cd docs
+        bundle install
     
     - name: Generate documentation of the latest commits
       run: |
