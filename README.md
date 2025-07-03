@@ -1,5 +1,9 @@
 # Inventory Management UI
 
+**🌍 Check out our github page** [https://metanull.github.io/inventory-management-ui/](https://metanull.github.io/inventory-management-ui/)
+
+---
+
 A modern, production-ready Vue.js 3 application built with TypeScript that provides a comprehensive user interface for managing cultural heritage inventory systems. This frontend application connects to the [Inventory Management API](https://github.com/metanull/inventory-app) to manage museums, collections, artifacts, and cultural objects with full CRUD operations, bearer token authentication, and real-time data synchronization.
 
 **🎯 Built for cultural heritage institutions to digitally catalog, organize, and preserve artifacts, monuments, and collections with modern web technologies and robust testing infrastructure.**
