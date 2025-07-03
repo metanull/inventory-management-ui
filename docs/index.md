@@ -88,7 +88,7 @@ The application will be available at `http://localhost:3000`.
 
 ## 🔗 Related Projects
 
-- [Inventory Management API](https://github.com/metanull/inventory-app) - Backend API for this application
+- [Inventory API](https://github.com/metanull/inventory-app) - Backend API for this application
 
 ## 📚 Documentation Sections
 
@@ -100,6 +100,12 @@ Guidelines for contributing to the project, including development setup and work
 
 ### [Development Archive](development-archive)
 Historical development updates and project evolution.
+
+### [Issues](https://github.com/metanull/inventory-management-ui/issues)
+Bug reports and feature requests
+
+### [Source Code](https://github.com/metanull/inventory-management-ui)
+Complete source code and issue tracking
 
 ## 📄 License
 
