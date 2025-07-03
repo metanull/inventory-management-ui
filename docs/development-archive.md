@@ -26,7 +26,7 @@ Welcome to the Inventory Management UI development archive! Here you'll find the
 
 {% assign sorted_docs = site.docs | sort: 'date' | reverse %}
 {% for doc in sorted_docs limit:10 %}
-### [{{ doc.title }}]({{ doc.url }})
+### [{{ doc.title }}]({{ doc.url | relative_url }})
 **{{ doc.date | date: "%B %d, %Y at %I:%M %p" }}** by {{ doc.author }}
 
 {% if doc.commit_hash %}
@@ -36,7 +36,7 @@ Welcome to the Inventory Management UI development archive! Here you'll find the
 {% assign content_preview = doc.content | strip_html | truncatewords: 75 %}
 {{ content_preview }}
 
-[View full commit details]({{ doc.url }})
+[View full commit details]({{ doc.url | relative_url }})
 
 ---
 {% endfor %}
