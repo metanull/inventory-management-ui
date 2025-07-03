@@ -2,6 +2,3 @@ npm run type-check
 npm run lint:check
 npm run format:check
 npm run test:unit
-git add .
-git commit -m "Tests passed! Pushing forward with confidence."
-HUSKY=0 git push
