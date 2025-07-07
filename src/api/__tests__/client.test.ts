@@ -239,24 +239,52 @@ describe('ApiClient', () => {
 
       const result = await ApiClient.getItemTags('item-1')
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/item/item-1/tags')
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/tag/for-item/item-1')
       expect(result.data).toEqual(mockTags)
     })
 
     it('should add tag to item successfully', async () => {
-      mockAxiosInstance.post.mockResolvedValueOnce({})
+      const mockItem = {
+        id: 'item-1',
+        internal_name: 'Test Item',
+        tags: [{ id: 'tag-1', internal_name: 'Tag 1' }],
+      }
+      const mockResponse = { data: mockItem }
+      mockAxiosInstance.patch.mockResolvedValueOnce({ data: mockResponse })
 
-      await ApiClient.addTagToItem('item-1', 'tag-1')
+      const result = await ApiClient.addTagToItem('item-1', 'tag-1')
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/item/item-1/tags', { tag_id: 'tag-1' })
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/item/item-1/tags', {
+        attach: ['tag-1'],
+      })
+      expect(result.data).toEqual(mockItem)
     })
 
     it('should remove tag from item successfully', async () => {
-      mockAxiosInstance.delete.mockResolvedValueOnce({})
+      const mockItem = { id: 'item-1', internal_name: 'Test Item', tags: [] }
+      const mockResponse = { data: mockItem }
+      mockAxiosInstance.patch.mockResolvedValueOnce({ data: mockResponse })
 
-      await ApiClient.removeTagFromItem('item-1', 'tag-1')
+      const result = await ApiClient.removeTagFromItem('item-1', 'tag-1')
 
-      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/item/item-1/tags/tag-1')
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/item/item-1/tags', {
+        detach: ['tag-1'],
+      })
+      expect(result.data).toEqual(mockItem)
+    })
+
+    it('should update item tags with attach and detach arrays successfully', async () => {
+      const mockItem = { id: 'item-1', internal_name: 'Test Item', tags: [] }
+      const mockResponse = { data: mockItem }
+      mockAxiosInstance.patch.mockResolvedValueOnce({ data: mockResponse })
+
+      const result = await ApiClient.updateItemTags('item-1', ['tag-2'], ['tag-1'])
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/item/item-1/tags', {
+        attach: ['tag-2'],
+        detach: ['tag-1'],
+      })
+      expect(result.data).toEqual(mockItem)
     })
 
     it('should handle items API errors', async () => {
@@ -672,6 +700,38 @@ describe('ApiClient', () => {
 
       expect(mockAxiosInstance.put).toHaveBeenCalledWith('/available-image/1', updateData)
       expect(result.data.comment).toBe('Updated comment')
+    })
+
+    it('should download available image', async () => {
+      const mockResponse: AxiosResponse<string> = {
+        data: 'binary-image-data',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as InternalAxiosRequestConfig,
+      }
+      mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
+
+      const result = await ApiClient.downloadAvailableImage('1')
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/available-image/1/download')
+      expect(result).toBe('binary-image-data')
+    })
+
+    it('should view available image', async () => {
+      const mockResponse: AxiosResponse<string> = {
+        data: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as InternalAxiosRequestConfig,
+      }
+      mockAxiosInstance.get.mockResolvedValueOnce(mockResponse)
+
+      const result = await ApiClient.viewAvailableImage('1')
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/available-image/1/view')
+      expect(result).toBe('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...')
     })
   })
 
