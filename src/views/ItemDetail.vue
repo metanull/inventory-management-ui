@@ -281,12 +281,17 @@
 
     addingTag.value = true
     try {
-      await apiClient.addTagToItem(item.value.id, selectedTagId.value)
+      const response = await apiClient.addTagToItem(item.value.id, selectedTagId.value)
 
-      // Add the tag to the local list
-      const tagToAdd = allTags.value.find((tag: TagResource) => tag.id === selectedTagId.value)
-      if (tagToAdd) {
-        tags.value.push(tagToAdd)
+      // Update the item with the response data which includes updated tags
+      if (response.data.tags) {
+        tags.value = response.data.tags
+      } else {
+        // Fallback: Add the tag to the local list
+        const tagToAdd = allTags.value.find((tag: TagResource) => tag.id === selectedTagId.value)
+        if (tagToAdd) {
+          tags.value.push(tagToAdd)
+        }
       }
 
       selectedTagId.value = ''
@@ -302,10 +307,15 @@
 
     removingTagId.value = tagId
     try {
-      await apiClient.removeTagFromItem(item.value.id, tagId)
+      const response = await apiClient.removeTagFromItem(item.value.id, tagId)
 
-      // Remove the tag from the local list
-      tags.value = tags.value.filter((tag: TagResource) => tag.id !== tagId)
+      // Update the item with the response data which includes updated tags
+      if (response.data.tags) {
+        tags.value = response.data.tags
+      } else {
+        // Fallback: Remove the tag from the local list
+        tags.value = tags.value.filter((tag: TagResource) => tag.id !== tagId)
+      }
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to remove tag'
     } finally {

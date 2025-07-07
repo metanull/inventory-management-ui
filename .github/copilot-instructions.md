@@ -1,13 +1,16 @@
 **CRITICAL: Awlays use PowerShell syntax when using `run_in_terminal`**
 **CRITICAL: This is a Vue.js 3 application with Typescript**
-**CRITICAL: docs/ contains a distinct Ruby application based on Jekyll**
-**CRITICAL: Always use wsl when interacting with Ruby**
+**CRITICAL: This is a windows system, the console is powershell. Command must be executed using powershell compatible functions and syntax OR through a WSL console**
+**CRITICAL: docs/ contains a distinct Ruby application based on Jekyll. Always use wsl when interacting with Ruby.**
+**CRITICAL: API specifications are in `E:\inventory\inventory-management-ui\src\api\inventory-app.json`**
+**CRITICAL: My application MUST porovide a UI to manage all Resources in the API specification**
 **CRITICAL: When creating a pull-request (pr), if on the main branch, always first create a dedicated branch for the pr, then create the pr from that branch**
 **CRITICAL: before a commit, always run `npm run format` and `npm run lint` to ensure code quality**
 **CRITICAL: when creating a branch for a pull request, always use the `feature/` or `fix/` prefix, depending on the type of change**
 **CRITICAL: when using `gh pr create` always escape the `--assignee @me` like this: `--assignee "@me"` and never use `--label`**
 **CRITICAL: when using `gh pr create` always make the pr auto-merge in squash mode**
 **CRITICAL: when using `gh pr create` never use --merge --squash (as it is not supported), first create the pr, then make the pr 'auto-merge' in a second instruction**
+**CRITICAL: after setting the pull request to auto-merge, always return to the main branch**
 - Use Vue.js 3
   - Use TypeScript for type safety
   - Use the Composition API with `<script setup>` syntax

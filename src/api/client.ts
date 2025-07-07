@@ -447,17 +447,37 @@ class ApiClient {
   // Item Tags
   async getItemTags(itemId: string): Promise<ApiResponse<TagResource[]>> {
     const response: AxiosResponse<ApiResponse<TagResource[]>> = await this.client.get(
-      `/item/${itemId}/tags`
+      `/tag/for-item/${itemId}`
     )
     return response.data
   }
 
-  async addTagToItem(itemId: string, tagId: string): Promise<void> {
-    await this.client.post(`/item/${itemId}/tags`, { tag_id: tagId })
+  async addTagToItem(itemId: string, tagId: string): Promise<ApiResponse<ItemResource>> {
+    const response: AxiosResponse<ApiResponse<ItemResource>> = await this.client.patch(
+      `/item/${itemId}/tags`,
+      { attach: [tagId] }
+    )
+    return response.data
   }
 
-  async removeTagFromItem(itemId: string, tagId: string): Promise<void> {
-    await this.client.delete(`/item/${itemId}/tags/${tagId}`)
+  async removeTagFromItem(itemId: string, tagId: string): Promise<ApiResponse<ItemResource>> {
+    const response: AxiosResponse<ApiResponse<ItemResource>> = await this.client.patch(
+      `/item/${itemId}/tags`,
+      { detach: [tagId] }
+    )
+    return response.data
+  }
+
+  async updateItemTags(
+    itemId: string,
+    attachTags: string[] = [],
+    detachTags: string[] = []
+  ): Promise<ApiResponse<ItemResource>> {
+    const response: AxiosResponse<ApiResponse<ItemResource>> = await this.client.patch(
+      `/item/${itemId}/tags`,
+      { attach: attachTags, detach: detachTags }
+    )
+    return response.data
   }
 
   // Partners
@@ -781,6 +801,11 @@ class ApiClient {
 
   async downloadAvailableImage(id: string): Promise<string> {
     const response: AxiosResponse<string> = await this.client.get(`/available-image/${id}/download`)
+    return response.data
+  }
+
+  async viewAvailableImage(id: string): Promise<string> {
+    const response: AxiosResponse<string> = await this.client.get(`/available-image/${id}/view`)
     return response.data
   }
 
