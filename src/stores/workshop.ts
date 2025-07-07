@@ -13,8 +13,8 @@ export const useWorkshopStore = defineStore('workshop', () => {
     try {
       const res = await apiClient.getWorkshops()
       workshops.value = res.data
-    } catch (e: any) {
-      error.value = e.message || 'Failed to fetch workshops.'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Failed to fetch workshops.'
     } finally {
       loading.value = false
     }

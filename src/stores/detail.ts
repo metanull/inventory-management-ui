@@ -13,8 +13,8 @@ export const useDetailStore = defineStore('detail', () => {
     try {
       const res = await apiClient.getDetails()
       details.value = res.data
-    } catch (e: any) {
-      error.value = e.message || 'Failed to fetch details.'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Failed to fetch details.'
     } finally {
       loading.value = false
     }

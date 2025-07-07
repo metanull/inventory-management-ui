@@ -13,8 +13,8 @@ export const useAuthorStore = defineStore('author', () => {
     try {
       const res = await apiClient.getAuthors()
       authors.value = res.data
-    } catch (e: any) {
-      error.value = e.message || 'Failed to fetch authors.'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Failed to fetch authors.'
     } finally {
       loading.value = false
     }
