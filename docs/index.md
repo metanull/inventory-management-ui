@@ -114,3 +114,23 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 ---
 
 *Last updated: {{ site.time | date: "%B %d, %Y" }}*
+
+### API Specification Management
+
+#### Fetching the API Specification
+To fetch the latest API specification from the Inventory API, run:
+
+```bash
+npm run inventory-app:fetch
+```
+
+This will download the specification and store it in `src/api/inventory-app.json`.
+
+#### Comparing API Specification Changes
+To compare the local API specification with the latest version online, run:
+
+```bash
+npm run inventory-app:diff
+```
+
+This will display the differences between the local and remote versions.

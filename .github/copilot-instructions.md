@@ -1,8 +1,12 @@
 **CRITICAL: Awlays use PowerShell syntax when using `run_in_terminal`**
-**CRITICAL: Always append `; echo ""` to PowerShell commands when using `run_in_terminal`**
 **CRITICAL: This is a Vue.js 3 application with Typescript**
 **CRITICAL: docs/ contains a distinct Ruby application based on Jekyll**
 **CRITICAL: Always use wsl when interacting with Ruby**
+**CRITICAL: When creating a pull-request (pr), if on the main branch, always first create a dedicated branch for the pr, then create the pr from that branch**
+**CRITICAL: when creating a branch for a pull request, always use the `feature/` or `fix/` prefix, depending on the type of change**
+**CRITICAL: when using `gh pr create` always escape the `--assignee @me` like this: `--assignee "@me"` and never use `--label`**
+**CRITICAL: when using `gh pr create` always make the pr auto-merge in squash mode**
+**CRITICAL: when using `gh pr create` never use --merge --squash (as it is not supported), first create the pr, then make the pr 'auto-merge' in a second instruction**
 - Use Vue.js 3
   - Use TypeScript for type safety
   - Use the Composition API with `<script setup>` syntax
@@ -23,12 +27,15 @@
   - Generate tests for types
 - API Integration
   - OpenAPI specification is available at `https://metanull.github.com/inventory-app/api.json`
-    - Store the api specification locally
-      - use .gitignore to exclude it from version control
-      - keep the local copy up to date with the remote specification
-    - OpenAPI specification is used to generate types
-      - Keep `apiClient` methods up to date with OpenAPI specification
-  - Use Axios for HTTP requests with interceptors for authentication
+    - The npm script 'inventory-app:fetch' fetches the OpenAPI specification and stores it in `src/api/inventory-app.json`
+    - The npm script 'inventory-app:diff' compares the local OpenAPI specification with the remote one and shows the differences
+    - Use the OpenAPI specification to understand the API endpoints and their parameters
+    - Use the OpenAPI specification to generate types for API responses
+    - Use the OpenAPI specification to generate API client methods
+    - Use the OpenAPI specification to ensure API client methods are up to date
+    - Use the OpenAPI specification to generate documentation for API endpoints
+    - Use the OpenAPI specification to generate tests for API client methods
+  - Use Axios for API HTTP requests with interceptors for authentication
   - Handle errors consistently with user feedback
   - Show loading states during API calls
   - Cache data appropriately with reactive state
