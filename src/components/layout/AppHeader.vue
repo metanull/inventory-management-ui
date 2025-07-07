@@ -15,17 +15,13 @@
           >
             Dashboard
           </RouterLink>
+
+          <!-- Core Entities -->
           <RouterLink
             to="/items"
             class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
           >
             Items
-          </RouterLink>
-          <RouterLink
-            to="/partners"
-            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-          >
-            Partners
           </RouterLink>
           <RouterLink
             to="/projects"
@@ -34,11 +30,13 @@
             Projects
           </RouterLink>
           <RouterLink
-            to="/tags"
+            to="/partners"
             class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
           >
-            Tags
+            Partners
           </RouterLink>
+
+          <!-- Content & Media -->
           <RouterLink
             to="/pictures"
             class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
@@ -46,10 +44,72 @@
             Pictures
           </RouterLink>
           <RouterLink
+            to="/available-images"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Available Images
+          </RouterLink>
+          <RouterLink
+            to="/image-uploads"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Image Uploads
+          </RouterLink>
+
+          <!-- People -->
+          <RouterLink
+            to="/artists"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Artists
+          </RouterLink>
+          <RouterLink
+            to="/authors"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Authors
+          </RouterLink>
+          <RouterLink
+            to="/workshops"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Workshops
+          </RouterLink>
+
+          <!-- Metadata -->
+          <RouterLink
+            to="/tags"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Tags
+          </RouterLink>
+          <RouterLink
+            to="/details"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Details
+          </RouterLink>
+
+          <!-- Geography & Location -->
+          <RouterLink
             to="/countries"
             class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
           >
             Countries
+          </RouterLink>
+          <RouterLink
+            to="/addresses"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Addresses
+          </RouterLink>
+
+          <!-- Contact & Language -->
+          <RouterLink
+            to="/contacts"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Contacts
           </RouterLink>
           <RouterLink
             to="/languages"
@@ -62,12 +122,6 @@
             class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
           >
             Contexts
-          </RouterLink>
-          <RouterLink
-            to="/image-uploads"
-            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-          >
-            Images
           </RouterLink>
         </nav>
 

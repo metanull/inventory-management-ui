@@ -140,7 +140,7 @@
 
   const form = reactive({
     internal_name: '',
-    type: '' as 'object' | 'monument' | '',
+    type: '' as string,
     backward_compatibility: '',
   })
 

@@ -140,6 +140,169 @@ const router = createRouter({
       component: () => import('@/views/ImageUploadDetail.vue'),
       meta: { requiresAuth: true },
     },
+    // Addresses
+    {
+      path: '/addresses',
+      name: 'addresses',
+      component: () => import('@/views/Addresses.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/addresses/new',
+      name: 'address-create',
+      component: () => import('@/views/AddressDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/addresses/:id',
+      name: 'address-detail',
+      component: () => import('@/views/AddressDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/addresses/:id/edit',
+      name: 'address-edit',
+      component: () => import('@/views/AddressDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    // Contacts
+    {
+      path: '/contacts',
+      name: 'contacts',
+      component: () => import('@/views/Contacts.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/contacts/new',
+      name: 'contact-create',
+      component: () => import('@/views/ContactDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/contacts/:id',
+      name: 'contact-detail',
+      component: () => import('@/views/ContactDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/contacts/:id/edit',
+      name: 'contact-edit',
+      component: () => import('@/views/ContactDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    // Available Images
+    {
+      path: '/available-images',
+      name: 'available-images',
+      component: () => import('@/views/AvailableImages.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/available-images/:id',
+      name: 'available-image-detail',
+      component: () => import('@/views/AvailableImageDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    // Details
+    {
+      path: '/details',
+      name: 'details',
+      component: () => import('@/views/Details.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/details/new',
+      name: 'detail-create',
+      component: () => import('@/views/DetailDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/details/:id',
+      name: 'detail-detail',
+      component: () => import('@/views/DetailDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/details/:id/edit',
+      name: 'detail-edit',
+      component: () => import('@/views/DetailDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    // Authors
+    {
+      path: '/authors',
+      name: 'authors',
+      component: () => import('@/views/Authors.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/authors/new',
+      name: 'author-create',
+      component: () => import('@/views/AuthorDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/authors/:id',
+      name: 'author-detail',
+      component: () => import('@/views/AuthorDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/authors/:id/edit',
+      name: 'author-edit',
+      component: () => import('@/views/AuthorDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    // Artists
+    {
+      path: '/artists',
+      name: 'artists',
+      component: () => import('@/views/Artists.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/artists/new',
+      name: 'artist-create',
+      component: () => import('@/views/ArtistDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/artists/:id',
+      name: 'artist-detail',
+      component: () => import('@/views/ArtistDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/artists/:id/edit',
+      name: 'artist-edit',
+      component: () => import('@/views/ArtistDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    // Workshops
+    {
+      path: '/workshops',
+      name: 'workshops',
+      component: () => import('@/views/Workshops.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/workshops/new',
+      name: 'workshop-create',
+      component: () => import('@/views/WorkshopDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/workshops/:id',
+      name: 'workshop-detail',
+      component: () => import('@/views/WorkshopDetail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/workshops/:id/edit',
+      name: 'workshop-edit',
+      component: () => import('@/views/WorkshopDetail.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 

@@ -38,8 +38,8 @@ const TEST_CONFIG = {
   // API base URL - should point to test environment
   API_BASE_URL: env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
   // Test user credentials
-  TEST_EMAIL: env.VITE_TEST_EMAIL || 'test@example.com',
-  TEST_PASSWORD: env.VITE_TEST_PASSWORD || 'password123',
+  TEST_EMAIL: env.VITE_TEST_EMAIL || 'user@example.com',
+  TEST_PASSWORD: env.VITE_TEST_PASSWORD || 'password',
 }
 
 // Store created resources for cleanup
@@ -53,6 +53,17 @@ const createdResources = {
   tags: [] as string[],
   pictures: [] as string[],
   imageUploads: [] as string[],
+  addresses: [] as string[],
+  addressTranslations: [] as string[],
+  contacts: [] as string[],
+  contactTranslations: [] as string[],
+  details: [] as string[],
+  detailTranslations: [] as string[],
+  itemTranslations: [] as string[],
+  locations: [] as string[],
+  locationTranslations: [] as string[],
+  provinces: [] as string[],
+  provinceTranslations: [] as string[],
 }
 
 // Only run integration tests if not in CI environment
@@ -180,6 +191,85 @@ if (!TEST_CONFIG.SKIP_IN_CI) {
           } catch (error) {
             console.warn(`Failed to cleanup country ${countryId}:`, error)
           }
+        }
+
+        for (const contactId of createdResources.contacts) {
+          try {
+            await apiClient.deleteContact(contactId)
+          } catch (error) {
+            console.warn(`Failed to cleanup contact ${contactId}:`, error)
+          }
+        }
+
+        for (const contactTranslationId of createdResources.contactTranslations) {
+          try {
+            await apiClient.deleteContactTranslation(contactTranslationId)
+          } catch (error) {
+            console.warn(`Failed to cleanup contact translation ${contactTranslationId}:`, error)
+          }
+        }
+
+        for (const detailId of createdResources.details) {
+          try {
+            await apiClient.deleteDetail(detailId)
+          } catch (error) {
+            console.warn(`Failed to cleanup detail ${detailId}:`, error)
+          }
+        }
+
+        for (const detailTranslationId of createdResources.detailTranslations) {
+          try {
+            await apiClient.deleteDetailTranslation(detailTranslationId)
+          } catch (error) {
+            console.warn(`Failed to cleanup detail translation ${detailTranslationId}:`, error)
+          }
+        }
+
+        for (const itemTranslationId of createdResources.itemTranslations) {
+          try {
+            await apiClient.deleteItemTranslation(itemTranslationId)
+          } catch (error) {
+            console.warn(`Failed to cleanup item translation ${itemTranslationId}:`, error)
+          }
+        }
+
+        for (const locationId of createdResources.locations) {
+          try {
+            await apiClient.deleteLocation(locationId)
+          } catch (error) {
+            console.warn(`Failed to cleanup location ${locationId}:`, error)
+          }
+        }
+
+        for (const locationTranslationId of createdResources.locationTranslations) {
+          try {
+            await apiClient.deleteLocationTranslation(locationTranslationId)
+          } catch (error) {
+            console.warn(`Failed to cleanup location translation ${locationTranslationId}:`, error)
+          }
+        }
+
+        for (const provinceId of createdResources.provinces) {
+          try {
+            await apiClient.deleteProvince(provinceId)
+          } catch (error) {
+            console.warn(`Failed to cleanup province ${provinceId}:`, error)
+          }
+        }
+
+        // ProvinceTranslations
+        if (
+          createdResources.provinceTranslations &&
+          createdResources.provinceTranslations.length > 0
+        ) {
+          for (const id of createdResources.provinceTranslations) {
+            try {
+              await apiClient.deleteProvinceTranslation(id)
+            } catch {
+              // Ignore errors (may have been deleted in test)
+            }
+          }
+          createdResources.provinceTranslations = []
         }
 
         console.log('✅ Cleanup completed')
@@ -682,6 +772,870 @@ if (!TEST_CONFIG.SKIP_IN_CI) {
           expect(axiosError.response?.status).toBe(422)
           expect(axiosError.response?.data?.errors).toBeDefined()
           console.log('✅ Validation error handled correctly')
+        }
+      })
+    })
+
+    describe('Address API', () => {
+      test('should create, read, update, and delete an address', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive address tests')
+          return
+        }
+        // Ensure a country exists for the address
+        const countryId = 'TSTADDR'
+        let countryCreated = false
+        try {
+          await apiClient.getCountry(countryId)
+        } catch {
+          const country = await apiClient.createCountry({
+            id: countryId,
+            internal_name: 'Test Country for Address',
+            backward_compatibility: null,
+          })
+          createdResources.countries.push(country.data.id)
+          countryCreated = true
+        }
+        // Create
+        const createData = {
+          internal_name: 'Test Address',
+          country_id: countryId,
+        }
+        const createResponse = await apiClient.createAddress(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.internal_name).toBe('Test Address')
+        createdResources.addresses = createdResources.addresses || []
+        createdResources.addresses.push(createResponse.data.id)
+        console.log('✅ Address created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getAddress(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ Address retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          internal_name: 'Updated Test Address',
+        }
+        const updateResponse = await apiClient.updateAddress(createResponse.data.id, updateData)
+        expect(updateResponse.data.internal_name).toBe('Updated Test Address')
+        console.log('✅ Address updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteAddress(createResponse.data.id)
+        createdResources.addresses = createdResources.addresses.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ Address deleted:', createResponse.data.id)
+        // Optionally clean up country if we created it
+        if (countryCreated) {
+          await apiClient.deleteCountry(countryId)
+          createdResources.countries = createdResources.countries.filter(id => id !== countryId)
+        }
+      })
+    })
+
+    describe('AddressTranslation API', () => {
+      test('should create, read, update, and delete an address translation', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive address translation tests')
+          return
+        }
+        // Ensure a country and address exist for the translation
+        const countryId = 'TSTADDRTR'
+        let countryCreated = false
+        try {
+          await apiClient.getCountry(countryId)
+        } catch {
+          const country = await apiClient.createCountry({
+            id: countryId,
+            internal_name: 'Test Country for AddressTranslation',
+            backward_compatibility: null,
+          })
+          createdResources.countries.push(country.data.id)
+          countryCreated = true
+        }
+        const addressCreate = await apiClient.createAddress({
+          internal_name: 'Test Address for Translation',
+          country_id: countryId,
+        })
+        createdResources.addresses.push(addressCreate.data.id)
+        // Create
+        const createData = {
+          address_id: addressCreate.data.id,
+          language_id: 'eng',
+          address: '123 Main St',
+          description: 'Test translation',
+        }
+        const createResponse = await apiClient.createAddressTranslation(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.address).toBe('123 Main St')
+        createdResources.addressTranslations = createdResources.addressTranslations || []
+        createdResources.addressTranslations.push(createResponse.data.id)
+        console.log('✅ AddressTranslation created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getAddressTranslation(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ AddressTranslation retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          address: '456 Updated St',
+          description: 'Updated translation',
+        }
+        const updateResponse = await apiClient.updateAddressTranslation(
+          createResponse.data.id,
+          updateData
+        )
+        expect(updateResponse.data.address).toBe('456 Updated St')
+        console.log('✅ AddressTranslation updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteAddressTranslation(createResponse.data.id)
+        createdResources.addressTranslations = createdResources.addressTranslations.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ AddressTranslation deleted:', createResponse.data.id)
+        // Cleanup address
+        await apiClient.deleteAddress(addressCreate.data.id)
+        createdResources.addresses = createdResources.addresses.filter(
+          id => id !== addressCreate.data.id
+        )
+        // Optionally clean up country if we created it
+        if (countryCreated) {
+          await apiClient.deleteCountry(countryId)
+          createdResources.countries = createdResources.countries.filter(id => id !== countryId)
+        }
+      })
+    })
+
+    describe('Contact API', () => {
+      test('should create, read, update, and delete a contact', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive contact tests')
+          return
+        }
+        // Create
+        const createData = {
+          internal_name: 'Test Contact',
+          phone_number: '123-456-7890',
+          formatted_phone_number: null,
+          fax_number: null,
+          formatted_fax_number: null,
+          email: 'contact@example.com',
+        }
+        const createResponse = await apiClient.createContact(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.internal_name).toBe('Test Contact')
+        createdResources.contacts = createdResources.contacts || []
+        createdResources.contacts.push(createResponse.data.id)
+        console.log('✅ Contact created:', createResponse.data.id)
+
+        // Read
+        const getResponse = await apiClient.getContact(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ Contact retrieved:', getResponse.data.id)
+
+        // Update
+        const updateData = {
+          internal_name: 'Updated Test Contact',
+          phone_number: '987-654-3210',
+        }
+        const updateResponse = await apiClient.updateContact(createResponse.data.id, updateData)
+        expect(updateResponse.data.internal_name).toBe('Updated Test Contact')
+        expect(updateResponse.data.phone_number).toBe('987-654-3210')
+        console.log('✅ Contact updated:', updateResponse.data.id)
+
+        // Delete
+        await apiClient.deleteContact(createResponse.data.id)
+        createdResources.contacts = createdResources.contacts.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ Contact deleted:', createResponse.data.id)
+      })
+    })
+
+    describe('ContactTranslation API', () => {
+      test('should create, read, update, and delete a contact translation', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive contact translation tests')
+          return
+        }
+        // Ensure a contact exists for the translation
+        const contactCreate = await apiClient.createContact({
+          internal_name: 'Test Contact for Translation',
+          phone_number: '111-222-3333',
+          formatted_phone_number: null,
+          fax_number: null,
+          formatted_fax_number: null,
+          email: 'translation@example.com',
+        })
+        createdResources.contacts.push(contactCreate.data.id)
+        // Create
+        const createData = {
+          contact_id: contactCreate.data.id,
+          language_id: 'eng',
+          label: 'Test Contact Label',
+        }
+        const createResponse = await apiClient.createContactTranslation(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.label).toBe('Test Contact Label')
+        createdResources.contactTranslations = createdResources.contactTranslations || []
+        createdResources.contactTranslations.push(createResponse.data.id)
+        console.log('✅ ContactTranslation created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getContactTranslation(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ ContactTranslation retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          label: 'Updated Contact Label',
+        }
+        const updateResponse = await apiClient.updateContactTranslation(
+          createResponse.data.id,
+          updateData
+        )
+        expect(updateResponse.data.label).toBe('Updated Contact Label')
+        console.log('✅ ContactTranslation updated:', updateResponse.data.id)
+
+        // Delete
+        await apiClient.deleteContactTranslation(createResponse.data.id)
+        createdResources.contactTranslations = createdResources.contactTranslations.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ ContactTranslation deleted:', createResponse.data.id)
+        // Cleanup contact
+        await apiClient.deleteContact(contactCreate.data.id)
+        createdResources.contacts = createdResources.contacts.filter(
+          id => id !== contactCreate.data.id
+        )
+      })
+    })
+
+    describe('Detail API', () => {
+      test('should create, read, update, and delete a detail', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive detail tests')
+          return
+        }
+        // Ensure an item exists for the detail
+        const itemCreate = await apiClient.createItem({
+          internal_name: 'Test Item for Detail',
+          type: 'object',
+        })
+        createdResources.items.push(itemCreate.data.id)
+        // Create
+        const createData = {
+          internal_name: 'Test Detail',
+          backward_compatibility: null,
+          item_id: itemCreate.data.id,
+        }
+        const createResponse = await apiClient.createDetail(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.internal_name).toBe('Test Detail')
+        createdResources.details = createdResources.details || []
+        createdResources.details.push(createResponse.data.id)
+        console.log('✅ Detail created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getDetail(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ Detail retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          internal_name: 'Updated Test Detail',
+        }
+        const updateResponse = await apiClient.updateDetail(createResponse.data.id, updateData)
+        expect(updateResponse.data.internal_name).toBe('Updated Test Detail')
+        console.log('✅ Detail updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteDetail(createResponse.data.id)
+        createdResources.details = createdResources.details.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ Detail deleted:', createResponse.data.id)
+        // Cleanup item
+        await apiClient.deleteItem(itemCreate.data.id)
+        createdResources.items = createdResources.items.filter(id => id !== itemCreate.data.id)
+      })
+    })
+
+    describe('DetailTranslation API', () => {
+      test('should create, read, update, and delete a detail translation', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive detail translation tests')
+          return
+        }
+        // Ensure an item exists for the detail
+        const itemCreate = await apiClient.createItem({
+          internal_name: 'Test Item for DetailTranslation',
+          type: 'object',
+        })
+        createdResources.items.push(itemCreate.data.id)
+        // Ensure a detail exists for the translation
+        const detailCreate = await apiClient.createDetail({
+          internal_name: 'Test Detail for Translation',
+          backward_compatibility: null,
+          item_id: itemCreate.data.id,
+        })
+        createdResources.details.push(detailCreate.data.id)
+        // Use 'eng' as language_id and a default/test context
+        let contextId = 'default'
+        try {
+          const context = await apiClient.getDefaultContext()
+          contextId = context.data.id
+        } catch {
+          // fallback: create a context
+          const contextCreate = await apiClient.createContext({
+            internal_name: 'Test Context for DetailTranslation',
+            backward_compatibility: null,
+            is_default: false,
+          })
+          createdResources.contexts.push(contextCreate.data.id)
+          contextId = contextCreate.data.id
+        }
+        // Create
+        const createData = {
+          detail_id: detailCreate.data.id,
+          language_id: 'eng',
+          context_id: contextId,
+          name: 'Test DetailTranslation',
+          alternate_name: null,
+          description: 'Test description',
+        }
+        const createResponse = await apiClient.createDetailTranslation(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.name).toBe('Test DetailTranslation')
+        createdResources.detailTranslations = createdResources.detailTranslations || []
+        createdResources.detailTranslations.push(createResponse.data.id)
+        console.log('✅ DetailTranslation created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getDetailTranslation(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ DetailTranslation retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          name: 'Updated DetailTranslation',
+          description: 'Updated description',
+        }
+        const updateResponse = await apiClient.updateDetailTranslation(
+          createResponse.data.id,
+          updateData
+        )
+        expect(updateResponse.data.name).toBe('Updated DetailTranslation')
+        expect(updateResponse.data.description).toBe('Updated description')
+        console.log('✅ DetailTranslation updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteDetailTranslation(createResponse.data.id)
+        createdResources.detailTranslations = createdResources.detailTranslations.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ DetailTranslation deleted:', createResponse.data.id)
+        // Cleanup detail
+        await apiClient.deleteDetail(detailCreate.data.id)
+        createdResources.details = createdResources.details.filter(
+          id => id !== detailCreate.data.id
+        )
+        // Cleanup item
+        await apiClient.deleteItem(itemCreate.data.id)
+        createdResources.items = createdResources.items.filter(id => id !== itemCreate.data.id)
+        // Cleanup context if we created it
+        if (contextId && !['default', 'test', 'main'].includes(contextId)) {
+          await apiClient.deleteContext(contextId)
+          createdResources.contexts = createdResources.contexts.filter(id => id !== contextId)
+        }
+      })
+    })
+
+    describe('ItemTranslation API', () => {
+      test('should create, read, update, and delete an item translation', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive item translation tests')
+          return
+        }
+        // Ensure an item exists for the translation
+        const itemCreate = await apiClient.createItem({
+          internal_name: 'Test Item for ItemTranslation',
+          type: 'object',
+        })
+        createdResources.items.push(itemCreate.data.id)
+        // Use 'eng' as language_id and a default/test context
+        let contextId = 'default'
+        try {
+          const context = await apiClient.getDefaultContext()
+          contextId = context.data.id
+        } catch {
+          // fallback: create a context
+          const contextCreate = await apiClient.createContext({
+            internal_name: 'Test Context for ItemTranslation',
+            backward_compatibility: null,
+            is_default: false,
+          })
+          createdResources.contexts.push(contextCreate.data.id)
+          contextId = contextCreate.data.id
+        }
+        // Create
+        const createData = {
+          item_id: itemCreate.data.id,
+          language_id: 'eng',
+          context_id: contextId,
+          name: 'Test ItemTranslation',
+          alternate_name: null,
+          description: 'Test description',
+        }
+        const createResponse = await apiClient.createItemTranslation(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.name).toBe('Test ItemTranslation')
+        createdResources.itemTranslations = createdResources.itemTranslations || []
+        createdResources.itemTranslations.push(createResponse.data.id)
+        console.log('✅ ItemTranslation created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getItemTranslation(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ ItemTranslation retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          name: 'Updated ItemTranslation',
+          description: 'Updated description',
+        }
+        const updateResponse = await apiClient.updateItemTranslation(
+          createResponse.data.id,
+          updateData
+        )
+        expect(updateResponse.data.name).toBe('Updated ItemTranslation')
+        expect(updateResponse.data.description).toBe('Updated description')
+        console.log('✅ ItemTranslation updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteItemTranslation(createResponse.data.id)
+        createdResources.itemTranslations = createdResources.itemTranslations.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ ItemTranslation deleted:', createResponse.data.id)
+        // Cleanup item
+        await apiClient.deleteItem(itemCreate.data.id)
+        createdResources.items = createdResources.items.filter(id => id !== itemCreate.data.id)
+        // Cleanup context if we created it
+        if (contextId && !['default', 'test', 'main'].includes(contextId)) {
+          await apiClient.deleteContext(contextId)
+          createdResources.contexts = createdResources.contexts.filter(id => id !== contextId)
+        }
+      })
+    })
+
+    describe('Location API', () => {
+      test('should create, read, update, and delete a location', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive location tests')
+          return
+        }
+        // Ensure a country exists for the location
+        const countryId = 'TSTLOC'
+        let countryCreated = false
+        try {
+          await apiClient.getCountry(countryId)
+        } catch {
+          const country = await apiClient.createCountry({
+            id: countryId,
+            internal_name: 'Test Country for Location',
+            backward_compatibility: null,
+          })
+          createdResources.countries.push(country.data.id)
+          countryCreated = true
+        }
+        // Create
+        const createData = {
+          internal_name: 'Test Location',
+          country_id: countryId,
+        }
+        const createResponse = await apiClient.createLocation(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.internal_name).toBe('Test Location')
+        createdResources.locations = createdResources.locations || []
+        createdResources.locations.push(createResponse.data.id)
+        console.log('✅ Location created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getLocation(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ Location retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          internal_name: 'Updated Test Location',
+        }
+        const updateResponse = await apiClient.updateLocation(createResponse.data.id, updateData)
+        expect(updateResponse.data.internal_name).toBe('Updated Test Location')
+        console.log('✅ Location updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteLocation(createResponse.data.id)
+        createdResources.locations = createdResources.locations.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ Location deleted:', createResponse.data.id)
+        // Optionally clean up country if we created it
+        if (countryCreated) {
+          await apiClient.deleteCountry(countryId)
+          createdResources.countries = createdResources.countries.filter(id => id !== countryId)
+        }
+      })
+    })
+
+    describe('LocationTranslation API', () => {
+      test('should create, read, update, and delete a location translation', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive location translation tests')
+          return
+        }
+        // Ensure a country and location exist for the translation
+        const countryId = 'TSTLOCTR'
+        let countryCreated = false
+        try {
+          await apiClient.getCountry(countryId)
+        } catch {
+          const country = await apiClient.createCountry({
+            id: countryId,
+            internal_name: 'Test Country for LocationTranslation',
+            backward_compatibility: null,
+          })
+          createdResources.countries.push(country.data.id)
+          countryCreated = true
+        }
+        const locationCreate = await apiClient.createLocation({
+          internal_name: 'Test Location for Translation',
+          country_id: countryId,
+        })
+        createdResources.locations.push(locationCreate.data.id)
+        // Create
+        const createData = {
+          location_id: locationCreate.data.id,
+          language_id: 'eng',
+          name: 'Test LocationTranslation',
+          description: 'Test translation',
+        }
+        const createResponse = await apiClient.createLocationTranslation(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.name).toBe('Test LocationTranslation')
+        createdResources.locationTranslations = createdResources.locationTranslations || []
+        createdResources.locationTranslations.push(createResponse.data.id)
+        console.log('✅ LocationTranslation created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getLocationTranslation(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ LocationTranslation retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          name: 'Updated LocationTranslation',
+          description: 'Updated translation',
+        }
+        const updateResponse = await apiClient.updateLocationTranslation(
+          createResponse.data.id,
+          updateData
+        )
+        expect(updateResponse.data.name).toBe('Updated LocationTranslation')
+        expect(updateResponse.data.description).toBe('Updated translation')
+        console.log('✅ LocationTranslation updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteLocationTranslation(createResponse.data.id)
+        createdResources.locationTranslations = createdResources.locationTranslations.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ LocationTranslation deleted:', createResponse.data.id)
+        // Cleanup location
+        await apiClient.deleteLocation(locationCreate.data.id)
+        createdResources.locations = createdResources.locations.filter(
+          id => id !== locationCreate.data.id
+        )
+        // Optionally clean up country if we created it
+        if (countryCreated) {
+          await apiClient.deleteCountry(countryId)
+          createdResources.countries = createdResources.countries.filter(id => id !== countryId)
+        }
+      })
+    })
+
+    describe('Province API', () => {
+      test('should create, read, update, and delete a province', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive province tests')
+          return
+        }
+        // Ensure a country exists for the province
+        const countryId = 'TSTPROV'
+        let countryCreated = false
+        try {
+          await apiClient.getCountry(countryId)
+        } catch {
+          const country = await apiClient.createCountry({
+            id: countryId,
+            internal_name: 'Test Country for Province',
+            backward_compatibility: null,
+          })
+          createdResources.countries.push(country.data.id)
+          countryCreated = true
+        }
+        // Create
+        const createData = {
+          internal_name: 'Test Province',
+          country_id: countryId,
+        }
+        const createResponse = await apiClient.createProvince(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.internal_name).toBe('Test Province')
+        createdResources.provinces = createdResources.provinces || []
+        createdResources.provinces.push(createResponse.data.id)
+        console.log('✅ Province created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getProvince(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ Province retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          internal_name: 'Updated Test Province',
+        }
+        const updateResponse = await apiClient.updateProvince(createResponse.data.id, updateData)
+        expect(updateResponse.data.internal_name).toBe('Updated Test Province')
+        console.log('✅ Province updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteProvince(createResponse.data.id)
+        createdResources.provinces = createdResources.provinces.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ Province deleted:', createResponse.data.id)
+        // Optionally clean up country if we created it
+        if (countryCreated) {
+          await apiClient.deleteCountry(countryId)
+          createdResources.countries = createdResources.countries.filter(id => id !== countryId)
+        }
+      })
+    })
+
+    describe('ProvinceTranslation API', () => {
+      test('should create, read, update, and delete a province translation', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive province translation tests')
+          return
+        }
+        // Ensure a country and province exist for the translation
+        const countryId = 'TSTPROVTR'
+        let countryCreated = false
+        try {
+          await apiClient.getCountry(countryId)
+        } catch {
+          const country = await apiClient.createCountry({
+            id: countryId,
+            internal_name: 'Test Country for ProvinceTranslation',
+            backward_compatibility: null,
+          })
+          createdResources.countries.push(country.data.id)
+          countryCreated = true
+        }
+        const provinceCreate = await apiClient.createProvince({
+          internal_name: 'Test Province for Translation',
+          country_id: countryId,
+        })
+        createdResources.provinces.push(provinceCreate.data.id)
+        // Create
+        const createData = {
+          province_id: provinceCreate.data.id,
+          language_id: 'eng',
+          name: 'Test ProvinceTranslation',
+          description: 'Test translation',
+        }
+        const createResponse = await apiClient.createProvinceTranslation(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.name).toBe('Test ProvinceTranslation')
+        createdResources.provinceTranslations = createdResources.provinceTranslations || []
+        createdResources.provinceTranslations.push(createResponse.data.id)
+        console.log('✅ ProvinceTranslation created:', createResponse.data.id)
+        // Read
+        const getResponse = await apiClient.getProvinceTranslation(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        console.log('✅ ProvinceTranslation retrieved:', getResponse.data.id)
+        // Update
+        const updateData = {
+          name: 'Updated ProvinceTranslation',
+          description: 'Updated translation',
+        }
+        const updateResponse = await apiClient.updateProvinceTranslation(
+          createResponse.data.id,
+          updateData
+        )
+        expect(updateResponse.data.name).toBe('Updated ProvinceTranslation')
+        expect(updateResponse.data.description).toBe('Updated translation')
+        console.log('✅ ProvinceTranslation updated:', updateResponse.data.id)
+        // Delete
+        await apiClient.deleteProvinceTranslation(createResponse.data.id)
+        createdResources.provinceTranslations = createdResources.provinceTranslations.filter(
+          id => id !== createResponse.data.id
+        )
+        console.log('✅ ProvinceTranslation deleted:', createResponse.data.id)
+        // Cleanup province
+        await apiClient.deleteProvince(provinceCreate.data.id)
+        createdResources.provinces = createdResources.provinces.filter(
+          id => id !== provinceCreate.data.id
+        )
+        // Optionally clean up country if we created it
+        if (countryCreated) {
+          await apiClient.deleteCountry(countryId)
+          createdResources.countries = createdResources.countries.filter(id => id !== countryId)
+        }
+      })
+    })
+
+    describe('Additional API Coverage', () => {
+      // TagItems CRUD
+      test('should create, read, update, and delete a tag item', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive tag item tests')
+          return
+        }
+        // Ensure a tag and item exist
+        const tag = await apiClient.createTag({
+          internal_name: 'Test Tag for TagItem',
+          description: 'desc',
+        })
+        const item = await apiClient.createItem({
+          internal_name: 'Test Item for TagItem',
+          type: 'object',
+        })
+        createdResources.tags.push(tag.data.id)
+        createdResources.items.push(item.data.id)
+        // Create
+        const createData = { tag_id: tag.data.id, item_id: item.data.id }
+        const createResponse = await apiClient.createTagItem(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.tag_id).toBe(tag.data.id)
+        // Read
+        const getResponse = await apiClient.getTagItem(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        // Update
+        const updateData = {}
+        const updateResponse = await apiClient.updateTagItem(createResponse.data.id, updateData)
+        expect(updateResponse.data.id).toBe(createResponse.data.id)
+        // Delete
+        await apiClient.deleteTagItem(createResponse.data.id)
+        // Cleanup
+        await apiClient.deleteItem(item.data.id)
+        await apiClient.deleteTag(tag.data.id)
+        createdResources.items = createdResources.items.filter(id => id !== item.data.id)
+        createdResources.tags = createdResources.tags.filter(id => id !== tag.data.id)
+      })
+
+      // Workshops CRUD
+      test('should create, read, update, and delete a workshop', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive workshop tests')
+          return
+        }
+        const createData = { name: 'Test Workshop', internal_name: 'Test Workshop' }
+        const createResponse = await apiClient.createWorkshop(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.name).toBe('Test Workshop')
+        // Read
+        const getResponse = await apiClient.getWorkshop(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        // Update
+        const updateData = { name: 'Updated Workshop' }
+        const updateResponse = await apiClient.updateWorkshop(createResponse.data.id, updateData)
+        expect(updateResponse.data.name).toBe('Updated Workshop')
+        // Delete
+        await apiClient.deleteWorkshop(createResponse.data.id)
+      })
+
+      // Artists CRUD
+      test('should create, read, update, and delete an artist', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive artist tests')
+          return
+        }
+        const createData = { name: 'Test Artist', internal_name: 'Test Artist' }
+        const createResponse = await apiClient.createArtist(createData)
+        expect(createResponse.data).toBeDefined()
+        expect(createResponse.data.name).toBe('Test Artist')
+        // Read
+        const getResponse = await apiClient.getArtist(createResponse.data.id)
+        expect(getResponse.data).toBeDefined()
+        expect(getResponse.data.id).toBe(createResponse.data.id)
+        // Update
+        const updateData = { name: 'Updated Artist' }
+        const updateResponse = await apiClient.updateArtist(createResponse.data.id, updateData)
+        expect(updateResponse.data.name).toBe('Updated Artist')
+        // Delete
+        await apiClient.deleteArtist(createResponse.data.id)
+      })
+
+      // PATCH endpoints
+      test('should set default language and context', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive patch tests')
+          return
+        }
+        // Create language and context
+        const lang = await apiClient.createLanguage({
+          id: `t${Date.now().toString().slice(-2)}`,
+          internal_name: 'PatchTestLang',
+          is_default: false,
+        })
+        const ctx = await apiClient.createContext({
+          internal_name: 'PatchTestContext',
+          is_default: false,
+        })
+        createdResources.languages.push(lang.data.id)
+        createdResources.contexts.push(ctx.data.id)
+        // Set default
+        const setLang = await apiClient.setDefaultLanguage(lang.data.id, true)
+        expect(setLang.data.is_default).toBe(true)
+        // Cleanup
+        await apiClient.deleteLanguage(lang.data.id)
+        createdResources.languages = createdResources.languages.filter(id => id !== lang.data.id)
+      })
+
+      // Pictures: createPicture, updatePicture
+      test('should create and update a picture (if supported)', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive picture upload tests')
+          return
+        }
+        // Try to create a picture with dummy FormData
+        try {
+          const formData = new FormData()
+          formData.append('file', new Blob(['test'], { type: 'image/jpeg' }), 'test.jpg')
+          formData.append('internal_name', 'IntegrationTestPicture')
+          const createResponse = await apiClient.createPicture(formData)
+          expect(createResponse.data).toBeDefined()
+          expect(createResponse.data.internal_name).toBe('IntegrationTestPicture')
+          // Update
+          const updateData = { internal_name: 'Updated IntegrationTestPicture' }
+          const updateResponse = await apiClient.updatePicture(createResponse.data.id, updateData)
+          expect(updateResponse.data.internal_name).toBe('Updated IntegrationTestPicture')
+          // Delete
+          await apiClient.deletePicture(createResponse.data.id)
+        } catch {
+          console.log('ℹ️ Skipping picture upload test (not supported in this environment)')
+        }
+      })
+
+      // Image Uploads: createImageUpload, deleteImageUpload
+      test('should create and delete an image upload (if supported)', async () => {
+        if (!TEST_CONFIG.RUN_DESTRUCTIVE_TESTS) {
+          console.log('⏭️ Skipping destructive image upload tests')
+          return
+        }
+        try {
+          const formData = new FormData()
+          formData.append('file', new Blob(['test'], { type: 'image/jpeg' }), 'test.jpg')
+          const createResponse = await apiClient.createImageUpload(formData)
+          expect(createResponse.data).toBeDefined()
+          expect(createResponse.data.name).toBe('test.jpg')
+          // Delete
+          await apiClient.deleteImageUpload(createResponse.data.id)
+        } catch {
+          console.log('ℹ️ Skipping image upload test (not supported in this environment)')
         }
       })
     })

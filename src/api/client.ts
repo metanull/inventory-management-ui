@@ -1,6 +1,10 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
 import { ErrorHandler } from '@/utils/errorHandler'
 
+declare const process: {
+  env: Record<string, string | undefined>
+}
+
 export interface ApiResponse<T> {
   data: T
 }
@@ -23,16 +27,47 @@ export interface PaginatedResponse<T> {
   }
 }
 
-// Resource types based on the API specification
-export interface ItemResource {
+// Resource types based on the OpenAPI specification
+export interface AddressTranslationResource {
+  id: string
+  address_id: string
+  language_id: string
+  address: string
+  description: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface AddressResource {
+  id: string
+  internal_name: string
+  country_id: string
+  translations?: AddressTranslationResource[]
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface AvailableImageResource {
+  id: string
+  path: string | null
+  comment: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface CountryResource {
   id: string
   internal_name: string
   backward_compatibility: string | null
-  type: 'object' | 'monument'
-  partner?: PartnerResource
-  project?: ProjectResource
-  country?: CountryResource
-  tags?: TagResource[]
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface LanguageResource {
+  id: string
+  internal_name: string
+  backward_compatibility: string | null
+  is_default: boolean
   created_at: string | null
   updated_at: string | null
 }
@@ -41,7 +76,7 @@ export interface PartnerResource {
   id: string
   internal_name: string
   backward_compatibility: string | null
-  type: 'museum' | 'institution' | 'individual'
+  type: string
   country?: CountryResource
   created_at: string | null
   updated_at: string | null
@@ -54,8 +89,6 @@ export interface ProjectResource {
   launch_date: string | null
   is_launched: boolean
   is_enabled: boolean
-  context?: ContextResource
-  language?: LanguageResource
   created_at: string | null
   updated_at: string | null
 }
@@ -84,53 +117,93 @@ export interface PictureResource {
   updated_at: string | null
 }
 
-export interface ContextResource {
+export interface ArtistResource {
   id: string
-  internal_name: string
-  backward_compatibility: string | null
-  is_default: boolean
-  created_at: string | null
-  updated_at: string | null
-}
-
-export interface LanguageResource {
-  id: string
-  internal_name: string
-  backward_compatibility: string | null
-  is_default: boolean
-  created_at: string | null
-  updated_at: string | null
-}
-
-export interface CountryResource {
-  id: string
+  name: string
+  place_of_birth: string | null
+  place_of_death: string | null
+  date_of_birth: string | null
+  date_of_death: string | null
+  period_of_activity: string | null
   internal_name: string
   backward_compatibility: string | null
   created_at: string | null
   updated_at: string | null
+  items?: ItemResource[]
 }
 
-export interface AvailableImageResource {
+export interface WorkshopResource {
   id: string
-  path: string | null
-  comment: string | null
+  name: string
+  internal_name: string
+  backward_compatibility: string | null
+  created_at: string | null
+  updated_at: string | null
+  items?: ItemResource[]
+}
+
+export interface ItemResource {
+  id: string
+  internal_name: string
+  backward_compatibility: string | null
+  type: string
+  owner_reference: string | null
+  mwnf_reference: string | null
+  partner?: PartnerResource
+  project?: ProjectResource
+  country?: CountryResource
+  artists?: ArtistResource[]
+  workshops?: WorkshopResource[]
+  tags?: TagResource[]
+  translations?: ItemTranslationResource[]
   created_at: string | null
   updated_at: string | null
 }
 
-export interface ContextualizationResource {
+export interface ItemTranslationResource {
   id: string
+  item_id: string
+  language_id: string
   context_id: string
-  item_id: string | null
-  detail_id: string | null
-  extra: unknown[] | null
-  internal_name: string
+  name: string
+  alternate_name: string | null
+  description: string
+  type: string | null
+  holder: string | null
+  owner: string | null
+  initial_owner: string | null
+  dates: string | null
+  location: string | null
+  dimensions: string | null
+  place_of_production: string | null
+  method_for_datation: string | null
+  method_for_provenance: string | null
+  obtention: string | null
+  bibliography: string | null
+  author_id: string | null
+  text_copy_editor_id: string | null
+  translator_id: string | null
+  translation_copy_editor_id: string | null
+  backward_compatibility: string | null
+  extra: string[] | null
+  created_at: string | null
+  updated_at: string | null
+  item?: ItemResource
+  language?: LanguageResource
+  context?: ContextResource
+  author?: AuthorResource
+  text_copy_editor?: AuthorResource
+  translator?: AuthorResource
+  translation_copy_editor?: AuthorResource
+}
+
+export interface AuthorResource {
+  id: string
+  name: string
+  internal_name: string | null
   backward_compatibility: string | null
   created_at: string | null
   updated_at: string | null
-  context?: ContextResource
-  item?: ItemResource
-  detail?: DetailResource
 }
 
 export interface DetailResource {
@@ -138,6 +211,41 @@ export interface DetailResource {
   internal_name: string
   backward_compatibility: string | null
   item?: ItemResource
+  translations?: DetailTranslationResource[]
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface DetailTranslationResource {
+  id: string
+  detail_id: string
+  language_id: string
+  context_id: string
+  name: string
+  alternate_name: string | null
+  description: string
+  author_id: string | null
+  text_copy_editor_id: string | null
+  translator_id: string | null
+  translation_copy_editor_id: string | null
+  backward_compatibility: string | null
+  extra: string[] | null
+  created_at: string | null
+  updated_at: string | null
+  detail?: DetailResource
+  language?: LanguageResource
+  context?: ContextResource
+  author?: AuthorResource
+  text_copy_editor?: AuthorResource
+  translator?: AuthorResource
+  translation_copy_editor?: AuthorResource
+}
+
+export interface ContextResource {
+  id: string
+  internal_name: string
+  backward_compatibility: string | null
+  is_default: boolean
   created_at: string | null
   updated_at: string | null
 }
@@ -153,12 +261,96 @@ export interface ImageUploadResource {
   updated_at: string | null
 }
 
+export interface ContactTranslationResource {
+  id: string
+  contact_id: string
+  language_id: string
+  label: string
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface ContactResource {
+  id: string
+  internal_name: string
+  phone_number: string | null
+  formatted_phone_number: string | null
+  fax_number: string | null
+  formatted_fax_number: string | null
+  email: string | null
+  translations?: ContactTranslationResource[]
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface LocationTranslationResource {
+  id: string
+  location_id: string
+  language_id: string
+  name: string
+  description: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface LocationResource {
+  id: string
+  internal_name: string
+  country_id: string
+  translations?: LocationTranslationResource[]
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface ProvinceTranslationResource {
+  id: string
+  province_id: string
+  language_id: string
+  name: string
+  description: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface ProvinceResource {
+  id: string
+  internal_name: string
+  country_id: string
+  translations?: ProvinceTranslationResource[]
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface TagItemResource {
+  id: string
+  tag_id: string
+  item_id: string
+  tag?: TagResource
+  item?: ItemResource
+  created_at: string | null
+  updated_at: string | null
+}
+
 class ApiClient {
   private client: AxiosInstance
 
   constructor() {
+    // Support both Vite (import.meta.env) and Node (process.env) for baseURL
+    let baseURL: string
+    if (
+      typeof import.meta !== 'undefined' &&
+      import.meta.env &&
+      import.meta.env.VITE_API_BASE_URL
+    ) {
+      baseURL = import.meta.env.VITE_API_BASE_URL
+    } else if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
+      baseURL = process.env.VITE_API_BASE_URL
+    } else {
+      baseURL = 'http://127.0.0.1:8000/api'
+    }
+
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL,
+      baseURL,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -520,132 +712,6 @@ class ApiClient {
     await this.client.delete(`/language/${id}`)
   }
 
-  // Contexts
-  async getContexts(): Promise<ApiResponse<ContextResource[]>> {
-    const response: AxiosResponse<ApiResponse<ContextResource[]>> =
-      await this.client.get('/context')
-    return response.data
-  }
-
-  async getContext(id: string): Promise<ApiResponse<ContextResource>> {
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.get(
-      `/context/${id}`
-    )
-    return response.data
-  }
-
-  async getDefaultContext(): Promise<ApiResponse<ContextResource>> {
-    const response: AxiosResponse<ApiResponse<ContextResource>> =
-      await this.client.get('/context/default')
-    return response.data
-  }
-
-  async createContext(data: Partial<ContextResource>): Promise<ApiResponse<ContextResource>> {
-    // Remove forbidden fields for creation
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { is_default, ...createData } = data
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.post(
-      '/context',
-      createData
-    )
-    return response.data
-  }
-
-  async updateContext(
-    id: string,
-    data: Partial<ContextResource>
-  ): Promise<ApiResponse<ContextResource>> {
-    // Remove forbidden fields for update
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { is_default, ...updateData } = data
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.put(
-      `/context/${id}`,
-      updateData
-    )
-    return response.data
-  }
-
-  async setDefaultContext(id: string, isDefault: boolean): Promise<ApiResponse<ContextResource>> {
-    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.patch(
-      `/context/${id}/default`,
-      {
-        is_default: isDefault,
-      }
-    )
-    return response.data
-  }
-
-  async deleteContext(id: string): Promise<void> {
-    await this.client.delete(`/context/${id}`)
-  }
-
-  // Contextualizations
-  async getContextualizations(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
-      await this.client.get('/contextualization')
-    return response.data
-  }
-
-  async getContextualizationsForItems(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
-      await this.client.get('/contextualization/for-items')
-    return response.data
-  }
-
-  async getContextualizationsForDetails(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
-      await this.client.get('/contextualization/for-details')
-    return response.data
-  }
-
-  async getDefaultContextualizations(): Promise<PaginatedResponse<ContextualizationResource>> {
-    const response: AxiosResponse<PaginatedResponse<ContextualizationResource>> =
-      await this.client.get('/contextualization/default-context')
-    return response.data
-  }
-
-  async getContextualization(id: string): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.get(
-      `/contextualization/${id}`
-    )
-    return response.data
-  }
-
-  async createContextualization(
-    data: Partial<ContextualizationResource>
-  ): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.post(
-      '/contextualization',
-      data
-    )
-    return response.data
-  }
-
-  async createContextualizationWithDefaultContext(
-    data: Partial<ContextualizationResource>
-  ): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.post(
-      '/contextualization/with-default-context',
-      data
-    )
-    return response.data
-  }
-
-  async updateContextualization(
-    id: string,
-    data: Partial<ContextualizationResource>
-  ): Promise<ApiResponse<ContextualizationResource>> {
-    const response: AxiosResponse<ApiResponse<ContextualizationResource>> = await this.client.put(
-      `/contextualization/${id}`,
-      data
-    )
-    return response.data
-  }
-
-  async deleteContextualization(id: string): Promise<void> {
-    await this.client.delete(`/contextualization/${id}`)
-  }
-
   // Details
   async getDetails(): Promise<ApiResponse<DetailResource[]>> {
     const response: AxiosResponse<ApiResponse<DetailResource[]>> = await this.client.get('/detail')
@@ -747,6 +813,571 @@ class ApiClient {
 
   async deleteImageUpload(id: string): Promise<void> {
     await this.client.delete(`/image-upload/${id}`)
+  }
+
+  // Address
+  async getAddresses(): Promise<ApiResponse<AddressResource[]>> {
+    const response: AxiosResponse<ApiResponse<AddressResource[]>> =
+      await this.client.get('/address')
+    return response.data
+  }
+
+  async getAddress(id: string): Promise<ApiResponse<AddressResource>> {
+    const response: AxiosResponse<ApiResponse<AddressResource>> = await this.client.get(
+      `/address/${id}`
+    )
+    return response.data
+  }
+
+  async createAddress(data: Partial<AddressResource>): Promise<ApiResponse<AddressResource>> {
+    const response: AxiosResponse<ApiResponse<AddressResource>> = await this.client.post(
+      '/address',
+      data
+    )
+    return response.data
+  }
+
+  async updateAddress(
+    id: string,
+    data: Partial<AddressResource>
+  ): Promise<ApiResponse<AddressResource>> {
+    const response: AxiosResponse<ApiResponse<AddressResource>> = await this.client.put(
+      `/address/${id}`,
+      data
+    )
+    return response.data
+  }
+
+  async deleteAddress(id: string): Promise<void> {
+    await this.client.delete(`/address/${id}`)
+  }
+
+  // --- AddressTranslation ---
+  async getAddressTranslations(): Promise<ApiResponse<AddressTranslationResource[]>> {
+    const response: AxiosResponse<ApiResponse<AddressTranslationResource[]>> =
+      await this.client.get('/address-translation')
+    return response.data
+  }
+  async getAddressTranslation(id: string): Promise<ApiResponse<AddressTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<AddressTranslationResource>> = await this.client.get(
+      `/address-translation/${id}`
+    )
+    return response.data
+  }
+  async createAddressTranslation(
+    data: Partial<AddressTranslationResource>
+  ): Promise<ApiResponse<AddressTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<AddressTranslationResource>> = await this.client.post(
+      '/address-translation',
+      data
+    )
+    return response.data
+  }
+  async updateAddressTranslation(
+    id: string,
+    data: Partial<AddressTranslationResource>
+  ): Promise<ApiResponse<AddressTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<AddressTranslationResource>> = await this.client.put(
+      `/address-translation/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteAddressTranslation(id: string): Promise<void> {
+    await this.client.delete(`/address-translation/${id}`)
+  }
+
+  // --- Contact ---
+  async getContacts(): Promise<ApiResponse<ContactResource[]>> {
+    const response: AxiosResponse<ApiResponse<ContactResource[]>> =
+      await this.client.get('/contact')
+    return response.data
+  }
+  async getContact(id: string): Promise<ApiResponse<ContactResource>> {
+    const response: AxiosResponse<ApiResponse<ContactResource>> = await this.client.get(
+      `/contact/${id}`
+    )
+    return response.data
+  }
+  async createContact(data: Partial<ContactResource>): Promise<ApiResponse<ContactResource>> {
+    const response: AxiosResponse<ApiResponse<ContactResource>> = await this.client.post(
+      '/contact',
+      data
+    )
+    return response.data
+  }
+  async updateContact(
+    id: string,
+    data: Partial<ContactResource>
+  ): Promise<ApiResponse<ContactResource>> {
+    const response: AxiosResponse<ApiResponse<ContactResource>> = await this.client.put(
+      `/contact/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteContact(id: string): Promise<void> {
+    await this.client.delete(`/contact/${id}`)
+  }
+
+  // --- ContactTranslation ---
+  async getContactTranslations(): Promise<ApiResponse<ContactTranslationResource[]>> {
+    const response: AxiosResponse<ApiResponse<ContactTranslationResource[]>> =
+      await this.client.get('/contact-translation')
+    return response.data
+  }
+  async getContactTranslation(id: string): Promise<ApiResponse<ContactTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ContactTranslationResource>> = await this.client.get(
+      `/contact-translation/${id}`
+    )
+    return response.data
+  }
+  async createContactTranslation(
+    data: Partial<ContactTranslationResource>
+  ): Promise<ApiResponse<ContactTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ContactTranslationResource>> = await this.client.post(
+      '/contact-translation',
+      data
+    )
+    return response.data
+  }
+  async updateContactTranslation(
+    id: string,
+    data: Partial<ContactTranslationResource>
+  ): Promise<ApiResponse<ContactTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ContactTranslationResource>> = await this.client.put(
+      `/contact-translation/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteContactTranslation(id: string): Promise<void> {
+    await this.client.delete(`/contact-translation/${id}`)
+  }
+
+  // --- DetailTranslation ---
+  async getDetailTranslations(): Promise<ApiResponse<DetailTranslationResource[]>> {
+    const response: AxiosResponse<ApiResponse<DetailTranslationResource[]>> =
+      await this.client.get('/detail-translation')
+    return response.data
+  }
+  async getDetailTranslation(id: string): Promise<ApiResponse<DetailTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<DetailTranslationResource>> = await this.client.get(
+      `/detail-translation/${id}`
+    )
+    return response.data
+  }
+  async createDetailTranslation(
+    data: Partial<DetailTranslationResource>
+  ): Promise<ApiResponse<DetailTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<DetailTranslationResource>> = await this.client.post(
+      '/detail-translation',
+      data
+    )
+    return response.data
+  }
+  async updateDetailTranslation(
+    id: string,
+    data: Partial<DetailTranslationResource>
+  ): Promise<ApiResponse<DetailTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<DetailTranslationResource>> = await this.client.put(
+      `/detail-translation/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteDetailTranslation(id: string): Promise<void> {
+    await this.client.delete(`/detail-translation/${id}`)
+  }
+
+  // --- ItemTranslation ---
+  async getItemTranslations(): Promise<ApiResponse<ItemTranslationResource[]>> {
+    const response: AxiosResponse<ApiResponse<ItemTranslationResource[]>> =
+      await this.client.get('/item-translation')
+    return response.data
+  }
+  async getItemTranslation(id: string): Promise<ApiResponse<ItemTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ItemTranslationResource>> = await this.client.get(
+      `/item-translation/${id}`
+    )
+    return response.data
+  }
+  async createItemTranslation(
+    data: Partial<ItemTranslationResource>
+  ): Promise<ApiResponse<ItemTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ItemTranslationResource>> = await this.client.post(
+      '/item-translation',
+      data
+    )
+    return response.data
+  }
+  async updateItemTranslation(
+    id: string,
+    data: Partial<ItemTranslationResource>
+  ): Promise<ApiResponse<ItemTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ItemTranslationResource>> = await this.client.put(
+      `/item-translation/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteItemTranslation(id: string): Promise<void> {
+    await this.client.delete(`/item-translation/${id}`)
+  }
+
+  // --- Location ---
+  async getLocations(): Promise<ApiResponse<LocationResource[]>> {
+    const response: AxiosResponse<ApiResponse<LocationResource[]>> =
+      await this.client.get('/location')
+    return response.data
+  }
+  async getLocation(id: string): Promise<ApiResponse<LocationResource>> {
+    const response: AxiosResponse<ApiResponse<LocationResource>> = await this.client.get(
+      `/location/${id}`
+    )
+    return response.data
+  }
+
+  async createLocation(data: Partial<LocationResource>): Promise<ApiResponse<LocationResource>> {
+    const response: AxiosResponse<ApiResponse<LocationResource>> = await this.client.post(
+      '/location',
+      data
+    )
+    return response.data
+  }
+
+  async updateLocation(
+    id: string,
+    data: Partial<LocationResource>
+  ): Promise<ApiResponse<LocationResource>> {
+    const response: AxiosResponse<ApiResponse<LocationResource>> = await this.client.put(
+      `/location/${id}`,
+      data
+    )
+    return response.data
+  }
+
+  async deleteLocation(id: string): Promise<void> {
+    await this.client.delete(`/location/${id}`)
+  }
+
+  // --- LocationTranslation ---
+  async getLocationTranslations(): Promise<ApiResponse<LocationTranslationResource[]>> {
+    const response: AxiosResponse<ApiResponse<LocationTranslationResource[]>> =
+      await this.client.get('/location-translation')
+    return response.data
+  }
+  async getLocationTranslation(id: string): Promise<ApiResponse<LocationTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<LocationTranslationResource>> = await this.client.get(
+      `/location-translation/${id}`
+    )
+    return response.data
+  }
+  async createLocationTranslation(
+    data: Partial<LocationTranslationResource>
+  ): Promise<ApiResponse<LocationTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<LocationTranslationResource>> =
+      await this.client.post('/location-translation', data)
+    return response.data
+  }
+  async updateLocationTranslation(
+    id: string,
+    data: Partial<LocationTranslationResource>
+  ): Promise<ApiResponse<LocationTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<LocationTranslationResource>> = await this.client.put(
+      `/location-translation/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteLocationTranslation(id: string): Promise<void> {
+    await this.client.delete(`/location-translation/${id}`)
+  }
+
+  // --- Province ---
+  async getProvinces(): Promise<ApiResponse<ProvinceResource[]>> {
+    const response: AxiosResponse<ApiResponse<ProvinceResource[]>> =
+      await this.client.get('/province')
+    return response.data
+  }
+  async getProvince(id: string): Promise<ApiResponse<ProvinceResource>> {
+    const response: AxiosResponse<ApiResponse<ProvinceResource>> = await this.client.get(
+      `/province/${id}`
+    )
+    return response.data
+  }
+  async createProvince(data: Partial<ProvinceResource>): Promise<ApiResponse<ProvinceResource>> {
+    const response: AxiosResponse<ApiResponse<ProvinceResource>> = await this.client.post(
+      '/province',
+      data
+    )
+    return response.data
+  }
+  async updateProvince(
+    id: string,
+    data: Partial<ProvinceResource>
+  ): Promise<ApiResponse<ProvinceResource>> {
+    const response: AxiosResponse<ApiResponse<ProvinceResource>> = await this.client.put(
+      `/province/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteProvince(id: string): Promise<void> {
+    await this.client.delete(`/province/${id}`)
+  }
+
+  // --- ProvinceTranslation ---
+  async getProvinceTranslations(): Promise<ApiResponse<ProvinceTranslationResource[]>> {
+    const response: AxiosResponse<ApiResponse<ProvinceTranslationResource[]>> =
+      await this.client.get('/province-translation')
+    return response.data
+  }
+  async getProvinceTranslation(id: string): Promise<ApiResponse<ProvinceTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ProvinceTranslationResource>> = await this.client.get(
+      `/province-translation/${id}`
+    )
+    return response.data
+  }
+  async createProvinceTranslation(
+    data: Partial<ProvinceTranslationResource>
+  ): Promise<ApiResponse<ProvinceTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ProvinceTranslationResource>> =
+      await this.client.post('/province-translation', data)
+    return response.data
+  }
+  async updateProvinceTranslation(
+    id: string,
+    data: Partial<ProvinceTranslationResource>
+  ): Promise<ApiResponse<ProvinceTranslationResource>> {
+    const response: AxiosResponse<ApiResponse<ProvinceTranslationResource>> = await this.client.put(
+      `/province-translation/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteProvinceTranslation(id: string): Promise<void> {
+    await this.client.delete(`/province-translation/${id}`)
+  }
+
+  // --- TagItem ---
+  async getTagItems(): Promise<ApiResponse<TagItemResource[]>> {
+    const response: AxiosResponse<ApiResponse<TagItemResource[]>> =
+      await this.client.get('/tag-item')
+    return response.data
+  }
+  async getTagItem(id: string): Promise<ApiResponse<TagItemResource>> {
+    const response: AxiosResponse<ApiResponse<TagItemResource>> = await this.client.get(
+      `/tag-item/${id}`
+    )
+    return response.data
+  }
+  async createTagItem(data: Partial<TagItemResource>): Promise<ApiResponse<TagItemResource>> {
+    const response: AxiosResponse<ApiResponse<TagItemResource>> = await this.client.post(
+      '/tag-item',
+      data
+    )
+    return response.data
+  }
+  async updateTagItem(
+    id: string,
+    data: Partial<TagItemResource>
+  ): Promise<ApiResponse<TagItemResource>> {
+    const response: AxiosResponse<ApiResponse<TagItemResource>> = await this.client.put(
+      `/tag-item/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteTagItem(id: string): Promise<void> {
+    await this.client.delete(`/tag-item/${id}`)
+  }
+
+  // --- Workshop ---
+  async getWorkshops(): Promise<ApiResponse<WorkshopResource[]>> {
+    const response: AxiosResponse<ApiResponse<WorkshopResource[]>> =
+      await this.client.get('/workshop')
+    return response.data
+  }
+  async getWorkshop(id: string): Promise<ApiResponse<WorkshopResource>> {
+    const response: AxiosResponse<ApiResponse<WorkshopResource>> = await this.client.get(
+      `/workshop/${id}`
+    )
+    return response.data
+  }
+  async createWorkshop(data: Partial<WorkshopResource>): Promise<ApiResponse<WorkshopResource>> {
+    const response: AxiosResponse<ApiResponse<WorkshopResource>> = await this.client.post(
+      '/workshop',
+      data
+    )
+    return response.data
+  }
+
+  async updateWorkshop(
+    id: string,
+    data: Partial<WorkshopResource>
+  ): Promise<ApiResponse<WorkshopResource>> {
+    const response: AxiosResponse<ApiResponse<WorkshopResource>> = await this.client.put(
+      `/workshop/${id}`,
+      data
+    )
+    return response.data
+  }
+
+  async deleteWorkshop(id: string): Promise<void> {
+    await this.client.delete(`/workshop/${id}`)
+  }
+
+  // --- Artist ---
+  async getArtists(): Promise<ApiResponse<ArtistResource[]>> {
+    const response: AxiosResponse<ApiResponse<ArtistResource[]>> = await this.client.get('/artist')
+    return response.data
+  }
+  async getArtist(id: string): Promise<ApiResponse<ArtistResource>> {
+    const response: AxiosResponse<ApiResponse<ArtistResource>> = await this.client.get(
+      `/artist/${id}`
+    )
+    return response.data
+  }
+  async createArtist(data: Partial<ArtistResource>): Promise<ApiResponse<ArtistResource>> {
+    const response: AxiosResponse<ApiResponse<ArtistResource>> = await this.client.post(
+      '/artist',
+      data
+    )
+    return response.data
+  }
+  async updateArtist(
+    id: string,
+    data: Partial<ArtistResource>
+  ): Promise<ApiResponse<ArtistResource>> {
+    const response: AxiosResponse<ApiResponse<ArtistResource>> = await this.client.put(
+      `/artist/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteArtist(id: string): Promise<void> {
+    await this.client.delete(`/artist/${id}`)
+  }
+
+  // --- Context ---
+  async getContexts(): Promise<ApiResponse<ContextResource[]>> {
+    const response: AxiosResponse<ApiResponse<ContextResource[]>> =
+      await this.client.get('/context')
+    return response.data
+  }
+  async getContext(id: string): Promise<ApiResponse<ContextResource>> {
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.get(
+      `/context/${id}`
+    )
+    return response.data
+  }
+  async getDefaultContext(): Promise<ApiResponse<ContextResource>> {
+    const response: AxiosResponse<ApiResponse<ContextResource>> =
+      await this.client.get('/context/default')
+    return response.data
+  }
+  async createContext(data: Partial<ContextResource>): Promise<ApiResponse<ContextResource>> {
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.post(
+      '/context',
+      data
+    )
+    return response.data
+  }
+  async updateContext(
+    id: string,
+    data: Partial<ContextResource>
+  ): Promise<ApiResponse<ContextResource>> {
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.put(
+      `/context/${id}`,
+      data
+    )
+    return response.data
+  }
+  async setDefaultContext(id: string, isDefault: boolean): Promise<ApiResponse<ContextResource>> {
+    const response: AxiosResponse<ApiResponse<ContextResource>> = await this.client.patch(
+      `/context/${id}/default`,
+      {
+        is_default: isDefault,
+      }
+    )
+    return response.data
+  }
+  async deleteContext(id: string): Promise<void> {
+    await this.client.delete(`/context/${id}`)
+  }
+
+  // --- Author ---
+  async getAuthors(): Promise<ApiResponse<AuthorResource[]>> {
+    const response: AxiosResponse<ApiResponse<AuthorResource[]>> = await this.client.get('/author')
+    return response.data
+  }
+  async getAuthor(id: string): Promise<ApiResponse<AuthorResource>> {
+    const response: AxiosResponse<ApiResponse<AuthorResource>> = await this.client.get(
+      `/author/${id}`
+    )
+    return response.data
+  }
+  async createAuthor(data: Partial<AuthorResource>): Promise<ApiResponse<AuthorResource>> {
+    const response: AxiosResponse<ApiResponse<AuthorResource>> = await this.client.post(
+      '/author',
+      data
+    )
+    return response.data
+  }
+  async updateAuthor(
+    id: string,
+    data: Partial<AuthorResource>
+  ): Promise<ApiResponse<AuthorResource>> {
+    const response: AxiosResponse<ApiResponse<AuthorResource>> = await this.client.put(
+      `/author/${id}`,
+      data
+    )
+    return response.data
+  }
+  async deleteAuthor(id: string): Promise<void> {
+    await this.client.delete(`/author/${id}`)
+  }
+
+  // --- Markdown ---
+  async markdownToHtml(markdown: string): Promise<{ html: string }> {
+    const response: AxiosResponse<{ html: string }> = await this.client.post('/markdown/to-html', {
+      markdown,
+    })
+    return response.data
+  }
+  async markdownFromHtml(html: string): Promise<{ markdown: string }> {
+    const response: AxiosResponse<{ markdown: string }> = await this.client.post(
+      '/markdown/from-html',
+      { html }
+    )
+    return response.data
+  }
+  async markdownValidate(markdown: string): Promise<{ valid: boolean }> {
+    const response: AxiosResponse<{ valid: boolean }> = await this.client.post(
+      '/markdown/validate',
+      { markdown }
+    )
+    return response.data
+  }
+  async markdownPreview(markdown: string): Promise<{ html: string }> {
+    const response: AxiosResponse<{ html: string }> = await this.client.post('/markdown/preview', {
+      markdown,
+    })
+    return response.data
+  }
+  async markdownIsMarkdown(content: string): Promise<{ isMarkdown: boolean }> {
+    const response: AxiosResponse<{ isMarkdown: boolean }> = await this.client.post(
+      '/markdown/is-markdown',
+      { content }
+    )
+    return response.data
+  }
+  async markdownAllowedElements(): Promise<{ elements: string[] }> {
+    const response: AxiosResponse<{ elements: string[] }> = await this.client.get(
+      '/markdown/allowed-elements'
+    )
+    return response.data
   }
 }
 
