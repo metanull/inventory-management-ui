@@ -24,7 +24,7 @@
     "format:check": "prettier --check src/",
     "type-check": "vue-tsc --noEmit",
     "prepare": "husky",
-    "inventory-app:fetch": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app.json'; echo ''\"",
+    "inventory-app:fetch": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app.json'\"",
     "inventory-app:diff": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app-temp.json'; Compare-Object (Get-Content './src/api/inventory-app.json') (Get-Content './src/api/inventory-app-temp.json') | Format-Table; Remove-Item './src/api/inventory-app-temp.json'\""
   },
   "dependencies": {

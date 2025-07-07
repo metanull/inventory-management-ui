@@ -16,9 +16,9 @@ export default defineConfig(({ mode }) => {
       // Integration test specific configuration
       name: 'integration',
       include: ['**/integration.test.ts'],
-      environment: 'jsdom',
+      environment: 'node', // changed from 'jsdom' to 'node'
       globals: true,
-      setupFiles: [],
+      setupFiles: [resolve(__dirname, './src/api/__tests__/integration.setup.ts')], // add setup file
       // Run tests sequentially to avoid conflicts with shared test data
       pool: 'forks',
       poolOptions: {

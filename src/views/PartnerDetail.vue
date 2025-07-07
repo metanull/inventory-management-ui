@@ -131,7 +131,7 @@
 
   const form = reactive({
     internal_name: '',
-    type: '' as 'museum' | 'institution' | 'individual' | '',
+    type: '' as string,
   })
 
   const fetchPartner = async () => {
