@@ -12,6 +12,9 @@ import Countries from '@/views/Countries.vue'
 import CountryDetail from '@/views/CountryDetail.vue'
 import Contexts from '@/views/Contexts.vue'
 import ContextDetail from '@/views/ContextDetail.vue'
+import Projects from '@/views/Projects.vue'
+import ProjectDetail from '@/views/ProjectDetail.vue'
+import ProjectEditForm from '@/views/ProjectEditForm.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -57,6 +60,30 @@ const router = createRouter({
       path: '/contexts/:id',
       name: 'context-detail',
       component: ContextDetail,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/projects',
+      name: 'projects',
+      component: Projects,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/projects/new',
+      name: 'project-new',
+      component: ProjectEditForm,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/projects/:id',
+      name: 'project-detail',
+      component: ProjectDetail,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/projects/:id/edit',
+      name: 'project-edit',
+      component: ProjectEditForm,
       meta: { requiresAuth: true },
     },
     {
