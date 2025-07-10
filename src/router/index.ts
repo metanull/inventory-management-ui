@@ -6,6 +6,7 @@ import {
 } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Login from '@/views/Login.vue'
+import Languages from '@/views/Languages.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -15,6 +16,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: Home,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/languages',
+      name: 'languages',
+      component: Languages,
       meta: { requiresAuth: true },
     },
     {
