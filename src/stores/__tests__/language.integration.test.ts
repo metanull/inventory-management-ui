@@ -24,12 +24,7 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // First authenticate
-      await authStore.login({
-        email: 'user@example.com',
-        password: 'password',
-        device_name: 'testing',
-        wipe_tokens: true,
-      })
+      await authStore.login('user@example.com', 'password')
 
       expect(authStore.isAuthenticated).toBe(true)
       expect(authStore.token).toBeTruthy()
@@ -54,12 +49,7 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // Authenticate first
-      await authStore.login({
-        email: 'user@example.com',
-        password: 'password',
-        device_name: 'testing',
-        wipe_tokens: true,
-      })
+      await authStore.login('user@example.com', 'password')
 
       const testLanguageId = 'tst'
       const testLanguageData = {
@@ -118,12 +108,7 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // Authenticate first
-      await authStore.login({
-        email: 'user@example.com',
-        password: 'password',
-        device_name: 'testing',
-        wipe_tokens: true,
-      })
+      await authStore.login('user@example.com', 'password')
 
       // Try to fetch a non-existent language
       try {
@@ -154,14 +139,12 @@ describe('Language Store Integration Tests', () => {
   it('should handle authentication failures', async () => {
     const authStore = useAuthStore()
 
+    // Clear any existing authentication state
+    await authStore.logout()
+
     try {
       // Try to authenticate with invalid credentials
-      await authStore.login({
-        email: 'invalid@example.com',
-        password: 'wrongpassword',
-        device_name: 'testing',
-        wipe_tokens: true,
-      })
+      await authStore.login('invalid@example.com', 'wrongpassword')
       expect.fail('Should have thrown an error for invalid credentials')
     } catch (error) {
       expect(error).toBeDefined()

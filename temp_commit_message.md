@@ -1,43 +1,28 @@
-# feat: refactor to use @metanull/inventory-app-api-client directly with comprehensive language management
+# fix: resolve integration test authentication and type safety issues
 
-## Summary
-Complete refactoring to use the official `@metanull/inventory-app-api-client` TypeScript package directly without wrappers, implementing full CRUD operations for language management with comprehensive testing coverage.
+## Authentication Fixes
+- **Fixed auth store login method calls**: Changed integration tests from passing object `{ email, password, ... }` to separate parameters `(email, password)` to match the actual method signature
+- **Improved test isolation**: Added `await authStore.logout()` before authentication failure tests to ensure clean state
+- **Resolved HTTP 422 errors**: Fixed malformed authentication requests that were causing "The email field must be a valid email address" errors
 
-## Key Features
-- **Direct API Client Integration**: Replaced custom client with official `@metanull/inventory-app-api-client` package
-- **Language Management Suite**: Complete CRUD operations (Create, Read, Update, Delete) for languages
-- **Form Validation**: Comprehensive input validation for language forms with real-time error feedback
-- **Error Handling**: Centralized error reporting using global `ErrorDisplay` component
-- **Testing Coverage**: Full unit and integration test suites with proper mocking
+## Type Safety Improvements
+- **Eliminated `any` types**: Replaced localStorage mock `any` casting with proper `LocalStorageInterface` definition
+- **Added proper TypeScript types**: Created explicit interface for localStorage mock with all required methods
+- **Fixed array type inference**: Explicitly typed `keys: string[]` to resolve TypeScript compilation issues
 
-## Components Implemented
-- `Languages.vue`: List view with table display, actions, and modals
-- `LanguageDetail.vue`: Detailed view for individual languages
-- `LanguageForm.vue`: Dedicated form component for create/edit with validation
-- Updated `Home.vue`: Added navigation link to language management
+## Integration Test Enhancements
+- **Cleaner error reporting**: Enhanced error handling to show concise HTTP status messages instead of full error dumps
+- **Expected error filtering**: Added console filtering for expected API errors (404, 422) during integration testing
+- **Removed prohibited fields**: Eliminated `is_default` field from language creation tests as API doesn't accept it
 
-## Technical Improvements
-- **TypeScript Compliance**: Disabled `exactOptionalPropertyTypes` for client compatibility
-- **Code Quality**: All code passes ESLint and Prettier formatting
-- **Type Safety**: Full TypeScript coverage with proper type definitions
-- **Test Coverage**: 37 unit tests + 4 integration tests, all passing
+## Code Quality
+- **ESLint compliance**: All linting errors resolved, no warnings about `any` types
+- **TypeScript validation**: All type checking passes without errors
+- **Test reliability**: All 37 unit tests + 4 integration tests now pass consistently
 
-## Store Refactoring
-- Direct API client usage in `useLanguageStore`
-- Proper error handling with centralized error management
-- Reactive state management for languages list and operations
-
-## Testing Infrastructure
-- Unit tests with proper mocking of API client and dependencies
-- Integration tests with real API connectivity
-- Mock localStorage for Node.js environment compatibility
-- Error scenario testing and validation testing
-
-## UI/UX Features
-- Responsive design with Tailwind CSS
-- Loading states and error messaging
-- Confirmation dialogs for destructive actions
-- Form validation with field-level error display
-- Empty state handling
-
-All tests pass, code is formatted, linted, and type-checked successfully.
+## Verification
+- ✅ Authentication now works correctly with proper bearer token authorization
+- ✅ Integration tests handle expected API errors gracefully
+- ✅ No type safety issues or `any` type warnings
+- ✅ Clean error output without excessive debugging information
+- ✅ All tests pass reliably
