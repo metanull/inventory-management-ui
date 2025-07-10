@@ -6,6 +6,24 @@ import Languages from '../Languages.vue'
 import { useLanguageStore } from '@/stores/language'
 import type { LanguageResource } from '@metanull/inventory-app-api-client'
 
+// Mock the ErrorHandler
+vi.mock('@/utils/errorHandler', () => ({
+  useErrorHandler: vi.fn(() => ({
+    clearValidationErrors: vi.fn(),
+    getFieldError: vi.fn(() => ''),
+  })),
+  ErrorHandler: {
+    handleError: vi.fn(),
+  },
+}))
+
+// Mock the auth store
+vi.mock('@/stores/auth', () => ({
+  useAuthStore: vi.fn(() => ({
+    token: 'mock-token',
+  })),
+}))
+
 // Mock the API client
 vi.mock('@metanull/inventory-app-api-client', () => ({
   LanguageApi: vi.fn().mockImplementation(() => ({
@@ -103,7 +121,7 @@ describe('Languages View', () => {
     expect(wrapper.text()).toContain('Loading languages')
   })
 
-  it('should show error message', async () => {
+  it('should show error message via store error state', async () => {
     const wrapper = mount(Languages, {
       global: {
         plugins: [pinia, router],
@@ -115,7 +133,9 @@ describe('Languages View', () => {
 
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.text()).toContain('Test error message')
+    // Since we're using the global ErrorDisplay component,
+    // we just verify the error is set in the store
+    expect(store.error).toBe('Test error message')
   })
 
   it('should show add language button', () => {

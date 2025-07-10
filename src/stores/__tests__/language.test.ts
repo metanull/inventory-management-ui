@@ -1,23 +1,63 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useLanguageStore } from '../language'
 import type { LanguageResource } from '@metanull/inventory-app-api-client'
 
-// Mock the API client
-vi.mock('@metanull/inventory-app-api-client', () => ({
-  LanguageApi: vi.fn().mockImplementation(() => ({
-    languageIndex: vi.fn(),
-    languageShow: vi.fn(),
-    languageStore: vi.fn(),
-    languageUpdate: vi.fn(),
-    languageDestroy: vi.fn(),
+// Mock the ErrorHandler
+vi.mock('@/utils/errorHandler', () => ({
+  ErrorHandler: {
+    handleError: vi.fn(),
+  },
+}))
+
+// Mock the auth store
+vi.mock('../auth', () => ({
+  useAuthStore: vi.fn(() => ({
+    token: 'mock-token',
   })),
+}))
+
+// Mock the API client
+const mockLanguageApi = {
+  languageIndex: vi.fn(),
+  languageShow: vi.fn(),
+  languageStore: vi.fn(),
+  languageUpdate: vi.fn(),
+  languageDestroy: vi.fn(),
+}
+
+vi.mock('@metanull/inventory-app-api-client', () => ({
+  LanguageApi: vi.fn().mockImplementation(() => mockLanguageApi),
   Configuration: vi.fn(),
 }))
+
+const mockLanguages: LanguageResource[] = [
+  {
+    id: 'eng',
+    internal_name: 'English',
+    backward_compatibility: 'en',
+    is_default: true,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'fra',
+    internal_name: 'French',
+    backward_compatibility: 'fr',
+    is_default: false,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+]
 
 describe('Language Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   it('should initialize with empty state', () => {
@@ -36,26 +76,7 @@ describe('Language Store', () => {
     expect(store.defaultLanguage).toBeUndefined()
 
     // Add languages with one being default
-    const languages: LanguageResource[] = [
-      {
-        id: 'eng',
-        internal_name: 'English',
-        backward_compatibility: 'en',
-        is_default: true,
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-      },
-      {
-        id: 'fra',
-        internal_name: 'French',
-        backward_compatibility: 'fr',
-        is_default: false,
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-      },
-    ]
-
-    store.languages = languages
+    store.languages = mockLanguages
     expect(store.defaultLanguage?.id).toBe('eng')
   })
 
@@ -71,15 +92,7 @@ describe('Language Store', () => {
   it('should clear current language', () => {
     const store = useLanguageStore()
 
-    store.currentLanguage = {
-      id: 'eng',
-      internal_name: 'English',
-      backward_compatibility: 'en',
-      is_default: true,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    }
-
+    store.currentLanguage = mockLanguages[0]
     store.clearCurrentLanguage()
 
     expect(store.currentLanguage).toBeNull()
@@ -88,16 +101,106 @@ describe('Language Store', () => {
   it('should handle fetchLanguages success', async () => {
     const store = useLanguageStore()
 
-    // Simply test that the method exists and loading state is managed
-    expect(typeof store.fetchLanguages).toBe('function')
+    mockLanguageApi.languageIndex.mockResolvedValue({
+      data: { data: mockLanguages },
+    })
+
+    await store.fetchLanguages()
+
+    expect(mockLanguageApi.languageIndex).toHaveBeenCalled()
+    expect(store.languages).toEqual(mockLanguages)
     expect(store.loading).toBe(false)
+    expect(store.error).toBeNull()
   })
 
   it('should handle fetchLanguages error', async () => {
     const store = useLanguageStore()
+    const error = new Error('Network error')
 
-    // Simply test that the method exists and error handling works
-    expect(typeof store.fetchLanguages).toBe('function')
-    expect(store.error).toBeNull()
+    mockLanguageApi.languageIndex.mockRejectedValue(error)
+
+    await expect(store.fetchLanguages()).rejects.toThrow('Network error')
+
+    expect(store.loading).toBe(false)
+    expect(store.error).toBe('Failed to fetch languages')
+  })
+
+  it('should handle fetchLanguage success', async () => {
+    const store = useLanguageStore()
+    const language = mockLanguages[0]
+
+    mockLanguageApi.languageShow.mockResolvedValue({
+      data: { data: language },
+    })
+
+    const result = await store.fetchLanguage('eng')
+
+    expect(mockLanguageApi.languageShow).toHaveBeenCalledWith('eng')
+    expect(store.currentLanguage).toEqual(language)
+    expect(result).toEqual(language)
+  })
+
+  it('should handle createLanguage success', async () => {
+    const store = useLanguageStore()
+    const newLanguage = {
+      id: 'spa',
+      internal_name: 'Spanish',
+      backward_compatibility: 'es',
+      is_default: false,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    }
+    const createData = {
+      id: 'spa',
+      internal_name: 'Spanish',
+      backward_compatibility: 'es',
+      is_default: false,
+    }
+
+    mockLanguageApi.languageStore.mockResolvedValue({
+      data: { data: newLanguage },
+    })
+
+    const result = await store.createLanguage(createData)
+
+    expect(mockLanguageApi.languageStore).toHaveBeenCalledWith(createData)
+    expect(store.languages).toHaveLength(1)
+    expect(store.languages[0]).toEqual(newLanguage)
+    expect(result).toEqual(newLanguage)
+  })
+
+  it('should handle updateLanguage success', async () => {
+    const store = useLanguageStore()
+    store.languages = [...mockLanguages]
+
+    const updatedLanguage = { ...mockLanguages[0], internal_name: 'Updated English' }
+    const updateData = {
+      internal_name: 'Updated English',
+      backward_compatibility: 'en',
+      is_default: true,
+    }
+
+    mockLanguageApi.languageUpdate.mockResolvedValue({
+      data: { data: updatedLanguage },
+    })
+
+    const result = await store.updateLanguage('eng', updateData)
+
+    expect(mockLanguageApi.languageUpdate).toHaveBeenCalledWith('eng', updateData)
+    expect(store.languages[0]).toEqual(updatedLanguage)
+    expect(result).toEqual(updatedLanguage)
+  })
+
+  it('should handle deleteLanguage success', async () => {
+    const store = useLanguageStore()
+    store.languages = [...mockLanguages]
+
+    mockLanguageApi.languageDestroy.mockResolvedValue({})
+
+    await store.deleteLanguage('fra')
+
+    expect(mockLanguageApi.languageDestroy).toHaveBeenCalledWith('fra')
+    expect(store.languages).toHaveLength(1)
+    expect(store.languages[0].id).toBe('eng')
   })
 })

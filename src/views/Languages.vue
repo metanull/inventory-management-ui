@@ -5,31 +5,6 @@
       <p class="text-gray-600">Manage languages available in the inventory system</p>
     </div>
 
-    <!-- Error Display -->
-    <div v-if="languageStore.error" class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center">
-          <svg class="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <p class="text-sm text-red-800">{{ languageStore.error }}</p>
-        </div>
-        <button class="text-red-400 hover:text-red-600" @click="languageStore.clearError">
-          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fill-rule="evenodd"
-              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-
     <!-- Action Buttons -->
     <div class="mb-6 flex justify-between items-center">
       <button
@@ -185,6 +160,25 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center gap-2">
                   <button
+                    class="text-indigo-600 hover:text-indigo-900"
+                    @click="router.push(`/languages/${language.id}`)"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      ></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
                     class="text-blue-600 hover:text-blue-900"
                     @click="openEditModal(language)"
                   >
@@ -219,116 +213,13 @@
       </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            {{ isEditing ? 'Edit Language' : 'Create New Language' }}
-          </h3>
-
-          <form class="space-y-4" @submit.prevent="submitForm">
-            <div>
-              <label for="id" class="block text-sm font-medium text-gray-700"
-                >ID (ISO 639-1 code)</label
-              >
-              <input
-                id="id"
-                v-model="formData.id"
-                :disabled="isEditing"
-                type="text"
-                maxlength="3"
-                minlength="3"
-                required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                placeholder="e.g., eng, fra, spa"
-              />
-            </div>
-
-            <div>
-              <label for="internal_name" class="block text-sm font-medium text-gray-700"
-                >Internal Name</label
-              >
-              <input
-                id="internal_name"
-                v-model="formData.internal_name"
-                type="text"
-                required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., English, French, Spanish"
-              />
-            </div>
-
-            <div>
-              <label for="backward_compatibility" class="block text-sm font-medium text-gray-700"
-                >Backward Compatibility (2 chars, optional)</label
-              >
-              <input
-                id="backward_compatibility"
-                v-model="formData.backward_compatibility"
-                type="text"
-                maxlength="2"
-                minlength="2"
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., en, fr, es"
-              />
-            </div>
-
-            <div class="flex items-center">
-              <input
-                id="is_default"
-                v-model="formData.is_default"
-                type="checkbox"
-                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label for="is_default" class="ml-2 block text-sm text-gray-900">
-                Set as default language
-              </label>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="languageStore.loading"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <svg
-                  v-if="languageStore.loading"
-                  class="animate-spin h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                {{ isEditing ? 'Update' : 'Create' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <!-- Language Form Modal -->
+    <LanguageForm
+      :is-visible="showModal"
+      :language="currentEditLanguage"
+      @close="closeModal"
+      @success="handleFormSuccess"
+    />
 
     <!-- Delete Confirmation Modal -->
     <div
@@ -387,50 +278,39 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, reactive } from 'vue'
+  import { ref, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
   import { useLanguageStore } from '@/stores/language'
+  import LanguageForm from '@/components/LanguageForm.vue'
   import type { LanguageResource } from '@metanull/inventory-app-api-client'
 
+  const router = useRouter()
   const languageStore = useLanguageStore()
 
   const showModal = ref(false)
   const showDeleteModal = ref(false)
-  const isEditing = ref(false)
+  const currentEditLanguage = ref<LanguageResource | null>(null)
   const languageToDelete = ref<LanguageResource | null>(null)
 
-  const formData = reactive({
-    id: '',
-    internal_name: '',
-    backward_compatibility: '',
-    is_default: false,
-  })
-
-  const resetForm = () => {
-    formData.id = ''
-    formData.internal_name = ''
-    formData.backward_compatibility = ''
-    formData.is_default = false
-  }
-
   const openCreateModal = () => {
-    resetForm()
-    isEditing.value = false
+    currentEditLanguage.value = null
     showModal.value = true
   }
 
   const openEditModal = (language: LanguageResource) => {
-    formData.id = language.id
-    formData.internal_name = language.internal_name
-    formData.backward_compatibility = language.backward_compatibility || ''
-    formData.is_default = language.is_default
-    isEditing.value = true
+    currentEditLanguage.value = language
     showModal.value = true
   }
 
   const closeModal = () => {
     showModal.value = false
-    resetForm()
+    currentEditLanguage.value = null
     languageStore.clearError()
+  }
+
+  const handleFormSuccess = () => {
+    // Refresh the languages list after successful create/update
+    refreshLanguages()
   }
 
   const openDeleteModal = (language: LanguageResource) => {
@@ -442,30 +322,6 @@
     showDeleteModal.value = false
     languageToDelete.value = null
     languageStore.clearError()
-  }
-
-  const submitForm = async () => {
-    try {
-      const requestData = {
-        internal_name: formData.internal_name,
-        backward_compatibility: formData.backward_compatibility || null,
-        is_default: formData.is_default,
-      }
-
-      if (isEditing.value) {
-        await languageStore.updateLanguage(formData.id, requestData)
-      } else {
-        await languageStore.createLanguage({
-          id: formData.id,
-          ...requestData,
-        })
-      }
-
-      closeModal()
-    } catch (error) {
-      // Error is handled by the store
-      console.error('Form submission error:', error)
-    }
   }
 
   const confirmDelete = async () => {

@@ -8,6 +8,7 @@ import {
   type LanguageUpdateRequest,
 } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from './auth'
+import { ErrorHandler } from '@/utils/errorHandler'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -64,10 +65,8 @@ export const useLanguageStore = defineStore('language', () => {
       const response = await apiClient.languageIndex()
       languages.value = response.data.data || []
     } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to fetch languages'
-      error.value = errorMessage
+      ErrorHandler.handleError(err, 'Failed to fetch languages')
+      error.value = 'Failed to fetch languages'
       throw err
     } finally {
       loading.value = false
@@ -85,10 +84,8 @@ export const useLanguageStore = defineStore('language', () => {
       currentLanguage.value = response.data.data
       return response.data.data
     } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to fetch language'
-      error.value = errorMessage
+      ErrorHandler.handleError(err, `Failed to fetch language ${id}`)
+      error.value = 'Failed to fetch language'
       throw err
     } finally {
       loading.value = false
@@ -110,10 +107,8 @@ export const useLanguageStore = defineStore('language', () => {
 
       return newLanguage
     } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to create language'
-      error.value = errorMessage
+      ErrorHandler.handleError(err, 'Failed to create language')
+      error.value = 'Failed to create language'
       throw err
     } finally {
       loading.value = false
@@ -143,10 +138,8 @@ export const useLanguageStore = defineStore('language', () => {
 
       return updatedLanguage
     } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to update language'
-      error.value = errorMessage
+      ErrorHandler.handleError(err, `Failed to update language ${id}`)
+      error.value = 'Failed to update language'
       throw err
     } finally {
       loading.value = false
@@ -170,10 +163,8 @@ export const useLanguageStore = defineStore('language', () => {
         currentLanguage.value = null
       }
     } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to delete language'
-      error.value = errorMessage
+      ErrorHandler.handleError(err, `Failed to delete language ${id}`)
+      error.value = 'Failed to delete language'
       throw err
     } finally {
       loading.value = false
