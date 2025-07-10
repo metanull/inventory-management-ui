@@ -10,6 +10,8 @@ import Languages from '@/views/Languages.vue'
 import LanguageDetail from '@/views/LanguageDetail.vue'
 import Countries from '@/views/Countries.vue'
 import CountryDetail from '@/views/CountryDetail.vue'
+import Contexts from '@/views/Contexts.vue'
+import ContextDetail from '@/views/ContextDetail.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -43,6 +45,18 @@ const router = createRouter({
       path: '/countries/:id',
       name: 'country-detail',
       component: CountryDetail,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/contexts',
+      name: 'contexts',
+      component: Contexts,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/contexts/:id',
+      name: 'context-detail',
+      component: ContextDetail,
       meta: { requiresAuth: true },
     },
     {
