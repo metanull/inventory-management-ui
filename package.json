@@ -30,6 +30,7 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
+    "@metanull/inventory-app-api-client": "^1.1.8-dev.709.2313",
     "@vueuse/core": "^13.4.0",
     "axios": "^1.7.9",
     "pinia": "^3.0.3",

@@ -1,6 +1,7 @@
-**CRITICAL: Awlays use PowerShell syntax when using `run_in_terminal`**
+**CRITICAL: Never modify `copilot-instructions.md`.**
 **CRITICAL: This is a Vue.js 3 application with Typescript**
 **CRITICAL: This is a windows system, the console is powershell. Command must be executed using powershell compatible functions and syntax OR through a WSL console**
+**CRITICAL: Awlays use PowerShell syntax when using `run_in_terminal`**
 **CRITICAL: docs/ contains a distinct Ruby application based on Jekyll. Always use wsl when interacting with Ruby.**
 **CRITICAL: When creating a pull-request (pr), if on the main branch, always first create a dedicated branch for the pr, then create the pr from that branch**
 **CRITICAL: when creating a branch for a pull request, always use the `feature/` or `fix/` prefix, depending on the type of change**
@@ -20,9 +21,10 @@
   - The API is a RESTful JSON API
   - The API provider is `https://metanull.github.com/inventory-app`
     - The provider maintains OpenAPI specifications at `https://metanull.github.com/inventory-app/api.json`
-    - The provider maintains a typescript-axios client library as a npm package `@metanull/inventory-app-api`
+    - The provider maintains a typescript-axios client library as a npm package `@metanull/inventory-app-api-client`
+      - Always use the latest version of `@metanull/inventory-app-api-client` unless a specific version is required for compatibility.
     - We have a npm script 'inventory-app:fetch' that can download the OpenAPI in our projects' `src/api/inventory-app.json` file.
-  - **CRITICAL: Use the typescript-axios client library `@metanull/inventory-app-api` for API integration**
+  - **CRITICAL: Use the typescript-axios client library `@metanull/inventory-app-api-client` for API integration**
     - The Package is private, so you need to authenticate with a GitHub token to install the package
     - The Package is hosted on github packages, so you need to configure your `.npmrc` file to authenticate with the GitHub registry
     - The API is under development, always check for newer versions of the library
