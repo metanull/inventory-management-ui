@@ -8,6 +8,8 @@ import Home from '@/views/Home.vue'
 import Login from '@/views/Login.vue'
 import Languages from '@/views/Languages.vue'
 import LanguageDetail from '@/views/LanguageDetail.vue'
+import Countries from '@/views/Countries.vue'
+import CountryDetail from '@/views/CountryDetail.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -29,6 +31,18 @@ const router = createRouter({
       path: '/languages/:id',
       name: 'language-detail',
       component: LanguageDetail,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/countries',
+      name: 'countries',
+      component: Countries,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/countries/:id',
+      name: 'country-detail',
+      component: CountryDetail,
       meta: { requiresAuth: true },
     },
     {
