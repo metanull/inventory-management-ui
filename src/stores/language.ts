@@ -202,6 +202,35 @@ export const useLanguageStore = defineStore('language', () => {
     }
   }
 
+  // Get the default language
+  const getDefaultLanguage = async () => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const apiClient = createApiClient()
+      const response = await apiClient.languageGetDefault()
+      const defaultLang = response.data.data
+
+      // Update the default language in the languages array if it exists
+      const index = languages.value.findIndex(lang => lang.id === defaultLang.id)
+      if (index !== -1) {
+        languages.value[index] = defaultLang
+      } else {
+        // If the default language isn't in our languages array, add it
+        languages.value.push(defaultLang)
+      }
+
+      return defaultLang
+    } catch (err: unknown) {
+      ErrorHandler.handleError(err, 'Failed to get default language')
+      error.value = 'Failed to get default language'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   const clearError = () => {
     error.value = null
   }
@@ -222,6 +251,7 @@ export const useLanguageStore = defineStore('language', () => {
     updateLanguage,
     deleteLanguage,
     setDefaultLanguage,
+    getDefaultLanguage,
     clearError,
     clearCurrentLanguage,
   }

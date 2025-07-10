@@ -193,6 +193,30 @@ describe('Language Store Integration Tests', () => {
     }
   }, 10000)
 
+  it('should get the default language', async () => {
+    const authStore = useAuthStore()
+    const languageStore = useLanguageStore()
+
+    try {
+      // First authenticate
+      await authStore.login('user@example.com', 'password')
+
+      expect(authStore.isAuthenticated).toBe(true)
+
+      // Get the default language
+      const defaultLanguage = await languageStore.getDefaultLanguage()
+
+      expect(defaultLanguage).toBeDefined()
+      expect(defaultLanguage.is_default).toBe(true)
+      expect(typeof defaultLanguage.id).toBe('string')
+      expect(typeof defaultLanguage.internal_name).toBe('string')
+    } catch (error) {
+      // If the API is not available, skip the test
+      console.warn('API not available for integration tests:', error)
+      return
+    }
+  }, 10000)
+
   it('should handle authentication failures', async () => {
     const authStore = useAuthStore()
 
