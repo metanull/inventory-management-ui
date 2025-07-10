@@ -56,7 +56,6 @@ describe('Language Store Integration Tests', () => {
         id: testLanguageId,
         internal_name: 'Test Language',
         backward_compatibility: 'ts',
-        is_default: false,
       }
 
       // Clean up any existing test language
@@ -80,7 +79,6 @@ describe('Language Store Integration Tests', () => {
       const updatedLanguage = await languageStore.updateLanguage(testLanguageId, {
         internal_name: 'Updated Test Language',
         backward_compatibility: 'ts',
-        is_default: false,
       })
       expect(updatedLanguage.internal_name).toBe('Updated Test Language')
 
@@ -124,7 +122,6 @@ describe('Language Store Integration Tests', () => {
           id: '', // Invalid: empty ID
           internal_name: '',
           backward_compatibility: null,
-          is_default: false,
         })
         expect.fail('Should have thrown an error for invalid language data')
       } catch (error) {
