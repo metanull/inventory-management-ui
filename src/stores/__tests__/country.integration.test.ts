@@ -2,8 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useCountryStore } from '@/stores/country'
 import { useAuthStore } from '@/stores/auth'
-
-const API_BASE_URL = 'http://127.0.0.1:8000/api'
+import { getTestCredentials, getApiBaseUrl } from '../../api/__tests__/integration.setup'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -15,7 +14,7 @@ describe('Country Store Integration Tests', () => {
     setActivePinia(createPinia())
 
     // Set up environment for integration tests
-    process.env.VITE_API_BASE_URL = API_BASE_URL
+    process.env.VITE_API_BASE_URL = getApiBaseUrl()
   })
 
   it('should authenticate and fetch countries from real API', async () => {
@@ -24,7 +23,8 @@ describe('Country Store Integration Tests', () => {
 
     try {
       // First authenticate
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
       expect(authStore.isAuthenticated).toBe(true)
       expect(authStore.token).toBeTruthy()
@@ -49,7 +49,8 @@ describe('Country Store Integration Tests', () => {
 
     try {
       // First authenticate
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
       expect(authStore.isAuthenticated).toBe(true)
 
@@ -106,36 +107,53 @@ describe('Country Store Integration Tests', () => {
 
     try {
       // First authenticate
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
-      // Try to create a country with duplicate ID (assuming 'USA' exists)
-      const duplicateCountryData = {
-        id: 'USA',
-        internal_name: 'Duplicate Country',
-        backward_compatibility: 'US',
+      // Create a test country first, then try to create a duplicate
+      const testCountryData = {
+        id: 'DUP',
+        internal_name: 'Duplicate Test Country',
+        backward_compatibility: 'DT',
       }
 
-      let errorOccurred = false
+      // Clean up any existing test country
       try {
-        await countryStore.createCountry(duplicateCountryData)
+        await countryStore.deleteCountry('DUP')
       } catch {
-        errorOccurred = true
+        // Ignore if it doesn't exist
       }
 
-      expect(errorOccurred).toBe(true)
+      // Create the country first
+      await countryStore.createCountry(testCountryData)
+
+      // Now try to create a duplicate - this should fail
+      let duplicateErrorOccurred = false
+      try {
+        await countryStore.createCountry(testCountryData)
+      } catch {
+        duplicateErrorOccurred = true
+        console.log('Expected duplicate error occurred')
+      }
+
+      expect(duplicateErrorOccurred).toBe(true)
+
+      // Clean up the test country
+      await countryStore.deleteCountry('DUP')
 
       // Try to update a non-existent country
-      errorOccurred = false
+      let updateErrorOccurred = false
       try {
         await countryStore.updateCountry('XXX', {
           internal_name: 'Non-existent Country',
           backward_compatibility: null,
         })
       } catch {
-        errorOccurred = true
+        updateErrorOccurred = true
+        console.log('Expected update error occurred')
       }
 
-      expect(errorOccurred).toBe(true)
+      expect(updateErrorOccurred).toBe(true)
 
       // Try to delete a non-existent country
       const deleteResult = await countryStore.deleteCountry('XXX')
@@ -145,18 +163,26 @@ describe('Country Store Integration Tests', () => {
       console.warn('API not available for integration tests:', error)
       return
     }
-  }, 10000) // 10 second timeout
+  }, 15000) // 15 second timeout for multiple operations
 
   it('should handle authentication errors', async () => {
+    const authStore = useAuthStore()
     const countryStore = useCountryStore()
 
     try {
+      // Clear any existing authentication state
+      await authStore.logout()
+
+      // Verify we're not authenticated
+      expect(authStore.isAuthenticated).toBe(false)
+
       // Try to fetch countries without authentication
       let errorOccurred = false
       try {
         await countryStore.fetchCountries()
       } catch {
         errorOccurred = true
+        console.log('Expected authentication error occurred')
       }
 
       expect(errorOccurred).toBe(true)

@@ -2,8 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useLanguageStore } from '@/stores/language'
 import { useAuthStore } from '@/stores/auth'
-
-const API_BASE_URL = 'http://127.0.0.1:8000/api'
+import { getTestCredentials, getApiBaseUrl } from '../../api/__tests__/integration.setup'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -15,7 +14,7 @@ describe('Language Store Integration Tests', () => {
     setActivePinia(createPinia())
 
     // Set up environment for integration tests
-    process.env.VITE_API_BASE_URL = API_BASE_URL
+    process.env.VITE_API_BASE_URL = getApiBaseUrl()
   })
 
   it('should authenticate and fetch languages from real API', async () => {
@@ -24,7 +23,8 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // First authenticate
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
       expect(authStore.isAuthenticated).toBe(true)
       expect(authStore.token).toBeTruthy()
@@ -49,7 +49,8 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // Authenticate first
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
       const testLanguageId = 'tst'
       const testLanguageData = {
@@ -106,7 +107,8 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // Authenticate first
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
       const testLanguageId = 'tsd' // Test Set Default
       const testLanguageData = {
@@ -166,7 +168,8 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // Authenticate first
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
       // Try to fetch a non-existent language
       try {
@@ -199,7 +202,8 @@ describe('Language Store Integration Tests', () => {
 
     try {
       // First authenticate
-      await authStore.login('user@example.com', 'password')
+      const { email, password } = getTestCredentials()
+      await authStore.login(email, password)
 
       expect(authStore.isAuthenticated).toBe(true)
 
