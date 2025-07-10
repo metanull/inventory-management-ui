@@ -161,6 +161,7 @@
                 <div class="flex items-center gap-2">
                   <button
                     class="text-indigo-600 hover:text-indigo-900"
+                    title="View details"
                     @click="router.push(`/languages/${language.id}`)"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,6 +181,7 @@
                   </button>
                   <button
                     class="text-blue-600 hover:text-blue-900"
+                    title="Edit language"
                     @click="openEditModal(language)"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,8 +194,25 @@
                     </svg>
                   </button>
                   <button
+                    v-if="!language.is_default"
+                    :disabled="languageStore.loading"
+                    class="text-green-600 hover:text-green-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    title="Set as default"
+                    @click="setAsDefault(language)"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
                     :disabled="language.is_default"
                     class="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    title="Delete language"
                     @click="openDeleteModal(language)"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,6 +352,15 @@
     } catch (error) {
       // Error is handled by the store
       console.error('Delete error:', error)
+    }
+  }
+
+  const setAsDefault = async (language: LanguageResource) => {
+    try {
+      await languageStore.setDefaultLanguage(language.id, true)
+    } catch (error) {
+      // Error is handled by the store
+      console.error('Set default error:', error)
     }
   }
 

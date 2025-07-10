@@ -100,6 +100,66 @@ describe('Language Store Integration Tests', () => {
     }
   }, 15000) // 15 second timeout for multiple operations
 
+  it('should set a language as default', async () => {
+    const authStore = useAuthStore()
+    const languageStore = useLanguageStore()
+
+    try {
+      // Authenticate first
+      await authStore.login('user@example.com', 'password')
+
+      const testLanguageId = 'tsd' // Test Set Default
+      const testLanguageData = {
+        id: testLanguageId,
+        internal_name: 'Test Set Default Language',
+        backward_compatibility: 'td',
+        // Note: is_default is prohibited in create operations
+      }
+
+      // Clean up any existing test language
+      try {
+        await languageStore.deleteLanguage(testLanguageId)
+      } catch {
+        // Ignore if language doesn't exist
+      }
+
+      // Create a test language (will be created as non-default by API)
+      const createdLanguage = await languageStore.createLanguage(testLanguageData)
+      expect(createdLanguage.is_default).toBe(false)
+
+      // Set the language as default
+      const updatedLanguage = await languageStore.setDefaultLanguage(testLanguageId, true)
+      expect(updatedLanguage.is_default).toBe(true)
+
+      // Fetch all languages to verify only one is default
+      await languageStore.fetchLanguages()
+      const defaultLanguages = languageStore.languages.filter(lang => lang.is_default)
+      expect(defaultLanguages).toHaveLength(1)
+      expect(defaultLanguages[0].id).toBe(testLanguageId)
+
+      // Unset the language as default by setting another language as default
+      // First, get the original default language (should be 'eng' if it exists)
+      const englishLanguage = languageStore.languages.find(lang => lang.id === 'eng')
+      if (englishLanguage) {
+        await languageStore.setDefaultLanguage('eng', true)
+
+        // Verify the change
+        await languageStore.fetchLanguages()
+        const testLang = languageStore.languages.find(lang => lang.id === testLanguageId)
+        const engLang = languageStore.languages.find(lang => lang.id === 'eng')
+
+        expect(testLang?.is_default).toBe(false)
+        expect(engLang?.is_default).toBe(true)
+      }
+
+      // Clean up: Delete the test language
+      await languageStore.deleteLanguage(testLanguageId)
+    } catch (error) {
+      console.warn('API not available for integration tests:', error)
+      return
+    }
+  }, 20000) // 20 second timeout for multiple operations
+
   it('should handle API errors appropriately', async () => {
     const authStore = useAuthStore()
     const languageStore = useLanguageStore()

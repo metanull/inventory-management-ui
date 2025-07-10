@@ -24,6 +24,7 @@ const mockLanguageApi = {
   languageStore: vi.fn(),
   languageUpdate: vi.fn(),
   languageDestroy: vi.fn(),
+  languageSetDefault: vi.fn(),
 }
 
 vi.mock('@metanull/inventory-app-api-client', () => ({
@@ -202,5 +203,42 @@ describe('Language Store', () => {
     expect(mockLanguageApi.languageDestroy).toHaveBeenCalledWith('fra')
     expect(store.languages).toHaveLength(1)
     expect(store.languages[0].id).toBe('eng')
+  })
+
+  it('should handle setDefaultLanguage success', async () => {
+    const store = useLanguageStore()
+    store.languages = [...mockLanguages]
+    store.currentLanguage = mockLanguages[1] // 'fra' language
+
+    const updatedLanguage = { ...mockLanguages[1], is_default: true }
+
+    mockLanguageApi.languageSetDefault.mockResolvedValue({
+      data: { data: updatedLanguage },
+    })
+
+    const result = await store.setDefaultLanguage('fra', true)
+
+    expect(mockLanguageApi.languageSetDefault).toHaveBeenCalledWith('fra', { is_default: true })
+
+    // Check that the target language is now default
+    expect(store.languages.find(lang => lang.id === 'fra')?.is_default).toBe(true)
+
+    // Check that other languages are no longer default
+    expect(store.languages.find(lang => lang.id === 'eng')?.is_default).toBe(false)
+
+    // Check that current language is updated if it matches
+    expect(store.currentLanguage?.is_default).toBe(true)
+
+    expect(result).toEqual(updatedLanguage)
+  })
+
+  it('should handle setDefaultLanguage error', async () => {
+    const store = useLanguageStore()
+    const errorMessage = 'Failed to set default'
+
+    mockLanguageApi.languageSetDefault.mockRejectedValue(new Error(errorMessage))
+
+    await expect(store.setDefaultLanguage('fra', true)).rejects.toThrow(errorMessage)
+    expect(store.error).toBe('Failed to set default language')
   })
 })
