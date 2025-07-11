@@ -191,7 +191,7 @@
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
                       <ViewButton @click="router.push(`/projects/${project.id}`)" />
-                      <EditButton @click="router.push(`/projects/${project.id}/edit`)" />
+                      <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
                       <DeleteButton @click="confirmDelete(project)" />
                     </div>
                   </td>

@@ -524,8 +524,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
+  import { ref, computed, onMounted, watch } from 'vue'
+  import { useRoute, useRouter, type LocationQueryValue } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
@@ -627,6 +627,25 @@
     language_id: '',
   })
 
+  // Check for edit mode from query parameter
+  const checkEditMode = () => {
+    if (route.query.edit === 'true' && project.value) {
+      startEdit()
+    }
+  }
+
+  // Watch for route query changes
+  watch(
+    () => route.query.edit,
+    (newEditValue: LocationQueryValue | LocationQueryValue[]) => {
+      if (newEditValue === 'true' && project.value) {
+        startEdit()
+      } else if (newEditValue !== 'true' && isEditing.value) {
+        cancelEdit()
+      }
+    }
+  )
+
   // Fetch project on mount
   onMounted(async () => {
     const projectId = route.params.id as string
@@ -638,6 +657,9 @@
           contextStore.fetchContexts(),
           languageStore.fetchLanguages(),
         ])
+
+        // Check if we should start in edit mode after data is loaded
+        checkEditMode()
       } catch (error) {
         console.error('Failed to fetch project or dropdown data:', error)
       }
@@ -724,6 +746,13 @@
       context_id: '',
       language_id: '',
     }
+
+    // Remove edit query parameter if present
+    if (route.query.edit) {
+      const query = { ...route.query }
+      delete query.edit
+      router.replace({ query })
+    }
   }
 
   const saveEdit = async () => {
@@ -739,6 +768,13 @@
         language_id: editForm.value.language_id || null,
       })
       isEditing.value = false
+
+      // Remove edit query parameter if present
+      if (route.query.edit) {
+        const query = { ...route.query }
+        delete query.edit
+        router.replace({ query })
+      }
     } catch (error) {
       console.error('Failed to save project:', error)
     } finally {
