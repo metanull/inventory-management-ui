@@ -1,5 +1,5 @@
 <template>
-  <DetailLayout
+  <DetailView
     :store-loading="projectStore.loading"
     :error="error"
     :resource="project"
@@ -187,7 +187,7 @@
         </div>
       </dl>
     </template>
-  </DetailLayout>
+  </DetailView>
 </template>
 
 <script setup lang="ts">
@@ -198,7 +198,7 @@
   import { useLanguageStore } from '@/stores/language'
   import type { ContextResource, LanguageResource } from '@metanull/inventory-app-api-client'
   import DateDisplay from '@/components/DateDisplay.vue'
-  import DetailLayout from '@/components/DetailLayout.vue'
+  import DetailView from '@/components/layout/DetailView.vue'
   import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import RocketIcon from '@/components/icons/RocketIcon.vue'
