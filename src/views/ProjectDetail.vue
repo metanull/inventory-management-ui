@@ -161,12 +161,6 @@
         <div class="border-t border-gray-200">
           <dl>
             <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">ID</dt>
-              <dd class="mt-1 sm:mt-0 sm:col-span-2">
-                <UuidDisplay :uuid="project.id" format="long" />
-              </dd>
-            </div>
-            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {{ project.internal_name }}
@@ -193,43 +187,61 @@
                 <span v-else class="text-gray-500">Not scheduled</span>
               </dd>
             </div>
-            <div
-              v-if="project.context"
-              class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
+            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Default Context</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ project.context.internal_name }}
+                <span v-if="project.context">{{ project.context.internal_name }}</span>
+                <span v-else class="text-gray-500">No default context set</span>
               </dd>
             </div>
-            <div
-              v-if="project.language"
-              class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Default Language</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ project.language.internal_name }}
+                <span v-if="project.language">{{ project.language.internal_name }}</span>
+                <span v-else class="text-gray-500">No default language set</span>
               </dd>
             </div>
-            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Created</dt>
+          </dl>
+        </div>
+      </div>
+
+      <!-- System Properties -->
+      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+          <h3 class="text-base leading-6 font-medium text-gray-700">System Properties</h3>
+          <p class="mt-1 max-w-2xl text-xs text-gray-400">
+            Internal system data managed by the API.
+          </p>
+        </div>
+        <div class="border-t border-gray-200">
+          <dl>
+            <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide">ID</dt>
+              <dd class="mt-1 sm:mt-0 sm:col-span-2">
+                <UuidDisplay :uuid="project.id" format="long" class="text-xs text-gray-600" />
+              </dd>
+            </div>
+            <div class="bg-white px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created</dt>
               <dd class="mt-1 sm:mt-0 sm:col-span-2">
                 <DateDisplay
                   :date="project.created_at"
                   format="medium"
                   show-time
-                  class="text-sm text-gray-900"
+                  class="text-xs text-gray-600"
                 />
               </dd>
             </div>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
+            <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                Last Updated
+              </dt>
               <dd class="mt-1 sm:mt-0 sm:col-span-2">
                 <DateDisplay
                   :date="project.updated_at"
                   format="medium"
                   show-time
-                  class="text-sm text-gray-900"
+                  class="text-xs text-gray-600"
                 />
               </dd>
             </div>
