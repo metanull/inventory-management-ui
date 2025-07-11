@@ -4,7 +4,12 @@
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
         <h1 class="text-2xl font-semibold text-gray-900">Languages</h1>
-        <p class="mt-2 text-sm text-gray-700">Manage languages available in the inventory system</p>
+        <p class="mt-2 text-sm text-gray-700">
+          Manage languages import TableViewButton from '@/components/actions/TableViewButton.vue'
+          import TableEditButton from '@/components/actions/TableEditButton.vue' import
+          TableDeleteButton from '@/components/actions/TableDeleteButton.vue'ailable in the
+          inventory system
+        </p>
       </div>
       <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
         <button
@@ -155,14 +160,14 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
-                      <ViewButton @click="router.push(`/languages/${language.id}`)" />
-                      <EditButton @click="openEditModal(language)" />
+                      <TableViewButton @click="router.push(`/languages/${language.id}`)" />
+                      <TableEditButton @click="openEditModal(language)" />
                       <SetDefaultButton
                         v-if="!language.is_default"
                         :disabled="languageStore.loading"
                         @click="setAsDefault(language)"
                       />
-                      <DeleteButton
+                      <TableDeleteButton
                         :disabled="language.is_default"
                         @click="openDeleteModal(language)"
                       />
@@ -246,9 +251,9 @@
   import { useLanguageStore } from '@/stores/language'
   import LanguageForm from '@/components/LanguageForm.vue'
   import type { LanguageResource } from '@metanull/inventory-app-api-client'
-  import ViewButton from '@/components/actions/ViewButton.vue'
-  import EditButton from '@/components/actions/EditButton.vue'
-  import DeleteButton from '@/components/actions/DeleteButton.vue'
+  import TableViewButton from '@/components/actions/TableViewButton.vue'
+  import TableEditButton from '@/components/actions/TableEditButton.vue'
+  import TableDeleteButton from '@/components/actions/TableDeleteButton.vue'
   import SetDefaultButton from '@/components/actions/SetDefaultButton.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
   import ResourceNameDisplay from '@/components/ResourceNameDisplay.vue'

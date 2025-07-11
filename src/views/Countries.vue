@@ -4,7 +4,11 @@
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
         <h1 class="text-2xl font-semibold text-gray-900">Countries</h1>
-        <p class="mt-2 text-sm text-gray-700">Manage countries available in the inventory system</p>
+        <p
+          class="mt-2 tex import TableViewButton from '@/components/actions/TableViewButton.vue' import TableEditButton from '@/components/actions/TableEditButton.vue' import TableDeleteButton from '@/components/actions/TableDeleteButton.vue'm text-gray-700"
+        >
+          Manage countries available in the inventory system
+        </p>
       </div>
       <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
         <button
@@ -109,12 +113,12 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
-                      <ViewButton
+                      <TableViewButton
                         data-testid="view-details-button"
                         @click="viewCountryDetail(country.id)"
                       />
-                      <EditButton @click="openEditModal(country)" />
-                      <DeleteButton @click="openDeleteModal(country)" />
+                      <TableEditButton @click="openEditModal(country)" />
+                      <TableDeleteButton @click="openDeleteModal(country)" />
                     </div>
                   </td>
                 </tr>
@@ -210,9 +214,9 @@
   import { useCountryStore } from '@/stores/country'
   import CountryForm from '@/components/CountryForm.vue'
   import ErrorDisplay from '@/components/ErrorDisplay.vue'
-  import ViewButton from '@/components/actions/ViewButton.vue'
-  import EditButton from '@/components/actions/EditButton.vue'
-  import DeleteButton from '@/components/actions/DeleteButton.vue'
+  import TableViewButton from '@/components/actions/TableViewButton.vue'
+  import TableEditButton from '@/components/actions/TableEditButton.vue'
+  import TableDeleteButton from '@/components/actions/TableDeleteButton.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
   import ResourceNameDisplay from '@/components/ResourceNameDisplay.vue'
 

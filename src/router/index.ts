@@ -14,7 +14,6 @@ import Contexts from '@/views/Contexts.vue'
 import ContextDetail from '@/views/ContextDetail.vue'
 import Projects from '@/views/Projects.vue'
 import ProjectDetail from '@/views/ProjectDetail.vue'
-import ProjectEditForm from '@/views/ProjectEditForm.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -71,19 +70,13 @@ const router = createRouter({
     {
       path: '/projects/new',
       name: 'project-new',
-      component: ProjectEditForm,
+      component: ProjectDetail,
       meta: { requiresAuth: true },
     },
     {
       path: '/projects/:id',
       name: 'project-detail',
       component: ProjectDetail,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/projects/:id/edit',
-      name: 'project-edit',
-      component: ProjectEditForm,
       meta: { requiresAuth: true },
     },
     {

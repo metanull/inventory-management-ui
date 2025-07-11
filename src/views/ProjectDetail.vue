@@ -2,11 +2,11 @@
   <DetailView
     :store-loading="projectStore.loading"
     :error="error"
-    :resource="project"
+    :resource="isNewProject ? null : project"
     :is-editing="isEditing"
     :save-loading="saveLoading"
     :action-loading="toggleLoading"
-    :status-cards="statusCardsConfig"
+    :status-cards="isNewProject ? [] : statusCardsConfig"
     information-title="Project Information"
     information-description="Detailed information about this project."
     :show-delete-modal="showDeleteModal"
@@ -317,12 +317,29 @@
     }
   )
 
+  // Check if this is a new project creation
+  const isNewProject = computed(() => route.params.id === 'new')
+
   // Fetch project on mount
   onMounted(async () => {
     const projectId = route.params.id as string
-    if (projectId) {
-      initialLoading.value = true
-      try {
+
+    initialLoading.value = true
+    try {
+      if (isNewProject.value) {
+        // For new projects, only fetch dropdown options and start in edit mode
+        await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])
+
+        // Initialize edit form with defaults
+        editForm.value = {
+          internal_name: '',
+          backward_compatibility: '',
+          launch_date: '',
+          context_id: defaultContext.value?.id || '',
+          language_id: defaultLanguage.value?.id || '',
+        }
+        isEditing.value = true
+      } else if (projectId) {
         // Fetch project data and dropdown options in parallel
         await Promise.all([
           projectStore.fetchProject(projectId),
@@ -332,11 +349,11 @@
 
         // Check if we should start in edit mode after data is loaded
         checkEditMode()
-      } catch (error) {
-        console.error('Failed to fetch project or dropdown data:', error)
-      } finally {
-        initialLoading.value = false
       }
+    } catch (error) {
+      console.error('Failed to fetch project or dropdown data:', error)
+    } finally {
+      initialLoading.value = false
     }
   })
 
@@ -412,6 +429,12 @@
   }
 
   const cancelEdit = () => {
+    if (isNewProject.value) {
+      // For new projects, navigate back to projects list
+      router.push('/projects')
+      return
+    }
+
     isEditing.value = false
     editForm.value = {
       internal_name: '',
@@ -430,24 +453,32 @@
   }
 
   const saveEdit = async () => {
-    if (!project.value) return
-
     saveLoading.value = true
     try {
-      await projectStore.updateProject(project.value.id, {
+      const projectData = {
         internal_name: editForm.value.internal_name,
         backward_compatibility: editForm.value.backward_compatibility || null,
         launch_date: editForm.value.launch_date || null,
         context_id: editForm.value.context_id || null,
         language_id: editForm.value.language_id || null,
-      })
-      isEditing.value = false
+      }
 
-      // Remove edit query parameter if present
-      if (route.query.edit) {
-        const query = { ...route.query }
-        delete query.edit
-        router.replace({ query })
+      if (isNewProject.value) {
+        // Create new project
+        const newProject = await projectStore.createProject(projectData)
+        // Navigate to the new project's detail page
+        router.replace(`/projects/${newProject.id}`)
+      } else if (project.value) {
+        // Update existing project
+        await projectStore.updateProject(project.value.id, projectData)
+        isEditing.value = false
+
+        // Remove edit query parameter if present
+        if (route.query.edit) {
+          const query = { ...route.query }
+          delete query.edit
+          router.replace({ query })
+        }
       }
     } catch (error) {
       console.error('Failed to save project:', error)
@@ -459,7 +490,7 @@
   // Fetch project function for retry
   const fetchProject = async () => {
     const projectId = route.params.id as string
-    if (projectId) {
+    if (projectId && !isNewProject.value) {
       try {
         await projectStore.fetchProject(projectId)
       } catch (error) {
