@@ -161,6 +161,12 @@
         <div class="border-t border-gray-200">
           <dl>
             <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">ID</dt>
+              <dd class="mt-1 sm:mt-0 sm:col-span-2">
+                <UuidDisplay :uuid="project.id" format="long" />
+              </dd>
+            </div>
+            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {{ project.internal_name }}
@@ -337,6 +343,7 @@
   import { useProjectStore } from '@/stores/project'
   import ErrorDisplay from '@/components/ErrorDisplay.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
+  import UuidDisplay from '@/components/UuidDisplay.vue'
 
   const route = useRoute()
   const router = useRouter()

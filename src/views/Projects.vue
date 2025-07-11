@@ -152,16 +152,10 @@
               <tbody class="divide-y divide-gray-200 bg-white">
                 <tr v-for="project in filteredProjects" :key="project.id" class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <div>
-                        <div class="text-sm font-medium text-gray-900">
-                          {{ project.internal_name }}
-                        </div>
-                        <div v-if="project.backward_compatibility" class="text-sm text-gray-500">
-                          Legacy ID: {{ project.backward_compatibility }}
-                        </div>
-                      </div>
-                    </div>
+                    <ResourceNameDisplay
+                      :internal-name="project.internal_name"
+                      :backward-compatibility="project.backward_compatibility"
+                    />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <DateDisplay v-if="project.launch_date" :date="project.launch_date" />
@@ -318,6 +312,7 @@
   import EditButton from '@/components/actions/EditButton.vue'
   import DeleteButton from '@/components/actions/DeleteButton.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
+  import ResourceNameDisplay from '@/components/ResourceNameDisplay.vue'
 
   const router = useRouter()
 

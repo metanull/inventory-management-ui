@@ -54,6 +54,7 @@ export const useLanguageStore = defineStore('language', () => {
   }
 
   const defaultLanguage = computed(() => languages.value.find(lang => lang.is_default))
+  const defaultLanguages = computed(() => languages.value.filter(lang => lang.is_default))
 
   // Fetch all languages
   const fetchLanguages = async () => {
@@ -245,6 +246,7 @@ export const useLanguageStore = defineStore('language', () => {
     loading,
     error,
     defaultLanguage,
+    defaultLanguages,
     fetchLanguages,
     fetchLanguage,
     createLanguage,

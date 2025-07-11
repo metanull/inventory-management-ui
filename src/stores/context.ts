@@ -59,6 +59,7 @@ export const useContextStore = defineStore('context', () => {
   }
 
   const defaultContext = computed(() => contexts.value.find(context => context.is_default))
+  const defaultContexts = computed(() => contexts.value.filter(context => context.is_default))
 
   // Fetch all contexts
   const fetchContexts = async () => {
@@ -250,6 +251,7 @@ export const useContextStore = defineStore('context', () => {
     loading,
     error,
     defaultContext,
+    defaultContexts,
     fetchContexts,
     fetchContext,
     createContext,
