@@ -1,411 +1,193 @@
 <template>
-  <div>
-    <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-    </div>
-
-    <!-- Error State -->
-    <ErrorDisplay v-else-if="error" :error="error" @retry="fetchProject" />
-
-    <!-- Project Details -->
-    <div v-else-if="project" class="space-y-6">
-      <!-- Header -->
-      <div class="bg-white shadow" :class="{ 'border-l-4 border-blue-500': isEditing }">
-        <div class="px-4 py-5 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900">
-                {{ project.internal_name }}
-                <span v-if="isEditing" class="text-sm font-normal text-blue-600 ml-2"
-                  >(Editing)</span
-                >
-              </h1>
-              <p v-if="project.backward_compatibility" class="text-sm text-gray-500">
-                Legacy ID: {{ project.backward_compatibility }}
-              </p>
-            </div>
-            <div class="flex space-x-3">
-              <template v-if="!isEditing">
-                <DetailEditButton @click="startEdit" />
-                <DetailDeleteButton @click="confirmDelete" />
-              </template>
-              <template v-else>
-                <DetailSaveButton :loading="saveLoading" @click="saveEdit" />
-                <DetailCancelButton @click="cancelEdit" />
-              </template>
-            </div>
-          </div>
+  <DetailLayout
+    :store-loading="projectStore.loading"
+    :error="error"
+    :resource="project"
+    :is-editing="isEditing"
+    :save-loading="saveLoading"
+    :action-loading="toggleLoading"
+    :status-cards="statusCardsConfig"
+    information-title="Project Information"
+    information-description="Detailed information about this project."
+    :show-delete-modal="showDeleteModal"
+    delete-modal-title="Delete Project"
+    :delete-modal-message="deleteModalMessage"
+    :delete-loading="deleteLoading"
+    :fetch-data="fetchProject"
+    @edit="startEdit"
+    @delete="confirmDelete"
+    @save="saveEdit"
+    @cancel="cancelEdit"
+    @status-toggle="handleStatusToggle"
+    @confirm-delete="deleteProject"
+    @cancel-delete="cancelDelete"
+  >
+    <template #information>
+      <dl>
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <input
+              v-if="isEditing"
+              v-model="editForm.internal_name"
+              type="text"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+            />
+            <span v-else>{{ project?.internal_name }}</span>
+          </dd>
         </div>
-      </div>
-
-      <!-- Status Cards -->
-      <div
-        class="grid grid-cols-1 gap-4 sm:grid-cols-2"
-        :class="{ 'opacity-50 pointer-events-none': isEditing }"
-      >
-        <!-- Enabled Status Card -->
-        <StatusCard
-          title="Status"
-          :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
-          :is-active="project.is_enabled"
-          :disabled="toggleLoading || isEditing"
-          :button-text="project.is_enabled ? 'Disable' : 'Enable'"
-          active-icon-background-class="bg-green-100"
-          inactive-icon-background-class="bg-red-100"
-          active-icon-class="text-green-600"
-          inactive-icon-class="text-red-600"
-          active-button-class="text-red-700 bg-red-100 hover:bg-red-200"
-          inactive-button-class="text-green-700 bg-green-100 hover:bg-green-200"
-          :active-icon-component="CheckCircleIcon"
-          :inactive-icon-component="XCircleIcon"
-          @toggle="toggleEnabled"
-        />
-
-        <!-- Launch Status Card -->
-        <StatusCard
-          title="Launch Status"
-          :status-text="project.is_launched ? 'Launched' : 'Not Launched'"
-          :is-active="project.is_launched"
-          :disabled="toggleLoading || isEditing"
-          :button-text="project.is_launched ? 'Mark as Not Launched' : 'Launch'"
-          active-icon-background-class="bg-blue-100"
-          inactive-icon-background-class="bg-gray-100"
-          active-icon-class="text-blue-600"
-          inactive-icon-class="text-gray-600"
-          active-button-class="text-gray-700 bg-gray-100 hover:bg-gray-200"
-          inactive-button-class="text-blue-700 bg-blue-100 hover:bg-blue-200"
-          :active-icon-component="RocketIcon"
-          :inactive-icon-component="PackageIcon"
-          @toggle="toggleLaunched"
-        />
-      </div>
-
-      <!-- Project Information -->
-      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">Project Information</h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500">
-            Detailed information about this project.
-          </p>
-        </div>
-        <div class="border-t border-gray-200">
-          <dl>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <input
-                  v-if="isEditing"
-                  v-model="editForm.internal_name"
-                  type="text"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  required
-                />
-                <span v-else>{{ project.internal_name }}</span>
-              </dd>
-            </div>
-            <div
-              v-if="project.backward_compatibility || isEditing"
-              class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">Legacy ID</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <input
-                  v-if="isEditing"
-                  v-model="editForm.backward_compatibility"
-                  type="text"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Optional legacy identifier"
-                />
-                <span v-else>{{ project.backward_compatibility }}</span>
-              </dd>
-            </div>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <input
-                  v-if="isEditing"
-                  v-model="editForm.launch_date"
-                  type="date"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-                <template v-else>
-                  <DateDisplay
-                    v-if="project.launch_date"
-                    :date="project.launch_date"
-                    format="medium"
-                    class="text-sm text-gray-900"
-                  />
-                  <span v-else class="text-gray-500">Not scheduled</span>
-                </template>
-              </dd>
-            </div>
-            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Default Context</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <select
-                  v-if="isEditing"
-                  v-model="editForm.context_id"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                  <!-- Priority items first -->
-                  <template v-if="sortedContexts.priorityItems.length > 0">
-                    <option
-                      v-for="context in sortedContexts.priorityItems"
-                      :key="context.id"
-                      :value="context.id"
-                      :class="
-                        getDropdownOptionClasses(
-                          editForm.context_id === context.id,
-                          context.is_default
-                        )
-                      "
-                    >
-                      {{ context.internal_name
-                      }}{{
-                        getDropdownOptionLabel(
-                          editForm.context_id === context.id,
-                          context.is_default
-                        )
-                      }}
-                    </option>
-                  </template>
-
-                  <!-- No default option -->
-                  <option
-                    value=""
-                    :class="getDropdownOptionClasses(editForm.context_id === '', false, true)"
-                  >
-                    {{ DROPDOWN_OPTION_LABELS.noDefaultContext
-                    }}{{ editForm.context_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
-                  </option>
-
-                  <!-- Separator -->
-                  <option disabled>────────────────</option>
-
-                  <!-- Remaining items -->
-                  <option
-                    v-for="context in sortedContexts.remainingItems"
-                    :key="context.id"
-                    :value="context.id"
-                    :class="getDropdownOptionClasses(false, context.is_default)"
-                  >
-                    {{ context.internal_name
-                    }}{{ getDropdownOptionLabel(false, context.is_default) }}
-                  </option>
-                </select>
-                <template v-else>
-                  <span v-if="project.context">{{ project.context.internal_name }}</span>
-                  <span v-else class="text-gray-500">No default context set</span>
-                </template>
-              </dd>
-            </div>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Default Language</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <select
-                  v-if="isEditing"
-                  v-model="editForm.language_id"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                  <!-- Priority items first -->
-                  <template v-if="sortedLanguages.priorityItems.length > 0">
-                    <option
-                      v-for="language in sortedLanguages.priorityItems"
-                      :key="language.id"
-                      :value="language.id"
-                      :class="
-                        getDropdownOptionClasses(
-                          editForm.language_id === language.id,
-                          language.is_default
-                        )
-                      "
-                    >
-                      {{ language.internal_name
-                      }}{{
-                        getDropdownOptionLabel(
-                          editForm.language_id === language.id,
-                          language.is_default
-                        )
-                      }}
-                    </option>
-                  </template>
-
-                  <!-- No default option -->
-                  <option
-                    value=""
-                    :class="getDropdownOptionClasses(editForm.language_id === '', false, true)"
-                  >
-                    {{ DROPDOWN_OPTION_LABELS.noDefaultLanguage
-                    }}{{ editForm.language_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
-                  </option>
-
-                  <!-- Separator -->
-                  <option disabled>────────────────</option>
-
-                  <!-- Remaining items -->
-                  <option
-                    v-for="language in sortedLanguages.remainingItems"
-                    :key="language.id"
-                    :value="language.id"
-                    :class="getDropdownOptionClasses(false, language.is_default)"
-                  >
-                    {{ language.internal_name
-                    }}{{ getDropdownOptionLabel(false, language.is_default) }}
-                  </option>
-                </select>
-                <template v-else>
-                  <span v-if="project.language">{{ project.language.internal_name }}</span>
-                  <span v-else class="text-gray-500">No default language set</span>
-                </template>
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-
-      <!-- System Properties -->
-      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-base leading-6 font-medium text-gray-700">System Properties</h3>
-          <p class="mt-1 max-w-2xl text-xs text-gray-400">
-            Internal system data managed by the API.
-          </p>
-        </div>
-        <div class="border-t border-gray-200">
-          <dl>
-            <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide">ID</dt>
-              <dd class="mt-1 sm:mt-0 sm:col-span-2">
-                <UuidDisplay :uuid="project.id" format="long" class="text-xs text-gray-600" />
-              </dd>
-            </div>
-            <div class="bg-white px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created</dt>
-              <dd class="mt-1 sm:mt-0 sm:col-span-2">
-                <DateDisplay
-                  :date="project.created_at"
-                  format="medium"
-                  show-time
-                  class="text-xs text-gray-600"
-                />
-              </dd>
-            </div>
-            <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide">
-                Last Updated
-              </dt>
-              <dd class="mt-1 sm:mt-0 sm:col-span-2">
-                <DateDisplay
-                  :date="project.updated_at"
-                  format="medium"
-                  show-time
-                  class="text-xs text-gray-600"
-                />
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 z-10 overflow-y-auto"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
-      >
         <div
-          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          aria-hidden="true"
-        ></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"
-          >&#8203;</span
+          v-if="project?.backward_compatibility || isEditing"
+          class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
         >
-        <div
-          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-        >
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div class="sm:flex sm:items-start">
-              <div
-                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"
-              >
-                <svg
-                  class="h-6 w-6 text-red-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">
-                  Delete Project
-                </h3>
-                <div class="mt-2">
-                  <p class="text-sm text-gray-500">
-                    Are you sure you want to delete "{{ project?.internal_name }}"? This action
-                    cannot be undone.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              :disabled="deleteLoading"
-              type="button"
-              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="deleteProject"
-            >
-              <svg
-                v-if="deleteLoading"
-                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Delete
-            </button>
-            <button
-              type="button"
-              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              @click="cancelDelete"
-            >
-              Cancel
-            </button>
-          </div>
+          <dt class="text-sm font-medium text-gray-500">Legacy ID</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <input
+              v-if="isEditing"
+              v-model="editForm.backward_compatibility"
+              type="text"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Optional legacy identifier"
+            />
+            <span v-else>{{ project?.backward_compatibility }}</span>
+          </dd>
         </div>
-      </div>
-    </div>
-  </div>
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <input
+              v-if="isEditing"
+              v-model="editForm.launch_date"
+              type="date"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+            <template v-else>
+              <DateDisplay
+                v-if="project?.launch_date"
+                :date="project.launch_date"
+                format="medium"
+                class="text-sm text-gray-900"
+              />
+              <span v-else class="text-gray-500">Not scheduled</span>
+            </template>
+          </dd>
+        </div>
+        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Default Context</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <select
+              v-if="isEditing"
+              v-model="editForm.context_id"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <!-- Priority items first -->
+              <template v-if="sortedContexts.priorityItems.length > 0">
+                <option
+                  v-for="context in sortedContexts.priorityItems"
+                  :key="context.id"
+                  :value="context.id"
+                  :class="
+                    getDropdownOptionClasses(editForm.context_id === context.id, context.is_default)
+                  "
+                >
+                  {{ context.internal_name
+                  }}{{
+                    getDropdownOptionLabel(editForm.context_id === context.id, context.is_default)
+                  }}
+                </option>
+              </template>
+
+              <!-- No default option -->
+              <option
+                value=""
+                :class="getDropdownOptionClasses(editForm.context_id === '', false, true)"
+              >
+                {{ DROPDOWN_OPTION_LABELS.noDefaultContext
+                }}{{ editForm.context_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
+              </option>
+
+              <!-- Separator -->
+              <option disabled>────────────────</option>
+
+              <!-- Remaining items -->
+              <option
+                v-for="context in sortedContexts.remainingItems"
+                :key="context.id"
+                :value="context.id"
+                :class="getDropdownOptionClasses(false, context.is_default)"
+              >
+                {{ context.internal_name }}{{ getDropdownOptionLabel(false, context.is_default) }}
+              </option>
+            </select>
+            <template v-else>
+              <span v-if="project?.context">{{ project.context.internal_name }}</span>
+              <span v-else class="text-gray-500">No default context set</span>
+            </template>
+          </dd>
+        </div>
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Default Language</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <select
+              v-if="isEditing"
+              v-model="editForm.language_id"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <!-- Priority items first -->
+              <template v-if="sortedLanguages.priorityItems.length > 0">
+                <option
+                  v-for="language in sortedLanguages.priorityItems"
+                  :key="language.id"
+                  :value="language.id"
+                  :class="
+                    getDropdownOptionClasses(
+                      editForm.language_id === language.id,
+                      language.is_default
+                    )
+                  "
+                >
+                  {{ language.internal_name
+                  }}{{
+                    getDropdownOptionLabel(
+                      editForm.language_id === language.id,
+                      language.is_default
+                    )
+                  }}
+                </option>
+              </template>
+
+              <!-- No default option -->
+              <option
+                value=""
+                :class="getDropdownOptionClasses(editForm.language_id === '', false, true)"
+              >
+                {{ DROPDOWN_OPTION_LABELS.noDefaultLanguage
+                }}{{ editForm.language_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
+              </option>
+
+              <!-- Separator -->
+              <option disabled>────────────────</option>
+
+              <!-- Remaining items -->
+              <option
+                v-for="language in sortedLanguages.remainingItems"
+                :key="language.id"
+                :value="language.id"
+                :class="getDropdownOptionClasses(false, language.is_default)"
+              >
+                {{ language.internal_name }}{{ getDropdownOptionLabel(false, language.is_default) }}
+              </option>
+            </select>
+            <template v-else>
+              <span v-if="project?.language">{{ project.language.internal_name }}</span>
+              <span v-else class="text-gray-500">No default language set</span>
+            </template>
+          </dd>
+        </div>
+      </dl>
+    </template>
+  </DetailLayout>
 </template>
 
 <script setup lang="ts">
@@ -415,14 +197,8 @@
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
   import type { ContextResource, LanguageResource } from '@metanull/inventory-app-api-client'
-  import ErrorDisplay from '@/components/ErrorDisplay.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
-  import UuidDisplay from '@/components/UuidDisplay.vue'
-  import DetailEditButton from '@/components/actions/DetailEditButton.vue'
-  import DetailDeleteButton from '@/components/actions/DetailDeleteButton.vue'
-  import DetailSaveButton from '@/components/actions/DetailSaveButton.vue'
-  import DetailCancelButton from '@/components/actions/DetailCancelButton.vue'
-  import StatusCard from '@/components/StatusCard.vue'
+  import DetailLayout from '@/components/DetailLayout.vue'
   import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import RocketIcon from '@/components/icons/RocketIcon.vue'
@@ -440,7 +216,6 @@
   const languageStore = useLanguageStore()
 
   const project = computed(() => projectStore.currentProject)
-  const loading = computed(() => projectStore.loading)
   const error = computed(() => projectStore.error)
 
   // Dropdown options
@@ -510,6 +285,7 @@
   const showDeleteModal = ref(false)
   const deleteLoading = ref(false)
   const toggleLoading = ref(false)
+  const initialLoading = ref(false)
   const isEditing = ref(false)
   const saveLoading = ref(false)
 
@@ -545,6 +321,7 @@
   onMounted(async () => {
     const projectId = route.params.id as string
     if (projectId) {
+      initialLoading.value = true
       try {
         // Fetch project data and dropdown options in parallel
         await Promise.all([
@@ -557,6 +334,8 @@
         checkEditMode()
       } catch (error) {
         console.error('Failed to fetch project or dropdown data:', error)
+      } finally {
+        initialLoading.value = false
       }
     }
   })
@@ -686,6 +465,52 @@
       } catch (error) {
         console.error('Failed to fetch project:', error)
       }
+    }
+  }
+
+  // Status cards configuration
+  const statusCardsConfig = computed(() => {
+    if (!project.value) return []
+
+    return [
+      {
+        title: 'Status',
+        statusText: project.value.is_enabled ? 'Enabled' : 'Disabled',
+        isActive: project.value.is_enabled,
+        disabled: false,
+        activeIconBackgroundClass: 'bg-green-100',
+        inactiveIconBackgroundClass: 'bg-red-100',
+        activeIconClass: 'text-green-600',
+        inactiveIconClass: 'text-red-600',
+        activeIconComponent: CheckCircleIcon,
+        inactiveIconComponent: XCircleIcon,
+      },
+      {
+        title: 'Launch Status',
+        statusText: project.value.is_launched ? 'Launched' : 'Not Launched',
+        isActive: project.value.is_launched,
+        disabled: !project.value.is_enabled,
+        activeIconBackgroundClass: 'bg-blue-100',
+        inactiveIconBackgroundClass: 'bg-gray-100',
+        activeIconClass: 'text-blue-600',
+        inactiveIconClass: 'text-gray-600',
+        activeIconComponent: RocketIcon,
+        inactiveIconComponent: PackageIcon,
+      },
+    ]
+  })
+
+  // Delete modal message
+  const deleteModalMessage = computed(() => {
+    return `Are you sure you want to delete "${project.value?.internal_name}"? This action cannot be undone.`
+  })
+
+  // Handle status toggle
+  const handleStatusToggle = async (index: number) => {
+    if (index === 0) {
+      await toggleEnabled()
+    } else if (index === 1) {
+      await toggleLaunched()
     }
   }
 </script>

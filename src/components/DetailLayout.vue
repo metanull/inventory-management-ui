@@ -1,0 +1,194 @@
+<template>
+  <div>
+    <!-- Initial Loading State (for first load) -->
+    <LoadingSpinner v-if="loading" />
+
+    <!-- Error State -->
+    <ErrorDisplay v-else-if="error" :error="error" @retry="handleRetry" />
+
+    <!-- Detail Content -->
+    <div v-else-if="resource" class="relative space-y-6">
+      <!-- Action Loading Overlay (for status toggles, etc.) -->
+      <div
+        v-if="actionLoading"
+        class="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50 rounded-lg"
+      >
+        <div class="bg-white rounded-lg p-4 shadow-lg">
+          <LoadingSpinner />
+        </div>
+      </div>
+
+      <!-- Header -->
+      <DetailHeader
+        :internal-name="resource.internal_name"
+        :backward-compatibility="resource.backward_compatibility"
+        :is-editing="isEditing"
+        :save-loading="saveLoading"
+        @edit="$emit('edit')"
+        @delete="$emit('delete')"
+        @save="$emit('save')"
+        @cancel="$emit('cancel')"
+      />
+
+      <!-- Status Cards -->
+      <div
+        v-if="statusCards && statusCards.length > 0"
+        class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+        :class="{ 'opacity-50 pointer-events-none': isEditing || actionLoading }"
+      >
+        <StatusCard
+          v-for="(card, index) in statusCards"
+          :key="index"
+          :title="card.title"
+          :status-text="card.statusText"
+          :is-active="card.isActive"
+          :disabled="card.disabled || actionLoading"
+          :active-icon-background-class="card.activeIconBackgroundClass"
+          :inactive-icon-background-class="card.inactiveIconBackgroundClass"
+          :active-icon-class="card.activeIconClass"
+          :inactive-icon-class="card.inactiveIconClass"
+          :active-icon-component="card.activeIconComponent"
+          :inactive-icon-component="card.inactiveIconComponent"
+          @toggle="$emit('statusToggle', index)"
+        />
+      </div>
+
+      <!-- Information Section (Slot) -->
+      <div
+        class="bg-white shadow overflow-hidden sm:rounded-lg"
+        :class="{ 'opacity-50 pointer-events-none': actionLoading }"
+      >
+        <div class="px-4 py-5 sm:px-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">{{ informationTitle }}</h3>
+          <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            {{ informationDescription }}
+          </p>
+        </div>
+        <div class="border-t border-gray-200">
+          <slot name="information" />
+        </div>
+      </div>
+
+      <!-- System Properties -->
+      <div :class="{ 'opacity-50 pointer-events-none': actionLoading }">
+        <SystemProperties
+          :id="resource.id"
+          :created-at="resource.created_at"
+          :updated-at="resource.updated_at"
+        />
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteConfirmationModal
+      :show="showDeleteModal"
+      :title="deleteModalTitle"
+      :message="deleteModalMessage"
+      :loading="deleteLoading"
+      @confirm="$emit('confirmDelete')"
+      @cancel="$emit('cancelDelete')"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+  import { ref, computed, onMounted, type Component } from 'vue'
+  import LoadingSpinner from '@/components/LoadingSpinner.vue'
+  import ErrorDisplay from '@/components/ErrorDisplay.vue'
+  import DetailHeader from '@/components/DetailHeader.vue'
+  import StatusCard from '@/components/StatusCard.vue'
+  import SystemProperties from '@/components/SystemProperties.vue'
+  import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue'
+
+  interface StatusCardConfig {
+    title: string
+    statusText: string
+    isActive: boolean
+    disabled?: boolean
+    loading?: boolean
+    activeIconBackgroundClass: string
+    inactiveIconBackgroundClass: string
+    activeIconClass: string
+    inactiveIconClass: string
+    activeIconComponent: Component
+    inactiveIconComponent: Component
+  }
+
+  interface Resource {
+    id: string
+    internal_name: string
+    backward_compatibility?: string | null
+    created_at: string | null
+    updated_at: string | null
+  }
+
+  const props = defineProps<{
+    // Loading states
+    storeLoading?: boolean // Store's internal loading state (optional)
+    error: any
+    resource: Resource | null
+
+    // Edit states
+    isEditing: boolean
+    saveLoading?: boolean
+    actionLoading?: boolean
+
+    // Configuration
+    statusCards?: StatusCardConfig[]
+    informationTitle: string
+    informationDescription: string
+
+    // Modal states
+    showDeleteModal: boolean
+    deleteModalTitle: string
+    deleteModalMessage: string
+    deleteLoading?: boolean
+
+    // Fetch function for initial load
+    fetchData: () => Promise<void>
+  }>()
+
+  const emit = defineEmits<{
+    retry: []
+    edit: []
+    delete: []
+    save: []
+    cancel: []
+    statusToggle: [index: number]
+    confirmDelete: []
+    cancelDelete: []
+  }>()
+
+  // Internal loading state for initial page load
+  const initialLoading = ref(false)
+
+  // Computed loading state - prioritize initial loading over store loading
+  const loading = computed(() => initialLoading.value || (props.storeLoading && !props.resource))
+
+  // Fetch data on mount
+  onMounted(async () => {
+    if (!props.resource) {
+      initialLoading.value = true
+      try {
+        await props.fetchData()
+      } catch (error) {
+        console.error('Failed to fetch data:', error)
+      } finally {
+        initialLoading.value = false
+      }
+    }
+  })
+
+  // Retry function that uses internal loading state
+  const handleRetry = async () => {
+    initialLoading.value = true
+    try {
+      await props.fetchData()
+      emit('retry')
+    } catch (error) {
+      console.error('Failed to retry data fetch:', error)
+    } finally {
+      initialLoading.value = false
+    }
+  }
+</script>

@@ -195,7 +195,6 @@ export const useProjectStore = defineStore('project', () => {
 
   // Set project enabled/disabled status
   const setProjectEnabled = async (id: string, isEnabled: boolean) => {
-    loading.value = true
     error.value = null
 
     try {
@@ -220,13 +219,13 @@ export const useProjectStore = defineStore('project', () => {
       error.value = 'Failed to set project enabled status'
       throw err
     } finally {
-      loading.value = false
+      // Note: We don't set loading to false here since we didn't set it to true
+      // Action loading is handled by the component that calls this method
     }
   }
 
   // Set project launched/not launched status
   const setProjectLaunched = async (id: string, isLaunched: boolean) => {
-    loading.value = true
     error.value = null
 
     try {
@@ -253,7 +252,8 @@ export const useProjectStore = defineStore('project', () => {
       error.value = 'Failed to set project launched status'
       throw err
     } finally {
-      loading.value = false
+      // Note: We don't set loading to false here since we didn't set it to true
+      // Action loading is handled by the component that calls this method
     }
   }
 
