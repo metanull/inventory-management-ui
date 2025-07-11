@@ -175,13 +175,21 @@
             <div>
               <dt class="text-sm font-medium text-gray-500">Created At</dt>
               <dd class="mt-1 text-sm text-gray-900">
-                {{ formatDate(languageStore.currentLanguage.created_at) }}
+                <DateDisplay
+                  :date="languageStore.currentLanguage.created_at"
+                  format="long"
+                  show-time
+                />
               </dd>
             </div>
             <div>
               <dt class="text-sm font-medium text-gray-500">Updated At</dt>
               <dd class="mt-1 text-sm text-gray-900">
-                {{ formatDate(languageStore.currentLanguage.updated_at) }}
+                <DateDisplay
+                  :date="languageStore.currentLanguage.updated_at"
+                  format="long"
+                  show-time
+                />
               </dd>
             </div>
           </dl>
@@ -294,11 +302,6 @@
   const languageStore = useLanguageStore()
 
   const showDeleteModal = ref(false)
-
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString()
-  }
 
   const editLanguage = () => {
     // Navigate back to languages list with edit mode

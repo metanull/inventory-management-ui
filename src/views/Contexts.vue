@@ -157,7 +157,7 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ formatDate(context.created_at) }}</div>
+                <DateDisplay :date="context.created_at" class="text-sm text-gray-900" />
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center gap-2">
@@ -251,6 +251,7 @@
   import EditButton from '@/components/actions/EditButton.vue'
   import DeleteButton from '@/components/actions/DeleteButton.vue'
   import SetDefaultButton from '@/components/actions/SetDefaultButton.vue'
+  import DateDisplay from '@/components/DateDisplay.vue'
 
   const router = useRouter()
   const contextStore = useContextStore()
@@ -320,11 +321,6 @@
       // Error is handled by the store
       console.error('Refresh error:', error)
     }
-  }
-
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString()
   }
 
   onMounted(() => {

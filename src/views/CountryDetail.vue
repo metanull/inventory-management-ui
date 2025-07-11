@@ -121,15 +121,25 @@
 
           <div>
             <dt class="text-sm font-medium text-gray-500">Created At</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              {{ formatDateTime(countryStore.currentCountry.created_at) }}
+            <dd class="mt-1">
+              <DateDisplay
+                :date="countryStore.currentCountry.created_at"
+                format="medium"
+                show-time
+                class="text-sm text-gray-900"
+              />
             </dd>
           </div>
 
           <div>
             <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              {{ formatDateTime(countryStore.currentCountry.updated_at) }}
+            <dd class="mt-1">
+              <DateDisplay
+                :date="countryStore.currentCountry.updated_at"
+                format="medium"
+                show-time
+                class="text-sm text-gray-900"
+              />
             </dd>
           </div>
         </dl>
@@ -285,6 +295,7 @@
   import { useCountryStore } from '@/stores/country'
   import CountryForm from '@/components/CountryForm.vue'
   import ErrorDisplay from '@/components/ErrorDisplay.vue'
+  import DateDisplay from '@/components/DateDisplay.vue'
 
   const router = useRouter()
   const route = useRoute()
@@ -324,23 +335,6 @@
         // Navigate back to countries list after successful deletion
         router.push('/countries')
       }
-    }
-  }
-
-  const formatDateTime = (dateString: string | null): string => {
-    if (!dateString) return 'N/A'
-
-    try {
-      const date = new Date(dateString)
-      return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    } catch {
-      return 'Invalid Date'
     }
   }
 

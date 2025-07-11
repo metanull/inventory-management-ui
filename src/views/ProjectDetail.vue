@@ -178,7 +178,13 @@
             <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ project.launch_date ? formatDate(project.launch_date) : 'Not scheduled' }}
+                <DateDisplay
+                  v-if="project.launch_date"
+                  :date="project.launch_date"
+                  format="medium"
+                  class="text-sm text-gray-900"
+                />
+                <span v-else class="text-gray-500">Not scheduled</span>
               </dd>
             </div>
             <div
@@ -201,14 +207,24 @@
             </div>
             <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Created</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ formatDate(project.created_at) }}
+              <dd class="mt-1 sm:mt-0 sm:col-span-2">
+                <DateDisplay
+                  :date="project.created_at"
+                  format="medium"
+                  show-time
+                  class="text-sm text-gray-900"
+                />
               </dd>
             </div>
             <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ formatDate(project.updated_at) }}
+              <dd class="mt-1 sm:mt-0 sm:col-span-2">
+                <DateDisplay
+                  :date="project.updated_at"
+                  format="medium"
+                  show-time
+                  class="text-sm text-gray-900"
+                />
               </dd>
             </div>
           </dl>
@@ -320,6 +336,7 @@
   import { useRoute, useRouter } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
   import ErrorDisplay from '@/components/ErrorDisplay.vue'
+  import DateDisplay from '@/components/DateDisplay.vue'
 
   const route = useRoute()
   const router = useRouter()
@@ -345,21 +362,6 @@
       }
     }
   })
-
-  // Format date helper
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    } catch {
-      return 'Invalid date'
-    }
-  }
 
   // Toggle enabled status
   const toggleEnabled = async () => {

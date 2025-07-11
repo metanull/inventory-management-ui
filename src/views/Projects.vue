@@ -164,7 +164,8 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ project.launch_date ? formatDate(project.launch_date) : 'Not scheduled' }}
+                    <DateDisplay v-if="project.launch_date" :date="project.launch_date" />
+                    <span v-else>Not scheduled</span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex space-x-2">
@@ -191,7 +192,7 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ formatDate(project.created_at) }}
+                    <DateDisplay :date="project.created_at" />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
@@ -316,6 +317,7 @@
   import ViewButton from '@/components/actions/ViewButton.vue'
   import EditButton from '@/components/actions/EditButton.vue'
   import DeleteButton from '@/components/actions/DeleteButton.vue'
+  import DateDisplay from '@/components/DateDisplay.vue'
 
   const router = useRouter()
 
@@ -355,21 +357,6 @@
       console.error('Failed to fetch projects:', error)
     }
   })
-
-  // Format date helper
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    } catch {
-      return 'Invalid date'
-    }
-  }
 
   // Delete confirmation
   const confirmDelete = (project: ProjectResource) => {

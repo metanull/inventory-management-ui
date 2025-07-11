@@ -176,14 +176,24 @@
             </div>
             <div>
               <dt class="text-sm font-medium text-gray-500">Created At</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {{ formatDate(contextStore.currentContext.created_at) }}
+              <dd class="mt-1">
+                <DateDisplay
+                  :date="contextStore.currentContext.created_at"
+                  format="medium"
+                  show-time
+                  class="text-sm text-gray-900"
+                />
               </dd>
             </div>
             <div>
               <dt class="text-sm font-medium text-gray-500">Updated At</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {{ formatDate(contextStore.currentContext.updated_at) }}
+              <dd class="mt-1">
+                <DateDisplay
+                  :date="contextStore.currentContext.updated_at"
+                  format="medium"
+                  show-time
+                  class="text-sm text-gray-900"
+                />
               </dd>
             </div>
           </dl>
@@ -290,17 +300,13 @@
   import { ref, onMounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useContextStore } from '@/stores/context'
+  import DateDisplay from '@/components/DateDisplay.vue'
 
   const route = useRoute()
   const router = useRouter()
   const contextStore = useContextStore()
 
   const showDeleteModal = ref(false)
-
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString()
-  }
 
   const editContext = () => {
     // Navigate back to contexts list with edit mode
