@@ -130,9 +130,11 @@
               class="hover:bg-gray-50"
             >
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900 font-mono">
-                  {{ context.id.substring(0, 8) }}...
-                </div>
+                <UuidDisplay
+                  :uuid="context.id"
+                  format="short"
+                  class="text-sm font-medium text-gray-900 font-mono"
+                />
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">{{ context.internal_name }}</div>
@@ -252,6 +254,7 @@
   import DeleteButton from '@/components/actions/DeleteButton.vue'
   import SetDefaultButton from '@/components/actions/SetDefaultButton.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
+  import UuidDisplay from '@/components/UuidDisplay.vue'
 
   const router = useRouter()
   const contextStore = useContextStore()

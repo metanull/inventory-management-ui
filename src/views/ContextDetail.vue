@@ -143,7 +143,7 @@
               <dd
                 class="mt-1 text-sm text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded break-all"
               >
-                {{ contextStore.currentContext.id }}
+                <UuidDisplay :uuid="contextStore.currentContext.id" format="long" />
               </dd>
             </div>
             <div>
@@ -251,7 +251,8 @@
           <p class="text-sm text-gray-600 mb-6">
             Are you sure you want to delete the context "{{
               contextStore.currentContext?.internal_name
-            }}" ({{ contextStore.currentContext?.id }})? This action cannot be undone.
+            }}" (<UuidDisplay :uuid="contextStore.currentContext?.id" format="short" />)? This
+            action cannot be undone.
           </p>
 
           <div class="flex justify-end gap-3">
@@ -301,6 +302,7 @@
   import { useRoute, useRouter } from 'vue-router'
   import { useContextStore } from '@/stores/context'
   import DateDisplay from '@/components/DateDisplay.vue'
+  import UuidDisplay from '@/components/UuidDisplay.vue'
 
   const route = useRoute()
   const router = useRouter()
