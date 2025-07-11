@@ -1,12 +1,194 @@
 <template>
+  <!-- New Project Creation -->
+  <div v-if="isNewProject && initialLoading" class="flex justify-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    <span class="ml-2">Loading project creation form...</span>
+  </div>
+
+  <!-- New Project Creation Form -->
+  <div v-else-if="isNewProject" class="relative space-y-6">
+    <!-- Header for New Project -->
+    <div class="bg-white shadow border-l-4 border-blue-500">
+      <div class="px-4 py-5 sm:px-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+              New Project
+              <span class="text-sm font-normal text-blue-600 ml-2">(Creating)</span>
+            </h1>
+          </div>
+          <div class="flex space-x-3">
+            <DetailSaveButton :loading="saveLoading" @click="saveEdit" />
+            <DetailCancelButton @click="cancelEdit" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Information Section for New Project -->
+    <div class="bg-white shadow rounded-lg">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Project Information</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+          Create a new project in your inventory system.
+        </p>
+      </div>
+      <div class="border-t border-gray-200">
+        <dl>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <input
+                v-model="editForm.internal_name"
+                type="text"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Enter project name"
+                required
+              />
+            </dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Legacy ID</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <input
+                v-model="editForm.backward_compatibility"
+                type="text"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Optional legacy identifier"
+              />
+            </dd>
+          </div>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <input
+                v-model="editForm.launch_date"
+                type="date"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Default Context</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <select
+                v-model="editForm.context_id"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <!-- Priority items first -->
+                <template v-if="sortedContexts.priorityItems.length > 0">
+                  <option
+                    v-for="context in sortedContexts.priorityItems"
+                    :key="context.id"
+                    :value="context.id"
+                    :class="
+                      getDropdownOptionClasses(
+                        editForm.context_id === context.id,
+                        context.is_default
+                      )
+                    "
+                  >
+                    {{ context.internal_name
+                    }}{{
+                      getDropdownOptionLabel(editForm.context_id === context.id, context.is_default)
+                    }}
+                  </option>
+                </template>
+
+                <!-- No default option -->
+                <option
+                  value=""
+                  :class="getDropdownOptionClasses(editForm.context_id === '', false, true)"
+                >
+                  {{ DROPDOWN_OPTION_LABELS.noDefaultContext
+                  }}{{ editForm.context_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
+                </option>
+
+                <!-- Separator -->
+                <option disabled>────────────────</option>
+
+                <!-- Remaining items -->
+                <option
+                  v-for="context in sortedContexts.remainingItems"
+                  :key="context.id"
+                  :value="context.id"
+                  :class="getDropdownOptionClasses(false, context.is_default)"
+                >
+                  {{ context.internal_name }}{{ getDropdownOptionLabel(false, context.is_default) }}
+                </option>
+              </select>
+            </dd>
+          </div>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Default Language</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <select
+                v-model="editForm.language_id"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <!-- Priority items first -->
+                <template v-if="sortedLanguages.priorityItems.length > 0">
+                  <option
+                    v-for="language in sortedLanguages.priorityItems"
+                    :key="language.id"
+                    :value="language.id"
+                    :class="
+                      getDropdownOptionClasses(
+                        editForm.language_id === language.id,
+                        language.is_default
+                      )
+                    "
+                  >
+                    {{ language.internal_name
+                    }}{{
+                      getDropdownOptionLabel(
+                        editForm.language_id === language.id,
+                        language.is_default
+                      )
+                    }}
+                  </option>
+                </template>
+
+                <!-- No default option -->
+                <option
+                  value=""
+                  :class="getDropdownOptionClasses(editForm.language_id === '', false, true)"
+                >
+                  {{ DROPDOWN_OPTION_LABELS.noDefaultLanguage
+                  }}{{ editForm.language_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
+                </option>
+
+                <!-- Separator -->
+                <option disabled>────────────────</option>
+
+                <!-- Remaining items -->
+                <option
+                  v-for="language in sortedLanguages.remainingItems"
+                  :key="language.id"
+                  :value="language.id"
+                  :class="getDropdownOptionClasses(false, language.is_default)"
+                >
+                  {{ language.internal_name
+                  }}{{ getDropdownOptionLabel(false, language.is_default) }}
+                </option>
+              </select>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Existing Project Detail -->
   <DetailView
+    v-else
     :store-loading="projectStore.loading"
     :error="error"
-    :resource="isNewProject ? null : project"
+    :resource="project"
     :is-editing="isEditing"
     :save-loading="saveLoading"
     :action-loading="toggleLoading"
-    :status-cards="isNewProject ? [] : statusCardsConfig"
+    :status-cards="statusCardsConfig"
     information-title="Project Information"
     information-description="Detailed information about this project."
     :show-delete-modal="showDeleteModal"
@@ -188,6 +370,14 @@
       </dl>
     </template>
   </DetailView>
+
+  <!-- Debug fallback -->
+  <div
+    v-if="!isNewProject && !project"
+    style="background: orange; color: white; padding: 10px; margin: 10px"
+  >
+    DEBUG: Not new project, no existing project - Route ID: {{ route.params.id }}
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -199,6 +389,8 @@
   import type { ContextResource, LanguageResource } from '@metanull/inventory-app-api-client'
   import DateDisplay from '@/components/DateDisplay.vue'
   import DetailView from '@/components/layout/DetailView.vue'
+  import DetailSaveButton from '@/components/actions/DetailSaveButton.vue'
+  import DetailCancelButton from '@/components/actions/DetailCancelButton.vue'
   import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import RocketIcon from '@/components/icons/RocketIcon.vue'
@@ -318,7 +510,9 @@
   )
 
   // Check if this is a new project creation
-  const isNewProject = computed(() => route.params.id === 'new')
+  const isNewProject = computed(
+    () => route.name === 'project-new' || route.path === '/projects/new'
+  )
 
   // Fetch project on mount
   onMounted(async () => {
