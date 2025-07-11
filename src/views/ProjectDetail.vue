@@ -27,54 +27,12 @@
             </div>
             <div class="flex space-x-3">
               <template v-if="!isEditing">
-                <button
-                  class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  @click="startEdit"
-                >
-                  Edit
-                </button>
-                <button
-                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  @click="confirmDelete"
-                >
-                  Delete
-                </button>
+                <DetailEditButton @click="startEdit" />
+                <DetailDeleteButton @click="confirmDelete" />
               </template>
               <template v-else>
-                <button
-                  :disabled="saveLoading"
-                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  @click="saveEdit"
-                >
-                  <svg
-                    v-if="saveLoading"
-                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Save
-                </button>
-                <button
-                  class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  @click="cancelEdit"
-                >
-                  Cancel
-                </button>
+                <DetailSaveButton :loading="saveLoading" @click="saveEdit" />
+                <DetailCancelButton @click="cancelEdit" />
               </template>
             </div>
           </div>
@@ -87,113 +45,40 @@
         :class="{ 'opacity-50 pointer-events-none': isEditing }"
       >
         <!-- Enabled Status Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="p-5">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div
-                  :class="[
-                    'w-8 h-8 rounded-full flex items-center justify-center',
-                    project.is_enabled ? 'bg-green-100' : 'bg-red-100',
-                  ]"
-                >
-                  <svg
-                    :class="['w-5 h-5', project.is_enabled ? 'text-green-600' : 'text-red-600']"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      v-if="project.is_enabled"
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clip-rule="evenodd"
-                    />
-                    <path
-                      v-else
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-5 w-0 flex-1">
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Status</dt>
-                  <dd class="text-lg font-medium text-gray-900">
-                    {{ project.is_enabled ? 'Enabled' : 'Disabled' }}
-                  </dd>
-                </dl>
-              </div>
-              <div class="ml-5 flex-shrink-0">
-                <button
-                  :disabled="toggleLoading || isEditing"
-                  :class="[
-                    'inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed',
-                    project.is_enabled
-                      ? 'text-red-700 bg-red-100 hover:bg-red-200'
-                      : 'text-green-700 bg-green-100 hover:bg-green-200',
-                  ]"
-                  @click="toggleEnabled"
-                >
-                  {{ project.is_enabled ? 'Disable' : 'Enable' }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <StatusCard
+          title="Status"
+          :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
+          :is-active="project.is_enabled"
+          :disabled="toggleLoading || isEditing"
+          :button-text="project.is_enabled ? 'Disable' : 'Enable'"
+          active-icon-background-class="bg-green-100"
+          inactive-icon-background-class="bg-red-100"
+          active-icon-class="text-green-600"
+          inactive-icon-class="text-red-600"
+          active-button-class="text-red-700 bg-red-100 hover:bg-red-200"
+          inactive-button-class="text-green-700 bg-green-100 hover:bg-green-200"
+          :active-icon-component="CheckCircleIcon"
+          :inactive-icon-component="XCircleIcon"
+          @toggle="toggleEnabled"
+        />
 
         <!-- Launch Status Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="p-5">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div
-                  :class="[
-                    'w-8 h-8 rounded-full flex items-center justify-center',
-                    project.is_launched ? 'bg-blue-100' : 'bg-gray-100',
-                  ]"
-                >
-                  <svg
-                    :class="['w-5 h-5', project.is_launched ? 'text-blue-600' : 'text-gray-600']"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-5 w-0 flex-1">
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Launch Status</dt>
-                  <dd class="text-lg font-medium text-gray-900">
-                    {{ project.is_launched ? 'Launched' : 'Not Launched' }}
-                  </dd>
-                </dl>
-              </div>
-              <div class="ml-5 flex-shrink-0">
-                <button
-                  :disabled="toggleLoading || isEditing"
-                  :class="[
-                    'inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed',
-                    project.is_launched
-                      ? 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-                      : 'text-blue-700 bg-blue-100 hover:bg-blue-200',
-                  ]"
-                  @click="toggleLaunched"
-                >
-                  {{ project.is_launched ? 'Mark as Not Launched' : 'Launch' }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <StatusCard
+          title="Launch Status"
+          :status-text="project.is_launched ? 'Launched' : 'Not Launched'"
+          :is-active="project.is_launched"
+          :disabled="toggleLoading || isEditing"
+          :button-text="project.is_launched ? 'Mark as Not Launched' : 'Launch'"
+          active-icon-background-class="bg-blue-100"
+          inactive-icon-background-class="bg-gray-100"
+          active-icon-class="text-blue-600"
+          inactive-icon-class="text-gray-600"
+          active-button-class="text-gray-700 bg-gray-100 hover:bg-gray-200"
+          inactive-button-class="text-blue-700 bg-blue-100 hover:bg-blue-200"
+          :active-icon-component="RocketIcon"
+          :inactive-icon-component="PackageIcon"
+          @toggle="toggleLaunched"
+        />
       </div>
 
       <!-- Project Information -->
@@ -529,9 +414,19 @@
   import { useProjectStore } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
+  import type { ContextResource, LanguageResource } from '@metanull/inventory-app-api-client'
   import ErrorDisplay from '@/components/ErrorDisplay.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
   import UuidDisplay from '@/components/UuidDisplay.vue'
+  import DetailEditButton from '@/components/actions/DetailEditButton.vue'
+  import DetailDeleteButton from '@/components/actions/DetailDeleteButton.vue'
+  import DetailSaveButton from '@/components/actions/DetailSaveButton.vue'
+  import DetailCancelButton from '@/components/actions/DetailCancelButton.vue'
+  import StatusCard from '@/components/StatusCard.vue'
+  import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
+  import XCircleIcon from '@/components/icons/XCircleIcon.vue'
+  import RocketIcon from '@/components/icons/RocketIcon.vue'
+  import PackageIcon from '@/components/icons/PackageIcon.vue'
   import {
     getDropdownOptionClasses,
     getDropdownOptionLabel,
@@ -556,10 +451,10 @@
 
   // Sorted dropdown options with priority items first
   const sortedContexts = computed(() => {
-    if (!contexts.value.length) return []
+    if (!contexts.value.length) return { priorityItems: [], remainingItems: [] }
 
-    const priorityItems = []
-    const remainingItems = []
+    const priorityItems: ContextResource[] = []
+    const remainingItems: ContextResource[] = []
 
     // Add current selection if it exists and is not default
     const currentContext = contexts.value.find(c => c.id === editForm.value.context_id)
@@ -584,10 +479,10 @@
   })
 
   const sortedLanguages = computed(() => {
-    if (!languages.value.length) return []
+    if (!languages.value.length) return { priorityItems: [], remainingItems: [] }
 
-    const priorityItems = []
-    const remainingItems = []
+    const priorityItems: LanguageResource[] = []
+    const remainingItems: LanguageResource[] = []
 
     // Add current selection if it exists and is not default
     const currentLanguage = languages.value.find(l => l.id === editForm.value.language_id)
