@@ -112,9 +112,9 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div class="flex justify-end space-x-2">
-                <TableViewButton @click="router.push(`/projects/${project.id}`)" />
-                <TableEditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
-                <TableDeleteButton @click="confirmDelete(project)" />
+                <ViewButton @click="router.push(`/projects/${project.id}`)" />
+                <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
+                <DeleteButton @click="confirmDelete(project)" />
               </div>
             </td>
           </tr>
@@ -142,9 +142,9 @@
   import { useProjectStore } from '@/stores/project'
   import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue'
   import type { ProjectResource } from '@metanull/inventory-app-api-client'
-  import TableViewButton from '@/components/actions/TableViewButton.vue'
-  import TableEditButton from '@/components/actions/TableEditButton.vue'
-  import TableDeleteButton from '@/components/actions/TableDeleteButton.vue'
+  import ViewButton from '@/components/actions/table/ViewButton.vue'
+  import EditButton from '@/components/actions/table/EditButton.vue'
+  import DeleteButton from '@/components/actions/table/DeleteButton.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
   import ResourceNameDisplay from '@/components/ResourceNameDisplay.vue'
   import FilterButton from '@/components/FilterButton.vue'

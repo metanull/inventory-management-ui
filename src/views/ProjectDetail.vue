@@ -18,8 +18,8 @@
             </h1>
           </div>
           <div class="flex space-x-3">
-            <DetailSaveButton :loading="saveLoading" @click="saveEdit" />
-            <DetailCancelButton @click="cancelEdit" />
+            <SaveButton :loading="saveLoading" @click="saveEdit" />
+            <CancelButton @click="cancelEdit" />
           </div>
         </div>
       </div>
@@ -389,8 +389,8 @@
   import type { ContextResource, LanguageResource } from '@metanull/inventory-app-api-client'
   import DateDisplay from '@/components/DateDisplay.vue'
   import DetailView from '@/components/layout/DetailView.vue'
-  import DetailSaveButton from '@/components/actions/DetailSaveButton.vue'
-  import DetailCancelButton from '@/components/actions/DetailCancelButton.vue'
+  import SaveButton from '@/components/actions/detail/SaveButton.vue'
+  import CancelButton from '@/components/actions/detail/CancelButton.vue'
   import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import RocketIcon from '@/components/icons/RocketIcon.vue'

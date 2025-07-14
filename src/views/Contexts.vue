@@ -4,12 +4,7 @@
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
         <h1 class="text-2xl font-semibold text-gray-900">Contexts</h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Manage contex import TableViewButton from '@/components/actions/TableViewButton.vue'
-          import TableEditButton from '@/components/actions/TableEditButton.vue' import
-          TableDeleteButton from '@/components/actions/TableDeleteButton.vue'available in the
-          inventory system
-        </p>
+        <p class="mt-2 text-sm text-gray-700">Manage contexts available in the inventory system</p>
       </div>
       <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
         <button
@@ -156,14 +151,14 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
-                      <TableViewButton @click="router.push(`/contexts/${context.id}`)" />
-                      <TableEditButton @click="openEditModal(context)" />
+                      <ViewButton @click="router.push(`/contexts/${context.id}`)" />
+                      <EditButton @click="openEditModal(context)" />
                       <SetDefaultButton
                         v-if="!context.is_default"
                         :disabled="contextStore.loading"
                         @click="setAsDefault(context)"
                       />
-                      <TableDeleteButton
+                      <DeleteButton
                         :disabled="context.is_default"
                         @click="openDeleteModal(context)"
                       />
@@ -247,9 +242,9 @@
   import { useContextStore } from '@/stores/context'
   import ContextForm from '@/components/ContextForm.vue'
   import type { ContextResource } from '@metanull/inventory-app-api-client'
-  import TableViewButton from '@/components/actions/TableViewButton.vue'
-  import TableEditButton from '@/components/actions/TableEditButton.vue'
-  import TableDeleteButton from '@/components/actions/TableDeleteButton.vue'
+  import ViewButton from '@/components/actions/table/ViewButton.vue'
+  import EditButton from '@/components/actions/table/EditButton.vue'
+  import DeleteButton from '@/components/actions/table/DeleteButton.vue'
   import SetDefaultButton from '@/components/actions/SetDefaultButton.vue'
   import DateDisplay from '@/components/DateDisplay.vue'
   import ResourceNameDisplay from '@/components/ResourceNameDisplay.vue'

@@ -13,12 +13,12 @@
         </div>
         <div class="flex space-x-3">
           <template v-if="!isEditing">
-            <DetailEditButton @click="$emit('edit')" />
-            <DetailDeleteButton @click="$emit('delete')" />
+            <EditButton @click="$emit('edit')" />
+            <DeleteButton @click="$emit('delete')" />
           </template>
           <template v-else>
-            <DetailSaveButton :loading="saveLoading" @click="$emit('save')" />
-            <DetailCancelButton @click="$emit('cancel')" />
+            <SaveButton :loading="saveLoading" @click="$emit('save')" />
+            <CancelButton @click="$emit('cancel')" />
           </template>
         </div>
       </div>
@@ -27,10 +27,10 @@
 </template>
 
 <script setup lang="ts">
-  import DetailEditButton from '@/components/actions/DetailEditButton.vue'
-  import DetailDeleteButton from '@/components/actions/DetailDeleteButton.vue'
-  import DetailSaveButton from '@/components/actions/DetailSaveButton.vue'
-  import DetailCancelButton from '@/components/actions/DetailCancelButton.vue'
+  import EditButton from '@/components/actions/detail/EditButton.vue'
+  import DeleteButton from '@/components/actions/detail/DeleteButton.vue'
+  import SaveButton from '@/components/actions/detail/SaveButton.vue'
+  import CancelButton from '@/components/actions/detail/CancelButton.vue'
 
   defineProps<{
     internalName: string

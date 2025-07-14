@@ -7,7 +7,7 @@
         <p v-if="description" class="mt-2 text-sm text-gray-700">{{ description }}</p>
       </div>
       <div v-if="addButtonRoute" class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-        <ListAddButton :to="addButtonRoute" :label="addButtonLabel" />
+        <AddButton :to="addButtonRoute" :label="addButtonLabel" />
       </div>
     </div>
 
@@ -42,7 +42,7 @@
       <h3 class="mt-2 text-sm font-medium text-gray-900">{{ emptyTitle }}</h3>
       <p class="mt-1 text-sm text-gray-500">{{ emptyMessage }}</p>
       <div v-if="showEmptyAddButton && addButtonRoute" class="mt-6">
-        <ListAddButton :to="addButtonRoute" :label="emptyAddButtonLabel" />
+        <AddButton :to="addButtonRoute" :label="emptyAddButtonLabel" />
       </div>
     </div>
 
@@ -59,7 +59,7 @@
 <script setup lang="ts">
   import ErrorDisplay from '@/components/ErrorDisplay.vue'
   import LoadingSpinner from '@/components/LoadingSpinner.vue'
-  import ListAddButton from '@/components/actions/ListAddButton.vue'
+  import AddButton from '@/components/actions/list/AddButton.vue'
 
   defineProps<{
     title: string
