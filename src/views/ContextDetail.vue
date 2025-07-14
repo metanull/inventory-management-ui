@@ -301,8 +301,8 @@
   import { ref, onMounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useContextStore } from '@/stores/context'
-  import DateDisplay from '@/components/DateDisplay.vue'
-  import UuidDisplay from '@/components/UuidDisplay.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import UuidDisplay from '@/components/format/Uuid.vue'
 
   const route = useRoute()
   const router = useRouter()

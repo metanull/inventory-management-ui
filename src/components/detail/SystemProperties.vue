@@ -40,8 +40,8 @@
 </template>
 
 <script setup lang="ts">
-  import DateDisplay from '@/components/DateDisplay.vue'
-  import UuidDisplay from '@/components/UuidDisplay.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import UuidDisplay from '@/components/format/Uuid.vue'
 
   defineProps<{
     id: string

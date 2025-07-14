@@ -209,12 +209,12 @@
   import type { CountryResource } from '@metanull/inventory-app-api-client'
   import { useCountryStore } from '@/stores/country'
   import CountryForm from '@/components/CountryForm.vue'
-  import ErrorDisplay from '@/components/ErrorDisplay.vue'
+  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
   import ViewButton from '@/components/actions/table/ViewButton.vue'
   import EditButton from '@/components/actions/table/EditButton.vue'
   import DeleteButton from '@/components/actions/table/DeleteButton.vue'
-  import DateDisplay from '@/components/DateDisplay.vue'
-  import ResourceNameDisplay from '@/components/ResourceNameDisplay.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import ResourceNameDisplay from '@/components/format/InternalName.vue'
 
   const router = useRouter()
   const countryStore = useCountryStore()

@@ -93,12 +93,12 @@
 
 <script setup lang="ts">
   import { ref, computed, onMounted, type Component } from 'vue'
-  import LoadingSpinner from '@/components/LoadingSpinner.vue'
-  import ErrorDisplay from '@/components/ErrorDisplay.vue'
-  import DetailHeader from '@/components/DetailHeader.vue'
-  import StatusCard from '@/components/StatusCard.vue'
-  import SystemProperties from '@/components/SystemProperties.vue'
-  import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue'
+  import LoadingSpinner from '@/components/layout/LoadingSpinner.vue'
+  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
+  import DetailHeader from '@/components/layout/DetailHeader.vue'
+  import StatusCard from '@/components/format/Toggle.vue'
+  import SystemProperties from '@/components/detail/SystemProperties.vue'
+  import DeleteConfirmationModal from '@/components/layout/DeleteConfirmationModal.vue'
 
   interface StatusCardConfig {
     title: string

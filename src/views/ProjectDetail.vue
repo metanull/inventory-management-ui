@@ -387,7 +387,7 @@
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
   import type { ContextResource, LanguageResource } from '@metanull/inventory-app-api-client'
-  import DateDisplay from '@/components/DateDisplay.vue'
+  import DateDisplay from '@/components/format/Date.vue'
   import DetailView from '@/components/layout/DetailView.vue'
   import SaveButton from '@/components/actions/detail/SaveButton.vue'
   import CancelButton from '@/components/actions/detail/CancelButton.vue'

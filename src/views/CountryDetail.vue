@@ -294,8 +294,8 @@
   import { useRouter, useRoute } from 'vue-router'
   import { useCountryStore } from '@/stores/country'
   import CountryForm from '@/components/CountryForm.vue'
-  import ErrorDisplay from '@/components/ErrorDisplay.vue'
-  import DateDisplay from '@/components/DateDisplay.vue'
+  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
+  import DateDisplay from '@/components/format/Date.vue'
 
   const router = useRouter()
   const route = useRoute()

@@ -12,5 +12,5 @@
 <script setup lang="ts">
   import { RouterView } from 'vue-router'
   import AppHeader from '@/components/layout/AppHeader.vue'
-  import ErrorDisplay from '@/components/ErrorDisplay.vue'
+  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
 </script>

@@ -252,8 +252,8 @@
   import EditButton from '@/components/actions/table/EditButton.vue'
   import DeleteButton from '@/components/actions/table/DeleteButton.vue'
   import SetDefaultButton from '@/components/actions/SetDefaultButton.vue'
-  import DateDisplay from '@/components/DateDisplay.vue'
-  import ResourceNameDisplay from '@/components/ResourceNameDisplay.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import ResourceNameDisplay from '@/components/format/InternalName.vue'
 
   const router = useRouter()
   const languageStore = useLanguageStore()

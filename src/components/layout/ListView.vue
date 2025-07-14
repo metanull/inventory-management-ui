@@ -57,8 +57,8 @@
 </template>
 
 <script setup lang="ts">
-  import ErrorDisplay from '@/components/ErrorDisplay.vue'
-  import LoadingSpinner from '@/components/LoadingSpinner.vue'
+  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
+  import LoadingSpinner from '@/components/layout/LoadingSpinner.vue'
   import AddButton from '@/components/actions/list/AddButton.vue'
 
   defineProps<{
