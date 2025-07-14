@@ -89,20 +89,21 @@
       <!-- System Status Card -->
       <StatusCard
         title="System Status"
-        description="You are successfully authenticated and connected to the system."
-        main-color="green"
-        status-text="Connected"
+        :description="apiStatusDescription"
+        :main-color="apiStatusColor"
+        :status-text="apiStatusText"
+        toggle-title="API Server"
+        :is-active="isApiUp"
+        :loading="apiLoading"
+        :disabled="true"
+        active-icon-background-class="bg-green-100"
+        inactive-icon-background-class="bg-red-100"
+        active-icon-class="text-green-600"
+        inactive-icon-class="text-red-600"
+        :active-icon-component="CheckCircleIcon"
+        :inactive-icon-component="XCircleIcon"
+        @toggle="checkApiStatus"
       >
-        <template #icon>
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </template>
       </StatusCard>
 
       <!-- More Features Coming Soon Card -->
@@ -128,7 +129,29 @@
 </template>
 
 <script setup lang="ts">
+  import { computed } from 'vue'
   import NavigationCard from '@/components/home/NavigationCard.vue'
   import StatusCard from '@/components/home/StatusCard.vue'
   import InformationCard from '@/components/home/InformationCard.vue'
+  import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
+  import XCircleIcon from '@/components/icons/XCircleIcon.vue'
+  import { useApiStatus } from '@/composables/useApiStatus'
+
+  const { isApiUp, loading: apiLoading, checkApiStatus } = useApiStatus()
+
+  const apiStatusText = computed(() => {
+    if (apiLoading.value) return 'Checking...'
+    return isApiUp.value ? 'API Online' : 'API Offline'
+  })
+
+  const apiStatusDescription = computed(() => {
+    if (apiLoading.value) return 'Checking API server connection...'
+    return isApiUp.value
+      ? 'You are successfully connected to the API server.'
+      : 'Unable to connect to the API server. Please check your connection.'
+  })
+
+  const apiStatusColor = computed(() => {
+    return isApiUp.value ? 'green' : 'red'
+  })
 </script>

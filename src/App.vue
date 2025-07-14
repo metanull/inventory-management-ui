@@ -6,11 +6,13 @@
     </main>
     <!-- Global Error Display -->
     <ErrorDisplay />
+    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router'
   import AppHeader from '@/components/layout/AppHeader.vue'
+  import AppFooter from '@/components/layout/AppFooter.vue'
   import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
 </script>

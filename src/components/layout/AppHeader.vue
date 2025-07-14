@@ -81,6 +81,7 @@
         <!-- Desktop Actions -->
         <div class="hidden md:flex items-center space-x-4">
           <button
+            v-if="authStore.isLoggedIn"
             class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             @click="handleLogout"
           >
@@ -188,6 +189,7 @@
 
           <!-- Mobile Logout -->
           <button
+            v-if="authStore.isLoggedIn"
             class="text-gray-500 hover:text-gray-900 text-left px-3 py-2 rounded-md text-base font-medium"
             @click="handleLogout"
           >
