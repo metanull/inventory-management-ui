@@ -41,7 +41,7 @@ The backend API provides RESTful endpoints for managing cultural heritage data w
 - 🎨 **Accessible UI** with Headless UI components and proper ARIA support
 - 📖 **Documentation Site** with Jekyll and GitHub Pages integration
 - 🔧 **Cross-Platform Testing** supporting both PowerShell and Bash environments
-- 🛠️ **API Integration** with automatic error handling and request/response interceptors
+- 🛠️ **API Integration** using `@metanull/inventory-app-api-client` TypeScript client library with automatic error handling
 
 ## 🏗️ Technology Stack
 
@@ -69,9 +69,9 @@ The backend API provides RESTful endpoints for managing cultural heritage data w
 - **MSW (Mock Service Worker)** for API mocking in unit tests
 
 ### API Integration
-- **Axios** HTTP client with request/response interceptors
+- **@metanull/inventory-app-api-client** TypeScript client library for all API calls
 - **Bearer Token Authentication** with `/mobile/acquire-token` endpoint
-- **TypeScript interfaces** matching the OpenAPI specification exactly
+- **TypeScript interfaces** generated from OpenAPI specification via client library
 - **Automatic error handling** with 401, 404, and 422 status code management
 - **VueUse** for composable utilities and reactive APIs
 - **Environment-based configuration** for different API endpoints
@@ -217,7 +217,7 @@ This application integrates with the [Inventory Management API](https://github.c
 - **Automatic Token Management**: Seamless token injection and refresh handling
 - **Role-based Access Control**: Permission management (when implemented in API)
 - **Secure Token Storage**: localStorage with automatic cleanup on logout
-- **Request Interceptors**: Automatic authentication header injection
+- **Client Library Authentication**: Automatic authentication header injection via `@metanull/inventory-app-api-client`
 
 For complete API documentation including authentication flows, visit: [metanull.github.io/inventory-app](https://metanull.github.io/inventory-app)
 

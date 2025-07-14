@@ -119,7 +119,7 @@ The application uses a multi-layered testing strategy:
 - **Vue Test Utils**: Official Vue.js testing utilities
 - **jsdom**: DOM simulation for component testing
 - **MSW (Mock Service Worker)**: API mocking for unit tests
-- **Axios**: HTTP client testing with interceptors
+- **@metanull/inventory-app-api-client**: TypeScript client library testing with mocks
 
 ## Unit Tests
 
@@ -545,7 +545,7 @@ php artisan db:seed --env=testing
 ```typescript
 // Use vi.mock() to mock heavy dependencies
 vi.mock('@/api/client')
-vi.mock('axios')
+vi.mock('@metanull/inventory-app-api-client')
 ```
 
 #### Slow Integration Tests

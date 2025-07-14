@@ -52,19 +52,19 @@ const token = response.data.access_token
 localStorage.setItem('token', token)
 
 // 4. Token automatically included in subsequent requests
-// via Axios interceptors
+// via the @metanull/inventory-app-api-client library
 ```
 
 ### Token Management
 
 - **Storage**: JWT tokens are stored in `localStorage`
-- **Injection**: Tokens are automatically injected into API requests via Axios interceptors
+- **Injection**: Tokens are automatically injected into API requests via the client library's built-in authentication handling
 - **Expiration**: Automatic logout when tokens expire (401 responses)
 - **Refresh**: Manual re-authentication required when tokens expire
 
 ## 🏗️ API Client Architecture
 
-The application uses a centralized API client (`src/api/client.ts`) that provides:
+The application uses the `@metanull/inventory-app-api-client` TypeScript client library that provides:
 
 ### Type-Safe Interface
 
@@ -86,34 +86,41 @@ export interface ItemResource {
 ### Standardized Methods
 
 ```typescript
-class APIClient {
-  // CRUD operations for each resource
-  async getItems(): Promise<ApiResponse<ItemResource[]>>
-  async getItem(id: string): Promise<ApiResponse<ItemResource>>
-  async createItem(data: Partial<ItemResource>): Promise<ApiResponse<ItemResource>>
-  async updateItem(id: string, data: Partial<ItemResource>): Promise<ApiResponse<ItemResource>>
-  async deleteItem(id: string): Promise<void>
-  
-  // Tag management for items
-  async getItemTags(itemId: string): Promise<ApiResponse<TagResource[]>>
-  async addTagToItem(itemId: string, tagId: string): Promise<void>
-  async removeTagFromItem(itemId: string, tagId: string): Promise<void>
-}
+// Import the client library
+import { Configuration, ItemsApi, PartnersApi, ProjectsApi, TagsApi } from '@metanull/inventory-app-api-client';
+
+// Configure the API client
+const config = new Configuration({
+  basePath: import.meta.env.VITE_API_BASE_URL,
+  accessToken: () => localStorage.getItem('token') || ''
+});
+
+// Create API instances
+const itemsApi = new ItemsApi(config);
+const partnersApi = new PartnersApi(config);
+const projectsApi = new ProjectsApi(config);
+const tagsApi = new TagsApi(config);
+
+// Example usage
+const getItems = async () => {
+  const response = await itemsApi.apiItemsGet();
+  return response.data;
+};
 ```
 
 ### Error Handling
 
 ```typescript
 try {
-  const response = await apiClient.getItems()
-  items.value = response.data
+  const response = await itemsApi.apiItemsGet();
+  items.value = response.data;
 } catch (error: any) {
   if (error.response?.status === 401) {
     // Redirect to login
     router.push('/login')
   } else {
     // Show user-friendly error message
-    errorMessage.value = error.response?.data?.message || 'An error occurred'
+    errorMessage.value = error.message || 'An error occurred'
   }
 }
 ```
@@ -135,40 +142,77 @@ interface ApiResponse<T> {
 #### Creating an Item
 
 ```typescript
+// Import the client library
+import { Configuration, ItemsApi, CreateItemDto } from '@metanull/inventory-app-api-client';
+
+// Configure the API client
+const config = new Configuration({
+  basePath: import.meta.env.VITE_API_BASE_URL,
+  accessToken: () => localStorage.getItem('token') || ''
+});
+
+// Create API instance
+const itemsApi = new ItemsApi(config);
+
 // Frontend request
-const newItem = {
+const newItem: CreateItemDto = {
   internal_name: 'Ancient Vase',
-  type: 'object' as const,
+  type: 'object',
   partner_id: 'partner-uuid',
   project_id: 'project-uuid'
 }
 
-const response = await apiClient.createItem(newItem)
+const response = await itemsApi.apiItemsPost(newItem);
 ```
 
 #### Updating with Relationships
 
 ```typescript
+// Import the client library
+import { Configuration, ItemsApi, UpdateItemDto } from '@metanull/inventory-app-api-client';
+
+// Configure the API client (typically done once in your app)
+const config = new Configuration({
+  basePath: import.meta.env.VITE_API_BASE_URL,
+  accessToken: () => localStorage.getItem('token') || ''
+});
+
+// Create API instance
+const itemsApi = new ItemsApi(config);
+
 // Update item with new partner
-const updatedItem = {
+const updatedItem: UpdateItemDto = {
   internal_name: 'Updated Name',
   partner_id: 'new-partner-uuid'
 }
 
-const response = await apiClient.updateItem(itemId, updatedItem)
+const response = await itemsApi.apiItemsIdPut(itemId, updatedItem);
 ```
 
 #### Tag Management
 
 ```typescript
+// Import the client library
+import { Configuration, TagsApi } from '@metanull/inventory-app-api-client';
+
+// Configure the API client
+const config = new Configuration({
+  basePath: import.meta.env.VITE_API_BASE_URL,
+  accessToken: () => localStorage.getItem('token') || ''
+});
+
+// Create API instance
+const tagsApi = new TagsApi(config);
+
 // Add tag to item
-await apiClient.addTagToItem(itemId, tagId)
+await tagsApi.apiItemsItemIdTagsTagIdPost(itemId, tagId);
 
 // Remove tag from item
-await apiClient.removeTagFromItem(itemId, tagId)
+await tagsApi.apiItemsItemIdTagsTagIdDelete(itemId, tagId);
 
 // Get all tags for item
-const tags = await apiClient.getItemTags(itemId)
+const response = await tagsApi.apiItemsItemIdTagsGet(itemId);
+const tags = response.data;
 ```
 
 ## 🔄 State Management Integration
@@ -183,9 +227,26 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   
   const login = async (credentials: LoginCredentials) => {
-    const response = await apiClient.login(credentials)
-    token.value = response.data.access_token
-    localStorage.setItem('token', token.value)
+    // Import the client library
+    import { Configuration, AuthApi, AcquireTokenRequest } from '@metanull/inventory-app-api-client';
+    
+    // Create API instance for authentication
+    const authApi = new AuthApi(new Configuration({
+      basePath: import.meta.env.VITE_API_BASE_URL
+    }));
+    
+    // Prepare token request
+    const tokenRequest: AcquireTokenRequest = {
+      email: credentials.email,
+      password: credentials.password,
+      device_name: 'web-app',
+      wipe_tokens: false
+    };
+    
+    // Acquire token
+    const response = await authApi.apiMobileAcquireTokenPost(tokenRequest);
+    token.value = response.data.access_token;
+    localStorage.setItem('token', token.value);
   }
   
   const logout = () => {
@@ -243,10 +304,11 @@ const fetchData = async () => {
   error.value = null
   
   try {
-    const response = await apiClient.getData()
-    data.value = response.data
+    // Using the client library
+    const response = await itemsApi.apiItemsGet();
+    data.value = response.data;
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'Failed to load data'
+    error.value = err.message || 'Failed to load data';
   } finally {
     loading.value = false
   }
@@ -261,20 +323,28 @@ For testing, API calls are mocked using Vitest:
 
 ```typescript
 // Test setup
-vi.mock('@/api/client', () => ({
-  apiClient: {
-    getItems: vi.fn(),
-    createItem: vi.fn(),
-    updateItem: vi.fn(),
-    deleteItem: vi.fn()
-  }
-}))
+vi.mock('@metanull/inventory-app-api-client', () => {
+  const mockItemsApi = {
+    apiItemsGet: vi.fn(),
+    apiItemsPost: vi.fn(),
+    apiItemsIdPut: vi.fn(),
+    apiItemsIdDelete: vi.fn()
+  };
+  
+  return {
+    ItemsApi: vi.fn(() => mockItemsApi),
+    Configuration: vi.fn(),
+    MockItemsApi: mockItemsApi  // Expose for easy access in tests
+  };
+});
+
+// Import the mock
+import { MockItemsApi } from '@metanull/inventory-app-api-client';
 
 // Test usage
-const mockApiClient = apiClient as any
-mockApiClient.getItems.mockResolvedValue({
+MockItemsApi.apiItemsGet.mockResolvedValue({
   data: [mockItem1, mockItem2]
-})
+});
 ```
 
 ### Local Development
