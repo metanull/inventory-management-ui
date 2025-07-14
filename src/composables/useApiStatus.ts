@@ -1,10 +1,15 @@
 import { ref, onMounted } from 'vue'
-import { Configuration, ContextApi } from '@metanull/inventory-app-api-client'
+import {
+  Configuration,
+  InfoApi,
+  type InfoVersion200Response,
+} from '@metanull/inventory-app-api-client'
 
 export function useApiStatus() {
   const isApiUp = ref(false)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const versionData = ref<InfoVersion200Response | null>(null)
 
   const checkApiStatus = async () => {
     loading.value = true
@@ -24,14 +29,17 @@ export function useApiStatus() {
       }
 
       const config = new Configuration({ basePath: baseURL })
-      const contextApi = new ContextApi(config)
-      // Simple health check by trying to fetch contexts (should work even without auth)
-      await contextApi.contextIndex()
+      const infoApi = new InfoApi(config)
+
+      // Only call the version endpoint
+      const versionResponse = await infoApi.infoVersion()
+      versionData.value = versionResponse.data
 
       isApiUp.value = true
     } catch (e) {
       isApiUp.value = false
       error.value = e instanceof Error ? e.message : 'Unknown error'
+      versionData.value = null
     } finally {
       loading.value = false
     }
@@ -45,6 +53,7 @@ export function useApiStatus() {
     isApiUp,
     loading,
     error,
+    versionData,
     checkApiStatus,
   }
 }

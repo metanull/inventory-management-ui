@@ -29,5 +29,15 @@
     buttonRoute: string
   }>()
 
-  const buttonClasses = computed(() => `bg-${props.mainColor}-600 hover:bg-${props.mainColor}-700`)
+  const buttonClasses = computed(() => {
+    const colorMap: Record<string, string> = {
+      blue: 'bg-blue-600 hover:bg-blue-700',
+      green: 'bg-green-600 hover:bg-green-700',
+      purple: 'bg-purple-600 hover:bg-purple-700',
+      orange: 'bg-orange-600 hover:bg-orange-700',
+      red: 'bg-red-600 hover:bg-red-700',
+      gray: 'bg-gray-600 hover:bg-gray-700',
+    }
+    return colorMap[props.mainColor] || 'bg-blue-600 hover:bg-blue-700'
+  })
 </script>

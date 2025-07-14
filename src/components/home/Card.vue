@@ -20,5 +20,15 @@
     mainColor: string
   }>()
 
-  const iconClasses = computed(() => `text-${props.mainColor}-600`)
+  const iconClasses = computed(() => {
+    const colorMap: Record<string, string> = {
+      blue: 'text-blue-600',
+      green: 'text-green-600',
+      purple: 'text-purple-600',
+      orange: 'text-orange-600',
+      red: 'text-red-600',
+      gray: 'text-gray-600',
+    }
+    return colorMap[props.mainColor] || 'text-blue-600'
+  })
 </script>
