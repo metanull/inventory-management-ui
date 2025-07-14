@@ -187,6 +187,8 @@
     :resource="project"
     :is-editing="isEditing"
     :save-loading="saveLoading"
+    :save-disabled="!hasUnsavedChanges"
+    :has-unsaved-changes="hasUnsavedChanges"
     :action-loading="toggleLoading"
     :status-cards="statusCardsConfig"
     information-title="Project Information"
@@ -488,6 +490,36 @@
     launch_date: '',
     context_id: '',
     language_id: '',
+  })
+
+  // Track unsaved changes
+  const hasUnsavedChanges = computed(() => {
+    if (!isEditing.value || !project.value) return false
+
+    // For new projects, any non-empty field indicates changes
+    if (isNewProject.value) {
+      return (
+        editForm.value.internal_name.trim() !== '' ||
+        editForm.value.backward_compatibility.trim() !== '' ||
+        editForm.value.launch_date.trim() !== '' ||
+        editForm.value.context_id !== '' ||
+        editForm.value.language_id !== ''
+      )
+    }
+
+    // For existing projects, compare with original values
+    let originalLaunchDate = ''
+    if (project.value.launch_date) {
+      originalLaunchDate = project.value.launch_date.split('T')[0]
+    }
+
+    return (
+      editForm.value.internal_name !== project.value.internal_name ||
+      editForm.value.backward_compatibility !== (project.value.backward_compatibility || '') ||
+      editForm.value.launch_date !== originalLaunchDate ||
+      editForm.value.context_id !== (project.value.context?.id || '') ||
+      editForm.value.language_id !== (project.value.language?.id || '')
+    )
   })
 
   // Check for edit mode from query parameter

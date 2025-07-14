@@ -24,6 +24,7 @@
         :backward-compatibility="resource.backward_compatibility"
         :is-editing="isEditing"
         :save-loading="saveLoading"
+        :save-disabled="isSaveDisabled"
         @edit="$emit('edit')"
         @delete="$emit('delete')"
         @save="$emit('save')"
@@ -65,7 +66,7 @@
           </p>
         </div>
         <div class="border-t border-gray-200">
-          <slot name="information" />
+          <slot name="information" :on-field-change="handleFieldChange" />
         </div>
       </div>
 
@@ -88,17 +89,30 @@
       @confirm="$emit('confirmDelete')"
       @cancel="$emit('cancelDelete')"
     />
+
+    <!-- Unsaved Changes Modal -->
+    <UnsavedChangesModal
+      :show="showUnsavedChangesModal"
+      @confirm="handleConfirmLeave"
+      @cancel="handleCancelLeave"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, type Component } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch, type Component } from 'vue'
+  import {
+    onBeforeRouteLeave,
+    type NavigationGuardNext,
+    type RouteLocationNormalized,
+  } from 'vue-router'
   import LoadingSpinner from '@/components/layout/LoadingSpinner.vue'
   import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
   import DetailHeader from '@/components/layout/DetailHeader.vue'
   import StatusCard from '@/components/format/Toggle.vue'
   import SystemProperties from '@/components/detail/SystemProperties.vue'
   import DeleteConfirmationModal from '@/components/layout/DeleteConfirmationModal.vue'
+  import UnsavedChangesModal from '@/components/layout/UnsavedChangesModal.vue'
 
   interface StatusCardConfig {
     title: string
@@ -132,6 +146,7 @@
     isEditing: boolean
     saveLoading?: boolean
     actionLoading?: boolean
+    hasUnsavedChanges?: boolean // New prop to track unsaved changes
 
     // Configuration
     statusCards?: StatusCardConfig[]
@@ -157,13 +172,82 @@
     statusToggle: [index: number]
     confirmDelete: []
     cancelDelete: []
+    unsavedChanges: [hasChanges: boolean] // New emit for parent to notify of changes
   }>()
 
   // Internal loading state for initial page load
   const initialLoading = ref(false)
 
+  // Unsaved changes modal state
+  const showUnsavedChangesModal = ref(false)
+  const pendingNavigation = ref<(() => void) | null>(null)
+
   // Computed loading state - prioritize initial loading over store loading
   const loading = computed(() => initialLoading.value || (props.storeLoading && !props.resource))
+
+  // Disable save button if no unsaved changes
+  const isSaveDisabled = computed(() => !props.hasUnsavedChanges)
+
+  // Browser beforeunload event handler
+  const handleBeforeUnload = (event: Event) => {
+    if (props.isEditing && props.hasUnsavedChanges) {
+      event.preventDefault()
+      // Modern browsers show a generic message, but we still need to set returnValue
+      Object.assign(event, { returnValue: '' })
+      return ''
+    }
+  }
+
+  // Navigation guard to prevent leaving with unsaved changes
+  onBeforeRouteLeave(
+    (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      if (props.isEditing && props.hasUnsavedChanges) {
+        showUnsavedChangesModal.value = true
+        pendingNavigation.value = () => next()
+        next(false) // Prevent navigation
+      } else {
+        next() // Allow navigation
+      }
+    }
+  )
+
+  // Watch for editing state changes to add/remove beforeunload listener
+  watch(
+    () => props.isEditing,
+    (isEditing: boolean) => {
+      if (isEditing) {
+        window.addEventListener('beforeunload', handleBeforeUnload)
+      } else {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+      }
+    },
+    { immediate: true }
+  )
+
+  // Clean up event listener on unmount
+  onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+  })
+
+  // Handle confirmation to leave without saving
+  const handleConfirmLeave = () => {
+    showUnsavedChangesModal.value = false
+    if (pendingNavigation.value) {
+      pendingNavigation.value()
+      pendingNavigation.value = null
+    }
+  }
+
+  // Handle cancellation of leaving
+  const handleCancelLeave = () => {
+    showUnsavedChangesModal.value = false
+    pendingNavigation.value = null
+  }
+
+  // Handle field changes from child components
+  const handleFieldChange = () => {
+    emit('unsavedChanges', true)
+  }
 
   // Fetch data on mount
   onMounted(async () => {

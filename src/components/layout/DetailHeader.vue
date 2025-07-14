@@ -17,7 +17,7 @@
             <DeleteButton @click="$emit('delete')" />
           </template>
           <template v-else>
-            <SaveButton :loading="saveLoading" @click="$emit('save')" />
+            <SaveButton :loading="saveLoading" :disabled="saveDisabled" @click="$emit('save')" />
             <CancelButton @click="$emit('cancel')" />
           </template>
         </div>
@@ -37,6 +37,7 @@
     backwardCompatibility?: string | null
     isEditing: boolean
     saveLoading?: boolean
+    saveDisabled?: boolean
   }>()
 
   defineEmits<{
