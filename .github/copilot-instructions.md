@@ -20,33 +20,16 @@
 - API Integration
   - The API is a RESTful JSON API
   - The API provider is `https://metanull.github.com/inventory-app`
-    - The provider maintains OpenAPI specifications at `https://metanull.github.com/inventory-app/api.json`
     - The provider maintains a typescript-axios client library as a npm package `@metanull/inventory-app-api-client`
-      - Always use the latest version of `@metanull/inventory-app-api-client` unless a specific version is required for compatibility.
-    - We have a npm script 'inventory-app:fetch' that can download the OpenAPI in our projects' `src/api/inventory-app.json` file.
-  - **CRITICAL: Use the typescript-axios client library `@metanull/inventory-app-api-client` for API integration**
-    - The Package is private, so you need to authenticate with a GitHub token to install the package
-    - The Package is hosted on github packages, so you need to configure your `.npmrc` file to authenticate with the GitHub registry
-    - The API is under development, always check for newer versions of the library
+    - **CRITICAL: Use the typescript-axios client library `@metanull/inventory-app-api-client` for API integration**
+      - The Package is private, so you need to authenticate with a GitHub token to install the package
+      - The Package is hosted on github packages, so you need to configure your `.npmrc` file to authenticate with the GitHub registry
+      - The API is under development, always check for newer versions of the library
       - The library is generated from the OpenAPI specification
-  - Use OpenAPI specification to:
-    - Use the OpenAPI specification to understand the API endpoints and their parameters
-    - Use the OpenAPI specification to understand the API types, methods, requests and responses.
-  - Use Axios for API HTTP requests with interceptors for authentication
   - Handle errors consistently with user feedback
   - Show loading states during API calls
+    - Prefer overlay spinners for full-screen loading
   - Cache data appropriately with reactive state
-  - Uses bearer token authentication
-    - API method for obtaining a JWT token is `POST /api/mobile/acquire-token`
-      - it requires `email` ('user@example.com'), `password` ('password'), `device_name` ('testing') and `wipe_tokens` (true) in the request body
-    - Token stored in localStorage
-    - Automatic token injection via Axios interceptors
-    - Automatic logout on 401 responses
-  - Data Management
-    - CRUD operations for all entity types that supports it
-    - Real-time error handling and user feedback
-    - Loading states with spinners
-    - Confirmation dialogs for destructive actions
 - Testing and quality
   - Use Vitest for unit testing with coverage reporting
   - Use Vue Test Utils for component testing
@@ -55,22 +38,25 @@
   - Generate tests for components
   - Generate tests for features
   - Generate tests for types
-- Error handling with try/catch and user feedback
+- Layout
+  - Keep layout consistent by using the same approaches in different pages:
+    - Each resource has a List page and a Detail page
+    - List pages show a table with actions
+    - Detail pages show a single record and support inline editing
+      - Inline editing also supports creating new records
+  - Keep layout consistent by using components
+  - **CRITICAL: Use the Partners.vue and PartnersDetial.vue as examples for layouts and logic of other pages.**
 - Code style
   - Follow ESLint and Prettier configurations
   - Use TypeScript strict mode
   - Prefer composition over inheritance
   - Keep components focused and single-purpose
 - CI/CD pipeline
-  - Pull request validation with type checking, linting, testing, and building
-  - Security scanning with Trivy vulnerability scanner
-  - Coverage requirements of 0% minimum test coverage
-  - Automated comments for build status updates on PRs
-  - Husky for pre-commit hooks
+  - Git hooks are in place using Husky.
+    - Automated quality checks rejects push that do not pass type checking, linting, testing, and building
+    - Coverage requirements of 0% minimum test coverage
 - Environment configuration
   - `.env` files for different environments
-  - `VITE_API_BASE_URL` for API endpoint configuration
-  - `VITE_APP_TITLE` for application branding
 - Responsive Design
   - Mobile-first approach with Tailwind breakpoints
   - Adaptive layouts for different screen sizes
