@@ -372,14 +372,6 @@
       </dl>
     </template>
   </DetailView>
-
-  <!-- Debug fallback -->
-  <div
-    v-if="!isNewProject && !project"
-    style="background: orange; color: white; padding: 10px; margin: 10px"
-  >
-    DEBUG: Not new project, no existing project - Route ID: {{ route.params.id }}
-  </div>
 </template>
 
 <script setup lang="ts">
