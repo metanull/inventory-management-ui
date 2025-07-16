@@ -25,6 +25,7 @@
         :is-editing="isEditing"
         :save-loading="saveLoading"
         :save-disabled="isSaveDisabled"
+        :back-link="backLink"
         @edit="$emit('edit')"
         @delete="$emit('delete')"
         @save="$emit('save')"
@@ -147,6 +148,14 @@
     saveLoading?: boolean
     actionLoading?: boolean
     hasUnsavedChanges?: boolean // New prop to track unsaved changes
+
+    // Navigation
+    backLink?: {
+      title: string
+      route: string
+      icon: any
+      color?: string
+    }
 
     // Configuration
     statusCards?: StatusCardConfig[]

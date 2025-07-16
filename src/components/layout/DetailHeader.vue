@@ -3,6 +3,18 @@
     <div class="px-4 py-5 sm:px-6">
       <div class="flex items-center justify-between">
         <div>
+          <!-- Back Navigation Link -->
+          <div v-if="backLink" class="mb-2">
+            <router-link
+              :to="backLink.route"
+              :class="backLinkClasses"
+              class="inline-flex items-center text-sm font-medium transition-colors hover:underline"
+            >
+              <component :is="backLink.icon" class="w-4 h-4 mr-1" />
+              {{ backLink.title }}
+            </router-link>
+          </div>
+
           <h1 class="text-2xl font-bold text-gray-900">
             {{ internalName }}
             <span v-if="isEditing" class="text-sm font-normal text-blue-600 ml-2">(Editing)</span>
@@ -27,17 +39,26 @@
 </template>
 
 <script setup lang="ts">
+  import { computed } from 'vue'
   import EditButton from '@/components/actions/detail/EditButton.vue'
   import DeleteButton from '@/components/actions/detail/DeleteButton.vue'
   import SaveButton from '@/components/actions/detail/SaveButton.vue'
   import CancelButton from '@/components/actions/detail/CancelButton.vue'
 
-  defineProps<{
+  interface BackLink {
+    title: string
+    route: string
+    icon: any
+    color?: string
+  }
+
+  const props = defineProps<{
     internalName: string
     backwardCompatibility?: string | null
     isEditing: boolean
     saveLoading?: boolean
     saveDisabled?: boolean
+    backLink?: BackLink
   }>()
 
   defineEmits<{
@@ -46,4 +67,18 @@
     save: []
     cancel: []
   }>()
+
+  const backLinkClasses = computed(() => {
+    if (!props.backLink?.color) return 'text-gray-600 hover:text-gray-800'
+
+    const colorMap: Record<string, string> = {
+      blue: 'text-blue-600 hover:text-blue-800',
+      green: 'text-green-600 hover:text-green-800',
+      purple: 'text-purple-600 hover:text-purple-800',
+      orange: 'text-orange-600 hover:text-orange-800',
+      red: 'text-red-600 hover:text-red-800',
+      gray: 'text-gray-600 hover:text-gray-800',
+    }
+    return colorMap[props.backLink.color] || 'text-gray-600 hover:text-gray-800'
+  })
 </script>

@@ -170,7 +170,7 @@
   const projects = computed(() => projectStore.projects)
   const enabledProjects = computed(() => projectStore.enabledProjects)
   const launchedProjects = computed(() => projectStore.launchedProjects)
-  const loading = computed(() => projectStore.loading)
+  const loading = computed(() => projectStore.loading && projects.value.length === 0)
   const error = computed(() => projectStore.error)
 
   // Filter state
