@@ -26,14 +26,16 @@
     "prepare": "husky",
     "inventory-app:fetch": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app.json'\"",
     "inventory-app:diff": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app-temp.json'; Compare-Object (Get-Content './src/api/inventory-app.json') (Get-Content './src/api/inventory-app-temp.json') | Format-Table; Remove-Item './src/api/inventory-app-temp.json'\"",
-    "inventory-app:start": "powershell -ExecutionPolicy Bypass -File ./scripts/start-api-server.ps1",
+    "inventory-app:start": "powershell -ExecutionPolicy Bypass -File ./scripts/Start-Api.ps1",
+    "inventory-app:watch-logs": "powershell -ExecutionPolicy Bypass -File ./scripts/Watch-ApiLogs.ps1",
+    "inventory-app:clear-logs": "powershell -ExecutionPolicy Bypass -File ./scripts/Clear-ApiLogs.ps1",
     "quality-check": "npm run type-check && npm run lint:check && npm run format:check && npm run test",
     "quality-check:fix": "npm run lint && npm run format"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
-    "@metanull/inventory-app-api-client": "^1.1.10-dev.714.1346",
+    "@metanull/inventory-app-api-client": "^1.1.19-dev.715.1753",
     "@vueuse/core": "^13.4.0",
     "axios": "^1.7.9",
     "pinia": "^3.0.3",

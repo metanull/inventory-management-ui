@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false)]
+    [ValidateNotNullOrEmpty()]
     [Alias('Url')]
     [string]$AppUrl = 'http://localhost:8000',
 
@@ -9,10 +10,8 @@ param(
     [int]$TimeoutSec = 10
 )
 Process {
-    try {
-        return Invoke-RestMethod -Uri "$AppUrl/api/health" -TimeoutSec $TimeoutSec -ErrorAction Stop
-    } catch {
-        Write-Warning "Failed to connect to API at $AppUrl. Error: $_"
-        return $false
-    }
+    $HealthCheckUrl = "$AppUrl/api/health"
+    Write-Information "Checking API health at $HealthCheckUrl with timeout of $TimeoutSec seconds..."
+
+    Invoke-RestMethod -Uri $HealthCheckUrl -TimeoutSec $TimeoutSec -ErrorAction Stop
 }
