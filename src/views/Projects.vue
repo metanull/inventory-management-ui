@@ -110,49 +110,28 @@
               />
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <Toggle
+              <ToggleSmall
                 title="Enabled"
                 :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
                 :is-active="project.is_enabled"
                 :disabled="true"
-                hide-switch
-                active-icon-background-class="bg-green-100"
-                inactive-icon-background-class="bg-red-100"
-                active-icon-class="text-green-600"
-                inactive-icon-class="text-red-600"
-                :active-icon-component="CheckCircleIcon"
-                :inactive-icon-component="XCircleIcon"
               />
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <Toggle
+              <ToggleSmall
                 title="Launched"
                 :status-text="project.is_launched ? 'Launched' : 'Not Launched'"
                 :is-active="project.is_launched"
                 :disabled="true"
-                hide-switch
-                active-icon-background-class="bg-blue-100"
-                inactive-icon-background-class="bg-gray-100"
-                active-icon-class="text-blue-600"
-                inactive-icon-class="text-gray-600"
-                :active-icon-component="RocketIcon"
-                :inactive-icon-component="RocketIcon"
               />
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <Toggle
+              <ToggleSmall
                 v-if="project.launch_date"
                 title="Launch Date"
                 :status-text="formatLaunchDate(project.launch_date)"
                 :is-active="isLaunchDatePassed(project.launch_date)"
                 :disabled="true"
-                hide-switch
-                active-icon-background-class="bg-indigo-100"
-                inactive-icon-background-class="bg-yellow-100"
-                active-icon-class="text-indigo-600"
-                inactive-icon-class="text-yellow-600"
-                :active-icon-component="CheckCircleIcon"
-                :inactive-icon-component="RocketIcon"
               />
               <span v-else class="text-sm text-gray-500">Not scheduled</span>
             </td>
@@ -199,10 +178,7 @@
   import FilterButton from '@/components/actions/list/FilterButton.vue'
   import ListView from '@/components/layout/ListView.vue'
   import TableView from '@/components/layout/TableView.vue'
-  import Toggle from '@/components/format/Toggle.vue'
-  import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
-  import XCircleIcon from '@/components/icons/XCircleIcon.vue'
-  import RocketIcon from '@/components/icons/RocketIcon.vue'
+  import ToggleSmall from '@/components/format/ToggleSmall.vue'
 
   const router = useRouter()
 
