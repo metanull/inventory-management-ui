@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Contributing
-nav_order: 3
+nav_order: 4
 ---
 
 # Contributing Guidelines
@@ -49,7 +49,7 @@ This is safe to commit and does **not** contain any tokens.
 ### 🤖 CI/CD Automation
 
 - In CI, set the token as an environment variable (e.g., `NPM_TOKEN`) and inject it at build time.
-- 
+
 #### 🛡️ Security Reminder
 
 - **Never commit your token to the repository.**

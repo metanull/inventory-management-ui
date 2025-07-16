@@ -95,6 +95,9 @@ The application will be available at `http://localhost:3000`.
 ### [Guidelines](guidelines/)
 Comprehensive development guidelines covering API integration, coding standards, and testing practices.
 
+### [Components](components/)
+A catalog of reusable Vue components used throughout the application, including usage examples and API documentation.
+
 ### [Contributing](contributing)
 Guidelines for contributing to the project, including development setup and workflow.
 
