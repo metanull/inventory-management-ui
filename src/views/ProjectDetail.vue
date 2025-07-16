@@ -71,107 +71,25 @@
           <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt class="text-sm font-medium text-gray-500">Default Context</dt>
             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <select
+              <GenericDropdown
                 v-model="editForm.context_id"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <!-- Priority items first -->
-                <template v-if="sortedContexts.priorityItems.length > 0">
-                  <option
-                    v-for="context in sortedContexts.priorityItems"
-                    :key="context.id"
-                    :value="context.id"
-                    :class="
-                      getDropdownOptionClasses(
-                        editForm.context_id === context.id,
-                        context.is_default
-                      )
-                    "
-                  >
-                    {{ context.internal_name
-                    }}{{
-                      getDropdownOptionLabel(editForm.context_id === context.id, context.is_default)
-                    }}
-                  </option>
-                </template>
-
-                <!-- No default option -->
-                <option
-                  value=""
-                  :class="getDropdownOptionClasses(editForm.context_id === '', false, true)"
-                >
-                  {{ DROPDOWN_OPTION_LABELS.noDefaultContext
-                  }}{{ editForm.context_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
-                </option>
-
-                <!-- Separator -->
-                <option disabled>────────────────</option>
-
-                <!-- Remaining items -->
-                <option
-                  v-for="context in sortedContexts.remainingItems"
-                  :key="context.id"
-                  :value="context.id"
-                  :class="getDropdownOptionClasses(false, context.is_default)"
-                >
-                  {{ context.internal_name }}{{ getDropdownOptionLabel(false, context.is_default) }}
-                </option>
-              </select>
+                :options="contexts"
+                :show-no-default-option="true"
+                no-default-label="No default context"
+                no-default-value=""
+              />
             </dd>
           </div>
           <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt class="text-sm font-medium text-gray-500">Default Language</dt>
             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <select
+              <GenericDropdown
                 v-model="editForm.language_id"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <!-- Priority items first -->
-                <template v-if="sortedLanguages.priorityItems.length > 0">
-                  <option
-                    v-for="language in sortedLanguages.priorityItems"
-                    :key="language.id"
-                    :value="language.id"
-                    :class="
-                      getDropdownOptionClasses(
-                        editForm.language_id === language.id,
-                        language.is_default
-                      )
-                    "
-                  >
-                    {{ language.internal_name
-                    }}{{
-                      getDropdownOptionLabel(
-                        editForm.language_id === language.id,
-                        language.is_default
-                      )
-                    }}
-                  </option>
-                </template>
-
-                <!-- No default option -->
-                <option
-                  value=""
-                  :class="getDropdownOptionClasses(editForm.language_id === '', false, true)"
-                >
-                  {{ DROPDOWN_OPTION_LABELS.noDefaultLanguage
-                  }}{{ editForm.language_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
-                </option>
-
-                <!-- Separator -->
-                <option disabled>────────────────</option>
-
-                <!-- Remaining items -->
-                <option
-                  v-for="language in sortedLanguages.remainingItems"
-                  :key="language.id"
-                  :value="language.id"
-                  :class="getDropdownOptionClasses(false, language.is_default)"
-                >
-                  {{ language.internal_name
-                  }}{{ getDropdownOptionLabel(false, language.is_default) }}
-                </option>
-              </select>
+                :options="languages"
+                :show-no-default-option="true"
+                no-default-label="No default language"
+                no-default-value=""
+              />
             </dd>
           </div>
         </dl>
@@ -261,50 +179,14 @@
         <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
           <dt class="text-sm font-medium text-gray-500">Default Context</dt>
           <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            <select
+            <GenericDropdown
               v-if="isEditing"
               v-model="editForm.context_id"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <!-- Priority items first -->
-              <template v-if="sortedContexts.priorityItems.length > 0">
-                <option
-                  v-for="context in sortedContexts.priorityItems"
-                  :key="context.id"
-                  :value="context.id"
-                  :class="
-                    getDropdownOptionClasses(editForm.context_id === context.id, context.is_default)
-                  "
-                >
-                  {{ context.internal_name
-                  }}{{
-                    getDropdownOptionLabel(editForm.context_id === context.id, context.is_default)
-                  }}
-                </option>
-              </template>
-
-              <!-- No default option -->
-              <option
-                value=""
-                :class="getDropdownOptionClasses(editForm.context_id === '', false, true)"
-              >
-                {{ DROPDOWN_OPTION_LABELS.noDefaultContext
-                }}{{ editForm.context_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
-              </option>
-
-              <!-- Separator -->
-              <option disabled>────────────────</option>
-
-              <!-- Remaining items -->
-              <option
-                v-for="context in sortedContexts.remainingItems"
-                :key="context.id"
-                :value="context.id"
-                :class="getDropdownOptionClasses(false, context.is_default)"
-              >
-                {{ context.internal_name }}{{ getDropdownOptionLabel(false, context.is_default) }}
-              </option>
-            </select>
+              :options="contexts"
+              :show-no-default-option="true"
+              no-default-label="No default context"
+              no-default-value=""
+            />
             <template v-else>
               <span v-if="project?.context">{{ project.context.internal_name }}</span>
               <span v-else class="text-gray-500">No default context set</span>
@@ -314,56 +196,14 @@
         <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
           <dt class="text-sm font-medium text-gray-500">Default Language</dt>
           <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            <select
+            <GenericDropdown
               v-if="isEditing"
               v-model="editForm.language_id"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <!-- Priority items first -->
-              <template v-if="sortedLanguages.priorityItems.length > 0">
-                <option
-                  v-for="language in sortedLanguages.priorityItems"
-                  :key="language.id"
-                  :value="language.id"
-                  :class="
-                    getDropdownOptionClasses(
-                      editForm.language_id === language.id,
-                      language.is_default
-                    )
-                  "
-                >
-                  {{ language.internal_name
-                  }}{{
-                    getDropdownOptionLabel(
-                      editForm.language_id === language.id,
-                      language.is_default
-                    )
-                  }}
-                </option>
-              </template>
-
-              <!-- No default option -->
-              <option
-                value=""
-                :class="getDropdownOptionClasses(editForm.language_id === '', false, true)"
-              >
-                {{ DROPDOWN_OPTION_LABELS.noDefaultLanguage
-                }}{{ editForm.language_id === '' ? DROPDOWN_OPTION_LABELS.current : '' }}
-              </option>
-
-              <!-- Separator -->
-              <option disabled>────────────────</option>
-
-              <!-- Remaining items -->
-              <option
-                v-for="language in sortedLanguages.remainingItems"
-                :key="language.id"
-                :value="language.id"
-                :class="getDropdownOptionClasses(false, language.is_default)"
-              >
-                {{ language.internal_name }}{{ getDropdownOptionLabel(false, language.is_default) }}
-              </option>
-            </select>
+              :options="languages"
+              :show-no-default-option="true"
+              no-default-label="No default language"
+              no-default-value=""
+            />
             <template v-else>
               <span v-if="project?.language">{{ project.language.internal_name }}</span>
               <span v-else class="text-gray-500">No default language set</span>
@@ -381,20 +221,15 @@
   import { useProjectStore } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
-  import type { ContextResource, LanguageResource } from '@metanull/inventory-app-api-client'
   import DateDisplay from '@/components/format/Date.vue'
   import DetailView from '@/components/layout/DetailView.vue'
   import SaveButton from '@/components/actions/detail/SaveButton.vue'
   import CancelButton from '@/components/actions/detail/CancelButton.vue'
+  import GenericDropdown from '@/components/form/GenericDropdown.vue'
   import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import RocketIcon from '@/components/icons/RocketIcon.vue'
   import PackageIcon from '@/components/icons/PackageIcon.vue'
-  import {
-    getDropdownOptionClasses,
-    getDropdownOptionLabel,
-    DROPDOWN_OPTION_LABELS,
-  } from '@/utils/dropdownStyles'
 
   const route = useRoute()
   const router = useRouter()
@@ -434,63 +269,6 @@
   const languages = computed(() => languageStore.languages)
   const defaultContext = computed(() => contextStore.defaultContext)
   const defaultLanguage = computed(() => languageStore.defaultLanguage)
-
-  // Sorted dropdown options with priority items first
-  const sortedContexts = computed(() => {
-    if (!contexts.value.length) return { priorityItems: [], remainingItems: [] }
-
-    const priorityItems: ContextResource[] = []
-    const remainingItems: ContextResource[] = []
-
-    // Add current selection if it exists and is not default
-    const currentContext = contexts.value.find(c => c.id === editForm.value.context_id)
-    if (currentContext && !currentContext.is_default) {
-      priorityItems.push(currentContext)
-    }
-
-    // Add system default if it exists and is not current
-    if (defaultContext.value && defaultContext.value.id !== editForm.value.context_id) {
-      priorityItems.push(defaultContext.value)
-    }
-
-    // Add remaining items
-    contexts.value.forEach(context => {
-      const isAlreadyInPriority = priorityItems.some(p => p.id === context.id)
-      if (!isAlreadyInPriority) {
-        remainingItems.push(context)
-      }
-    })
-
-    return { priorityItems, remainingItems }
-  })
-
-  const sortedLanguages = computed(() => {
-    if (!languages.value.length) return { priorityItems: [], remainingItems: [] }
-
-    const priorityItems: LanguageResource[] = []
-    const remainingItems: LanguageResource[] = []
-
-    // Add current selection if it exists and is not default
-    const currentLanguage = languages.value.find(l => l.id === editForm.value.language_id)
-    if (currentLanguage && !currentLanguage.is_default) {
-      priorityItems.push(currentLanguage)
-    }
-
-    // Add system default if it exists and is not current
-    if (defaultLanguage.value && defaultLanguage.value.id !== editForm.value.language_id) {
-      priorityItems.push(defaultLanguage.value)
-    }
-
-    // Add remaining items
-    languages.value.forEach(language => {
-      const isAlreadyInPriority = priorityItems.some(p => p.id === language.id)
-      if (!isAlreadyInPriority) {
-        remainingItems.push(language)
-      }
-    })
-
-    return { priorityItems, remainingItems }
-  })
 
   // Modal and action states
   const showDeleteModal = ref(false)
