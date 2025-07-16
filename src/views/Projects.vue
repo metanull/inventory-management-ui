@@ -76,13 +76,19 @@
             scope="col"
             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
           >
-            Launch Date
+            Enabled
           </th>
           <th
             scope="col"
             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
           >
-            Status
+            Launched
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
+          >
+            Launch Date
           </th>
           <th
             scope="col"
@@ -103,29 +109,52 @@
                 :backward-compatibility="project.backward_compatibility"
               />
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              <DateDisplay v-if="project.launch_date" :date="project.launch_date" />
-              <span v-else>Not scheduled</span>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <Toggle
+                title="Enabled"
+                :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
+                :is-active="project.is_enabled"
+                :disabled="true"
+                hide-switch
+                active-icon-background-class="bg-green-100"
+                inactive-icon-background-class="bg-red-100"
+                active-icon-class="text-green-600"
+                inactive-icon-class="text-red-600"
+                :active-icon-component="CheckCircleIcon"
+                :inactive-icon-component="XCircleIcon"
+              />
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex space-x-2">
-                <span
-                  :class="[
-                    'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
-                    project.is_enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-                  ]"
-                >
-                  {{ project.is_enabled ? 'Enabled' : 'Disabled' }}
-                </span>
-                <span
-                  :class="[
-                    'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
-                    project.is_launched ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800',
-                  ]"
-                >
-                  {{ project.is_launched ? 'Launched' : 'Not Launched' }}
-                </span>
-              </div>
+              <Toggle
+                title="Launched"
+                :status-text="project.is_launched ? 'Launched' : 'Not Launched'"
+                :is-active="project.is_launched"
+                :disabled="true"
+                hide-switch
+                active-icon-background-class="bg-blue-100"
+                inactive-icon-background-class="bg-gray-100"
+                active-icon-class="text-blue-600"
+                inactive-icon-class="text-gray-600"
+                :active-icon-component="RocketIcon"
+                :inactive-icon-component="RocketIcon"
+              />
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <Toggle
+                v-if="project.launch_date"
+                title="Launch Date"
+                :status-text="formatLaunchDate(project.launch_date)"
+                :is-active="isLaunchDatePassed(project.launch_date)"
+                :disabled="true"
+                hide-switch
+                active-icon-background-class="bg-indigo-100"
+                inactive-icon-background-class="bg-yellow-100"
+                active-icon-class="text-indigo-600"
+                inactive-icon-class="text-yellow-600"
+                :active-icon-component="CheckCircleIcon"
+                :inactive-icon-component="RocketIcon"
+              />
+              <span v-else class="text-sm text-gray-500">Not scheduled</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               <DateDisplay :date="project.created_at" />
@@ -170,6 +199,10 @@
   import FilterButton from '@/components/actions/list/FilterButton.vue'
   import ListView from '@/components/layout/ListView.vue'
   import TableView from '@/components/layout/TableView.vue'
+  import Toggle from '@/components/format/Toggle.vue'
+  import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
+  import XCircleIcon from '@/components/icons/XCircleIcon.vue'
+  import RocketIcon from '@/components/icons/RocketIcon.vue'
 
   const router = useRouter()
 
@@ -189,6 +222,22 @@
   const showDeleteModal = ref(false)
   const projectToDelete = ref<ProjectResource | null>(null)
   const deleteLoading = ref(false)
+
+  // Helper functions for launch date handling
+  const formatLaunchDate = (launchDate: string): string => {
+    const date = new Date(launchDate)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  const isLaunchDatePassed = (launchDate: string): boolean => {
+    const today = new Date()
+    const launch = new Date(launchDate)
+    return launch <= today
+  }
 
   // Computed filtered projects
   const filteredProjects = computed(() => {
