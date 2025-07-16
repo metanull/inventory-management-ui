@@ -1,5 +1,5 @@
 <template>
-  <span :class="className" :title="fullDate">
+  <span :class="[baseClasses, props.className]" :title="fullDate">
     {{ formattedDate }}
   </span>
 </template>
@@ -12,7 +12,18 @@
     format?: 'short' | 'medium' | 'long' | 'full'
     className?: string
     showTime?: boolean
+    variant?: 'default' | 'small-dark'
   }>()
+
+  const baseClasses = computed(() => {
+    switch (props.variant) {
+      case 'small-dark':
+        return 'text-sm text-gray-900'
+      case 'default':
+      default:
+        return ''
+    }
+  })
 
   const formattedDate = computed(() => {
     if (!props.date) return 'N/A'

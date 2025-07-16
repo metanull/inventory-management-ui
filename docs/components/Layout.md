@@ -2,6 +2,17 @@
 
 This directory contains layout components that provide structural organization and page-level composition for the inventory management application.
 
+## Directory Structure
+
+The layout components are organized into the following subdirectories:
+
+- **`src/components/layout/`** - Main layout components (DetailView, ListView, TableView, etc.)
+- **`src/components/layout/description/`** - Description list components (DescriptionList, DescriptionRow, etc.)
+- **`src/components/layout/table/`** - Table components (TableElement, TableHeader, TableRow, TableCell)
+- **`src/components/layout/modals/`** - Modal and loading components (LoadingSpinner, DeleteConfirmationModal, UnsavedChangesModal)
+
+This organization ensures that related components are grouped together and makes it easier to find and maintain the codebase.
+
 ## DetailView.vue
 
 A comprehensive layout component for detail/edit pages that provides consistent structure with loading states, error handling, editing capabilities, and unsaved changes protection.
@@ -191,24 +202,176 @@ A layout component for list pages that provides consistent structure with header
     <template #content>
       <TableView>
         <template #headers>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <TableRow>
+            <TableHeader>Name</TableHeader>
+            <TableHeader>Status</TableHeader>
+            <TableHeader variant="actions">Actions</TableHeader>
+          </TableRow>
         </template>
         <template #rows>
-          <tr v-for="resource in resources" :key="resource.id">
-            <td>{{ resource.name }}</td>
-            <td>{{ resource.status }}</td>
-            <td>
+          <TableRow v-for="resource in resources" :key="resource.id">
+            <TableCell>{{ resource.name }}</TableCell>
+            <TableCell>{{ resource.status }}</TableCell>
+            <TableCell variant="actions">
               <ViewButton :to="`/resources/${resource.id}`" />
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         </template>
       </TableView>
     </template>
   </ListView>
 </template>
 ```
+
+## Table Components
+
+A set of semantic components for building consistent tables with proper styling and accessibility. These components are located in `src/components/layout/table/`.
+
+### TableElement
+
+A base table component that provides the structural `<table>`, `<thead>`, and `<tbody>` elements with consistent styling.
+
+#### Features
+- **Semantic HTML**: Uses proper `<table>`, `<thead>`, and `<tbody>` elements
+- **Consistent Styling**: Standardized table appearance with dividers and backgrounds
+- **Accessibility**: Proper table structure for screen readers
+- **Flexible Content**: Supports any header and row content
+
+#### Slots
+
+| Slot | Description |
+|------|-------------|
+| `headers` | Table header content (should contain `<tr>` with `<th>` elements) |
+| `rows` | Table body content (should contain `<tr>` with `<td>` elements) |
+
+#### Usage
+
+```vue
+<template>
+  <TableElement>
+    <template #headers>
+      <TableRow>
+        <TableHeader>Name</TableHeader>
+        <TableHeader>Status</TableHeader>
+      </TableRow>
+    </template>
+    <template #rows>
+      <TableRow>
+        <TableCell>Project Alpha</TableCell>
+        <TableCell>Active</TableCell>
+      </TableRow>
+    </template>
+  </TableElement>
+</template>
+
+<script setup lang="ts">
+import TableElement from '@/components/layout/table/TableElement.vue'
+import TableRow from '@/components/layout/table/TableRow.vue'
+import TableHeader from '@/components/layout/table/TableHeader.vue'
+import TableCell from '@/components/layout/table/TableCell.vue'
+</script>
+```
+
+### TableHeader
+
+A component for table header cells (`<th>`) with consistent styling and variants.
+
+#### Features
+- **Consistent Styling**: Standardized header appearance
+- **Action Variant**: Special styling for action columns
+- **Accessibility**: Proper `<th>` element with scope attributes
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'actions'` | `'default'` | Header styling variant |
+
+#### Usage
+
+```vue
+<template>
+  <TableRow>
+    <TableHeader>Project Name</TableHeader>
+    <TableHeader variant="actions">
+      <span class="sr-only">Actions</span>
+    </TableHeader>
+  </TableRow>
+</template>
+
+<script setup lang="ts">
+import TableRow from '@/components/layout/table/TableRow.vue'
+import TableHeader from '@/components/layout/table/TableHeader.vue'
+</script>
+```
+
+### TableRow
+
+A component for table rows (`<tr>`) with consistent styling and hover effects.
+
+#### Features
+- **Hover Effects**: Optional hover background color
+- **Consistent Styling**: Standardized row appearance
+- **Accessibility**: Proper `<tr>` element
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'hover'` | `'hover'` | Row styling variant |
+
+#### Usage
+
+```vue
+<template>
+  <TableRow v-for="item in items" :key="item.id">
+    <TableCell>{{ item.name }}</TableCell>
+    <TableCell>{{ item.status }}</TableCell>
+  </TableRow>
+</template>
+
+<script setup lang="ts">
+import TableRow from '@/components/layout/table/TableRow.vue'
+import TableCell from '@/components/layout/table/TableCell.vue'
+</script>
+```
+
+### TableCell
+
+A component for table cells (`<td>`) with consistent styling and variants.
+
+#### Features
+- **Consistent Styling**: Standardized cell appearance with proper padding
+- **Action Variant**: Special styling for action columns (right-aligned)
+- **Accessibility**: Proper `<td>` element
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'actions'` | `'default'` | Cell styling variant |
+
+#### Usage
+
+```vue
+<template>
+  <TableCell>{{ project.name }}</TableCell>
+  <TableCell variant="actions">
+    <div class="flex justify-end space-x-2">
+      <button>Edit</button>
+      <button>Delete</button>
+    </div>
+  </TableCell>
+</template>
+
+<script setup lang="ts">
+import TableCell from '@/components/layout/table/TableCell.vue'
+</script>
+```
+
+### Used In
+- Projects.vue (projects table)
+- Can be used in other list views for consistent table presentation
 
 ## TableView.vue
 
@@ -242,32 +405,34 @@ None - this is a simple wrapper component.
 <template>
   <TableView>
     <template #headers>
-      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Name
-      </th>
-      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Status
-      </th>
-      <th class="relative px-6 py-3">
-        <span class="sr-only">Actions</span>
-      </th>
+      <TableRow>
+        <TableHeader>Name</TableHeader>
+        <TableHeader>Status</TableHeader>
+        <TableHeader variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
     </template>
     
     <template #rows>
-      <tr v-for="item in items" :key="item.id">
-        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-          {{ item.name }}
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-          {{ item.status }}
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      <TableRow v-for="item in items" :key="item.id">
+        <TableCell>{{ item.name }}</TableCell>
+        <TableCell>{{ item.status }}</TableCell>
+        <TableCell variant="actions">
           <ViewButton :to="`/items/${item.id}`" />
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     </template>
   </TableView>
 </template>
+
+<script setup lang="ts">
+import TableView from '@/components/layout/TableView.vue'
+import TableRow from '@/components/layout/table/TableRow.vue'
+import TableHeader from '@/components/layout/table/TableHeader.vue'
+import TableCell from '@/components/layout/table/TableCell.vue'
+import ViewButton from '@/components/actions/table/ViewButton.vue'
+</script>
 ```
 
 ## AppHeader.vue
@@ -337,38 +502,46 @@ A comprehensive error display component that shows error notifications with diff
 </template>
 ```
 
-## LoadingSpinner.vue
+## Modal Components
+
+A set of modal and loading components for user interactions and feedback. These components are located in `src/components/layout/modals/`.
+
+### LoadingSpinner
 
 A simple loading spinner component that provides consistent loading indication throughout the application.
 
-### Features
+#### Features
 
 - **Consistent Styling**: Standardized loading spinner appearance
 - **Tailwind Animation**: Uses Tailwind's built-in spin animation
 - **Centered Layout**: Proper centering with padding
 - **Accessible**: Semantic HTML structure
 
-### Props
+#### Props
 
 None - this is a simple component.
 
-### Events
+#### Events
 
 None - this is a simple component.
 
-### Usage
+#### Usage
 
 ```vue
 <template>
   <LoadingSpinner />
 </template>
+
+<script setup lang="ts">
+import LoadingSpinner from '@/components/layout/modals/LoadingSpinner.vue'
+</script>
 ```
 
-## DeleteConfirmationModal.vue
+### DeleteConfirmationModal
 
 A modal component for confirming destructive actions with customizable content and loading states.
 
-### Features
+#### Features
 
 - **Confirmation Dialog**: Standard confirmation pattern for destructive actions
 - **Loading States**: Loading spinner during delete operations
@@ -376,7 +549,7 @@ A modal component for confirming destructive actions with customizable content a
 - **Keyboard Support**: Proper focus management and keyboard navigation
 - **Accessibility**: ARIA attributes and screen reader support
 
-### Props
+#### Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
@@ -387,14 +560,14 @@ A modal component for confirming destructive actions with customizable content a
 | `confirmText` | `string` | `'Delete'` | Confirm button text |
 | `cancelText` | `string` | `'Cancel'` | Cancel button text |
 
-### Events
+#### Events
 
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `confirm` | - | Emitted when confirm button is clicked |
 | `cancel` | - | Emitted when cancel button is clicked |
 
-### Usage
+#### Usage
 
 ```vue
 <template>
@@ -409,7 +582,442 @@ A modal component for confirming destructive actions with customizable content a
     @cancel="closeModal"
   />
 </template>
+
+<script setup lang="ts">
+import DeleteConfirmationModal from '@/components/layout/modals/DeleteConfirmationModal.vue'
+</script>
 ```
+
+### UnsavedChangesModal
+
+A modal component for handling unsaved changes with options to save, discard, or cancel the action.
+
+#### Features
+
+- **Unsaved Changes Protection**: Prevents accidental data loss
+- **Multiple Actions**: Save, discard, or cancel options
+- **Loading States**: Loading spinner during save operations
+- **Keyboard Support**: Proper focus management and keyboard navigation
+- **Accessibility**: ARIA attributes and screen reader support
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `show` | `boolean` | - | Whether to show the modal |
+| `loading` | `boolean` | `undefined` | Loading state for save operation |
+
+#### Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `save` | - | Emitted when save button is clicked |
+| `discard` | - | Emitted when discard button is clicked |
+| `cancel` | - | Emitted when cancel button is clicked |
+
+#### Usage
+
+```vue
+<template>
+  <UnsavedChangesModal
+    :show="showUnsavedChangesModal"
+    :loading="saveLoading"
+    @save="handleSave"
+    @discard="handleDiscard"
+    @cancel="handleCancel"
+  />
+</template>
+
+<script setup lang="ts">
+import UnsavedChangesModal from '@/components/layout/modals/UnsavedChangesModal.vue'
+</script>
+```
+
+### Used In
+- DetailView.vue (loading states and modal dialogs)
+- ListView.vue (loading states)
+- Projects.vue (delete confirmation)
+- Can be used in any component requiring loading indication or modal dialogs
+
+## Description List Components
+
+A set of semantic components for building consistent description lists (dl, dt, dd elements) with proper styling and accessibility. These components are located in `src/components/layout/description/`.
+
+### DescriptionList
+
+A wrapper component for description lists that provides consistent styling and semantic structure.
+
+#### Features
+- **Semantic HTML**: Uses proper `<dl>` element
+- **Accessibility**: Proper markup for screen readers
+- **Consistent Styling**: Standardized appearance across views
+- **Flexible Content**: Supports any description row content
+
+#### Usage
+
+```vue
+<template>
+  <DescriptionList>
+    <DescriptionRow variant="gray">
+      <DescriptionTerm>Name</DescriptionTerm>
+      <DescriptionDetail>Project Alpha</DescriptionDetail>
+    </DescriptionRow>
+  </DescriptionList>
+</template>
+
+<script setup lang="ts">
+import DescriptionList from '@/components/layout/description/DescriptionList.vue'
+import DescriptionRow from '@/components/layout/description/DescriptionRow.vue'
+import DescriptionTerm from '@/components/layout/description/DescriptionTerm.vue'
+import DescriptionDetail from '@/components/layout/description/DescriptionDetail.vue'
+</script>
+```
+
+### DescriptionRow
+
+A row component for description lists with alternating background colors and proper spacing.
+
+#### Features
+- **Alternating Colors**: Gray and white variants for visual separation
+- **Responsive Grid**: Proper grid layout on different screen sizes
+- **Consistent Padding**: Standardized spacing throughout
+- **Accessibility**: Proper semantic structure
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'gray' \| 'white'` | `'gray'` | Background color variant |
+
+#### Usage
+
+```vue
+<template>
+  <DescriptionRow variant="gray">
+    <DescriptionTerm>Internal Name</DescriptionTerm>
+    <DescriptionDetail>{{ project.internal_name }}</DescriptionDetail>
+  </DescriptionRow>
+  
+  <DescriptionRow variant="white">
+    <DescriptionTerm>Status</DescriptionTerm>
+    <DescriptionDetail>{{ project.status }}</DescriptionDetail>
+  </DescriptionRow>
+</template>
+```
+
+### DescriptionTerm
+
+A component for description terms (labels) with consistent styling.
+
+#### Features
+- **Consistent Typography**: Standardized font weight and color
+- **Responsive Design**: Proper sizing across screen sizes
+- **Accessibility**: Semantic `<dt>` element
+- **Alignment**: Proper alignment with description details
+
+#### Usage
+
+```vue
+<template>
+  <DescriptionTerm>Launch Date</DescriptionTerm>
+</template>
+```
+
+### DescriptionDetail
+
+A component for description details (content) with flexible content support.
+
+#### Features
+- **Flexible Content**: Supports any child content
+- **Consistent Styling**: Standardized appearance
+- **Responsive Grid**: Proper column spanning
+- **Accessibility**: Semantic `<dd>` element
+
+#### Usage
+
+```vue
+<template>
+  <DescriptionDetail>
+    <FormInput v-if="isEditing" v-model="editForm.name" />
+    <DisplayText v-else>{{ project.name }}</DisplayText>
+  </DescriptionDetail>
+</template>
+```
+
+### Complete Table Example
+
+```vue
+<template>
+  <TableView>
+    <template #headers>
+      <TableRow>
+        <TableHeader>Name</TableHeader>
+        <TableHeader>Status</TableHeader>
+        <TableHeader>Created</TableHeader>
+        <TableHeader variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
+    </template>
+    
+    <template #rows>
+      <TableRow v-for="item in items" :key="item.id">
+        <TableCell>{{ item.name }}</TableCell>
+        <TableCell>
+          <ToggleSmall 
+            :title="item.status" 
+            :is-active="item.is_active"
+            :disabled="true"
+          />
+        </TableCell>
+        <TableCell>
+          <DateDisplay :date="item.created_at" />
+        </TableCell>
+        <TableCell variant="actions">
+          <div class="flex justify-end space-x-2">
+            <ViewButton @click="viewItem(item)" />
+            <EditButton @click="editItem(item)" />
+            <DeleteButton @click="deleteItem(item)" />
+          </div>
+        </TableCell>
+      </TableRow>
+    </template>
+  </TableView>
+</template>
+
+<script setup lang="ts">
+import TableView from '@/components/layout/TableView.vue'
+import TableHeader from '@/components/layout/table/TableHeader.vue'
+import TableRow from '@/components/layout/table/TableRow.vue'
+import TableCell from '@/components/layout/table/TableCell.vue'
+import ToggleSmall from '@/components/format/ToggleSmall.vue'
+import DateDisplay from '@/components/format/Date.vue'
+import ViewButton from '@/components/actions/table/ViewButton.vue'
+import EditButton from '@/components/actions/table/EditButton.vue'
+import DeleteButton from '@/components/actions/table/DeleteButton.vue'
+</script>
+```
+
+### Used In
+- Projects.vue (projects table)
+- Can be used in other list views for consistent table presentation
+
+### Complete Example
+
+```vue
+<template>
+  <DescriptionList>
+    <DescriptionRow variant="gray">
+      <DescriptionTerm>Internal Name</DescriptionTerm>
+      <DescriptionDetail>
+        <FormInput
+          v-if="isEditing"
+          v-model="editForm.internal_name"
+          type="text"
+          :required="true"
+        />
+        <DisplayText v-else>{{ project?.internal_name }}</DisplayText>
+      </DescriptionDetail>
+    </DescriptionRow>
+    
+    <DescriptionRow variant="white">
+      <DescriptionTerm>Launch Date</DescriptionTerm>
+      <DescriptionDetail>
+        <FormInput
+          v-if="isEditing"
+          v-model="editForm.launch_date"
+          type="date"
+        />
+        <template v-else>
+          <DateDisplay
+            v-if="project?.launch_date"
+            :date="project.launch_date"
+            format="medium"
+            variant="small-dark"
+          />
+          <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+        </template>
+      </DescriptionDetail>
+    </DescriptionRow>
+  </DescriptionList>
+</template>
+```
+
+### Used In
+- ProjectDetail.vue (project information display)
+- Can be used in other detail views for consistent information display
+
+## Table Components
+
+A set of semantic components for building consistent table elements (th, td) with proper styling and accessibility.
+
+### TableHeader
+
+A component for table headers with consistent styling and semantic structure.
+
+#### Features
+- **Semantic HTML**: Uses proper `<th>` element with scope attribute
+- **Accessibility**: Proper scope and semantic markup for screen readers
+- **Consistent Styling**: Standardized header appearance across tables
+- **Variant Support**: Different styling for regular headers and action columns
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `scope` | `'col' \| 'row'` | `'col'` | Scope attribute for accessibility |
+| `variant` | `'default' \| 'actions'` | `'default'` | Styling variant |
+
+#### Usage
+
+```vue
+<template>
+  <TableView>
+    <template #headers>
+      <TableHeader>Project</TableHeader>
+      <TableHeader>Status</TableHeader>
+      <TableHeader>Created</TableHeader>
+      <TableHeader variant="actions">
+        <span class="sr-only">Actions</span>
+      </TableHeader>
+    </template>
+  </TableView>
+</template>
+
+<script setup lang="ts">
+import TableHeader from '@/components/table/TableHeader.vue'
+import TableView from '@/components/layout/TableView.vue'
+</script>
+```
+
+### TableRow
+
+A row component for table rows with hover effects and consistent styling.
+
+#### Features
+- **Hover Effects**: Optional hover background color on row hover
+- **Consistent Styling**: Standardized row appearance
+- **Accessibility**: Proper semantic `<tr>` element
+- **Flexibility**: Supports any table cell content
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'hover'` | `'hover'` | Row styling variant |
+
+#### Usage
+
+```vue
+<template>
+  <TableRow v-for="item in items" :key="item.id">
+    <TableCell>{{ item.name }}</TableCell>
+    <TableCell>{{ item.value }}</TableCell>
+    <TableCell variant="actions">
+      <button>Edit</button>
+    </TableCell>
+  </TableRow>
+</template>
+```
+
+### TableCell
+
+A component for table cells with consistent styling and variant support.
+
+#### Features
+- **Semantic HTML**: Uses proper `<td>` element
+- **Consistent Styling**: Standardized cell appearance with proper padding
+- **Variant Support**: Different styling for regular cells and action columns
+- **Flexible Content**: Supports any child content
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'actions'` | `'default'` | Styling variant |
+
+#### Usage
+
+```vue
+<template>
+  <tr>
+    <TableCell>
+      <ResourceNameDisplay :internal-name="project.internal_name" />
+    </TableCell>
+    <TableCell>
+      <ToggleSmall :is-active="project.is_enabled" />
+    </TableCell>
+    <TableCell>
+      <DateDisplay :date="project.created_at" />
+    </TableCell>
+    <TableCell variant="actions">
+      <div class="flex justify-end space-x-2">
+        <ViewButton @click="viewProject(project)" />
+        <EditButton @click="editProject(project)" />
+        <DeleteButton @click="deleteProject(project)" />
+      </div>
+    </TableCell>
+  </tr>
+</template>
+
+<script setup lang="ts">
+import TableCell from '@/components/table/TableCell.vue'
+import ResourceNameDisplay from '@/components/format/InternalName.vue'
+import ToggleSmall from '@/components/format/ToggleSmall.vue'
+import DateDisplay from '@/components/format/Date.vue'
+import ViewButton from '@/components/actions/table/ViewButton.vue'
+import EditButton from '@/components/actions/table/EditButton.vue'
+import DeleteButton from '@/components/actions/table/DeleteButton.vue'
+</script>
+```
+
+### Complete Table Example
+
+```vue
+<template>
+  <TableView>
+    <template #headers>
+      <TableRow>
+        <TableHeader>Name</TableHeader>
+        <TableHeader>Status</TableHeader>
+        <TableHeader>Created</TableHeader>
+        <TableHeader variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
+    </template>
+    
+    <template #rows>
+      <TableRow v-for="item in items" :key="item.id" class="hover:bg-gray-50">
+        <TableCell>
+          <ResourceNameDisplay :internal-name="item.internal_name" />
+        </TableCell>
+        <TableCell>
+          <ToggleSmall
+            :is-active="item.is_enabled"
+            :status-text="item.is_enabled ? 'Enabled' : 'Disabled'"
+            :disabled="true"
+          />
+        </TableCell>
+        <TableCell>
+          <DateDisplay :date="item.created_at" variant="small-dark" />
+        </TableCell>
+        <TableCell variant="actions">
+          <div class="flex justify-end space-x-2">
+            <ViewButton @click="viewItem(item)" />
+            <EditButton @click="editItem(item)" />
+            <DeleteButton @click="deleteItem(item)" />
+          </div>
+        </TableCell>
+      </TableRow>
+    </template>
+  </TableView>
+</template>
+```
+
+### Used In
+- Projects.vue (projects table display)
+- Can be used in other list views for consistent table styling
 
 ## Design Principles
 

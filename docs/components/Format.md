@@ -157,6 +157,105 @@ import Date from '@/components/format/Date.vue'
 - ProjectDetail.vue (launch date display)
 - All date displays throughout the application
 
+## Date
+
+A component for displaying dates with consistent formatting across the application.
+
+### Features
+- **Multiple Formats**: Support for short, medium, long, and full date formats
+- **Optional Time**: Can include time display
+- **Variant Styling**: Different styling variants for different contexts
+- **Localization**: Uses browser's locale for date formatting
+- **Tooltip**: Shows full date/time on hover
+- **Error Handling**: Graceful handling of invalid dates
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `date` | `string \| null \| undefined` | `required` | Date string to format |
+| `format` | `'short' \| 'medium' \| 'long' \| 'full'` | `'medium'` | Date format style |
+| `className` | `string` | `undefined` | Additional CSS classes |
+| `showTime` | `boolean` | `false` | Whether to show time |
+| `variant` | `'default' \| 'small-dark'` | `'default'` | Styling variant |
+
+### Usage
+
+```vue
+<template>
+  <!-- Basic date display -->
+  <DateDisplay :date="project.created_at" />
+  
+  <!-- With time -->
+  <DateDisplay :date="project.updated_at" :show-time="true" />
+  
+  <!-- Different format -->
+  <DateDisplay :date="project.launch_date" format="short" />
+  
+  <!-- With variant styling -->
+  <DateDisplay 
+    :date="project.launch_date" 
+    format="medium" 
+    variant="small-dark" 
+  />
+</template>
+
+<script setup lang="ts">
+import DateDisplay from '@/components/format/Date.vue'
+</script>
+```
+
+### Used In
+- Projects.vue (created date column)
+- ProjectDetail.vue (launch date display)
+- All date displays throughout the application
+
+## DisplayText
+
+A reusable component for displaying text with consistent styling and semantic variants.
+
+### Features
+- **Semantic Variants**: Different styling for different types of text content
+- **Consistent Styling**: Standardized text appearance across the application
+- **Accessibility**: Proper semantic markup
+- **Slot Support**: Flexible content insertion
+- **TypeScript Support**: Fully typed props
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'gray' \| 'muted'` | `'default'` | Text styling variant |
+
+### Variants
+
+- **`default`**: Standard text with no additional styling
+- **`gray`/`muted`**: Gray text (text-gray-500) for secondary information, placeholders, and muted content
+
+### Usage
+
+```vue
+<template>
+  <!-- Default text -->
+  <DisplayText>{{ project.internal_name }}</DisplayText>
+  
+  <!-- Gray/muted text for placeholders -->
+  <DisplayText variant="gray">No default context set</DisplayText>
+  
+  <!-- Muted text for secondary information -->
+  <DisplayText variant="muted">Not scheduled</DisplayText>
+</template>
+
+<script setup lang="ts">
+import DisplayText from '@/components/format/DisplayText.vue'
+</script>
+```
+
+### Used In
+- ProjectDetail.vue (text content display, placeholder text)
+- Projects.vue (placeholder text in tables)
+- Replaces repetitive `<span class="text-sm text-gray-500">` patterns
+
 ## InternalName
 
 A component for displaying internal names with consistent formatting.

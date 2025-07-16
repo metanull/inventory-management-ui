@@ -64,7 +64,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
-  import LoadingSpinner from '@/components/layout/LoadingSpinner.vue'
+  import LoadingSpinner from '@/components/layout/modals/LoadingSpinner.vue'
   import AddButton from '@/components/actions/list/AddButton.vue'
 
   const props = defineProps<{

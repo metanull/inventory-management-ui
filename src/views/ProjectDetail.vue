@@ -34,43 +34,37 @@
         </p>
       </div>
       <div class="border-t border-gray-200">
-        <dl>
-          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <input
+        <DescriptionList>
+          <DescriptionRow variant="gray">
+            <DescriptionTerm>Internal Name</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
                 v-model="editForm.internal_name"
                 type="text"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Enter project name"
-                required
+                :required="true"
               />
-            </dd>
-          </div>
-          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Legacy ID</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <input
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow variant="white">
+            <DescriptionTerm>Legacy ID</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
                 v-model="editForm.backward_compatibility"
                 type="text"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Optional legacy identifier"
               />
-            </dd>
-          </div>
-          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <input
-                v-model="editForm.launch_date"
-                type="date"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-            </dd>
-          </div>
-          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Default Context</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow variant="gray">
+            <DescriptionTerm>Launch Date</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput v-model="editForm.launch_date" type="date" />
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow variant="white">
+            <DescriptionTerm>Default Context</DescriptionTerm>
+            <DescriptionDetail>
               <GenericDropdown
                 v-model="editForm.context_id"
                 :options="contexts"
@@ -78,11 +72,11 @@
                 no-default-label="No default context"
                 no-default-value=""
               />
-            </dd>
-          </div>
-          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Default Language</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow variant="gray">
+            <DescriptionTerm>Default Language</DescriptionTerm>
+            <DescriptionDetail>
               <GenericDropdown
                 v-model="editForm.language_id"
                 :options="languages"
@@ -90,9 +84,9 @@
                 no-default-label="No default language"
                 no-default-value=""
               />
-            </dd>
-          </div>
-        </dl>
+            </DescriptionDetail>
+          </DescriptionRow>
+        </DescriptionList>
       </div>
     </div>
   </div>
@@ -126,59 +120,49 @@
     @cancel-delete="cancelDelete"
   >
     <template #information>
-      <dl>
-        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
-          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            <input
+      <DescriptionList>
+        <DescriptionRow variant="gray">
+          <DescriptionTerm>Internal Name</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
               v-if="isEditing"
               v-model="editForm.internal_name"
               type="text"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              required
+              :required="true"
             />
-            <span v-else>{{ project?.internal_name }}</span>
-          </dd>
-        </div>
-        <div
-          v-if="project?.backward_compatibility || isEditing"
-          class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-        >
-          <dt class="text-sm font-medium text-gray-500">Legacy ID</dt>
-          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            <input
+            <DisplayText v-else>{{ project?.internal_name }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow v-if="project?.backward_compatibility || isEditing" variant="white">
+          <DescriptionTerm>Legacy ID</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
               v-if="isEditing"
               v-model="editForm.backward_compatibility"
               type="text"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="Optional legacy identifier"
             />
-            <span v-else>{{ project?.backward_compatibility }}</span>
-          </dd>
-        </div>
-        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
-          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            <input
-              v-if="isEditing"
-              v-model="editForm.launch_date"
-              type="date"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
+            <DisplayText v-else>{{ project?.backward_compatibility }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow variant="gray">
+          <DescriptionTerm>Launch Date</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput v-if="isEditing" v-model="editForm.launch_date" type="date" />
             <template v-else>
               <DateDisplay
                 v-if="project?.launch_date"
                 :date="project.launch_date"
                 format="medium"
-                class="text-sm text-gray-900"
+                variant="small-dark"
               />
-              <span v-else class="text-gray-500">Not scheduled</span>
+              <DisplayText v-else variant="gray">Not scheduled</DisplayText>
             </template>
-          </dd>
-        </div>
-        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt class="text-sm font-medium text-gray-500">Default Context</dt>
-          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow variant="white">
+          <DescriptionTerm>Default Context</DescriptionTerm>
+          <DescriptionDetail>
             <GenericDropdown
               v-if="isEditing"
               v-model="editForm.context_id"
@@ -188,14 +172,14 @@
               no-default-value=""
             />
             <template v-else>
-              <span v-if="project?.context">{{ project.context.internal_name }}</span>
-              <span v-else class="text-gray-500">No default context set</span>
+              <DisplayText v-if="project?.context">{{ project.context.internal_name }}</DisplayText>
+              <DisplayText v-else variant="gray">No default context set</DisplayText>
             </template>
-          </dd>
-        </div>
-        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt class="text-sm font-medium text-gray-500">Default Language</dt>
-          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow variant="gray">
+          <DescriptionTerm>Default Language</DescriptionTerm>
+          <DescriptionDetail>
             <GenericDropdown
               v-if="isEditing"
               v-model="editForm.language_id"
@@ -205,12 +189,14 @@
               no-default-value=""
             />
             <template v-else>
-              <span v-if="project?.language">{{ project.language.internal_name }}</span>
-              <span v-else class="text-gray-500">No default language set</span>
+              <DisplayText v-if="project?.language">{{
+                project.language.internal_name
+              }}</DisplayText>
+              <DisplayText v-else variant="gray">No default language set</DisplayText>
             </template>
-          </dd>
-        </div>
-      </dl>
+          </DescriptionDetail>
+        </DescriptionRow>
+      </DescriptionList>
     </template>
   </DetailView>
 </template>
@@ -222,10 +208,16 @@
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
   import DateDisplay from '@/components/format/Date.vue'
+  import DisplayText from '@/components/format/DisplayText.vue'
   import DetailView from '@/components/layout/DetailView.vue'
   import SaveButton from '@/components/actions/detail/SaveButton.vue'
   import CancelButton from '@/components/actions/detail/CancelButton.vue'
   import GenericDropdown from '@/components/form/GenericDropdown.vue'
+  import FormInput from '@/components/form/FormInput.vue'
+  import DescriptionList from '@/components/layout/description/DescriptionList.vue'
+  import DescriptionRow from '@/components/layout/description/DescriptionRow.vue'
+  import DescriptionTerm from '@/components/layout/description/DescriptionTerm.vue'
+  import DescriptionDetail from '@/components/layout/description/DescriptionDetail.vue'
   import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import RocketIcon from '@/components/icons/RocketIcon.vue'
@@ -527,8 +519,12 @@
     return [
       {
         title: 'Status',
+        description: 'Project status and availability',
+        mainColor: 'green',
         statusText: project.value.is_enabled ? 'Enabled' : 'Disabled',
+        toggleTitle: 'Project Status',
         isActive: project.value.is_enabled,
+        loading: false,
         disabled: false,
         activeIconBackgroundClass: 'bg-green-100',
         inactiveIconBackgroundClass: 'bg-red-100',
@@ -539,8 +535,12 @@
       },
       {
         title: 'Launch Status',
+        description: 'Project launch status',
+        mainColor: 'blue',
         statusText: project.value.is_launched ? 'Launched' : 'Not Launched',
+        toggleTitle: 'Launch Status',
         isActive: project.value.is_launched,
+        loading: false,
         disabled: !project.value.is_enabled,
         activeIconBackgroundClass: 'bg-blue-100',
         inactiveIconBackgroundClass: 'bg-gray-100',

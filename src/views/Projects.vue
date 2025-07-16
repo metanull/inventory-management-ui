@@ -66,66 +66,43 @@
     <template #content>
       <TableView>
         <template #headers>
-          <th
-            scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-          >
-            Project
-          </th>
-          <th
-            scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-          >
-            Enabled
-          </th>
-          <th
-            scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-          >
-            Launched
-          </th>
-          <th
-            scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-          >
-            Launch Date
-          </th>
-          <th
-            scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-          >
-            Created
-          </th>
-          <th scope="col" class="relative px-6 py-3">
-            <span class="sr-only">Actions</span>
-          </th>
+          <TableRow>
+            <TableHeader>Project</TableHeader>
+            <TableHeader>Enabled</TableHeader>
+            <TableHeader>Launched</TableHeader>
+            <TableHeader>Launch Date</TableHeader>
+            <TableHeader>Created</TableHeader>
+            <TableHeader variant="actions">
+              <span class="sr-only">Actions</span>
+            </TableHeader>
+          </TableRow>
         </template>
 
         <template #rows>
-          <tr v-for="project in filteredProjects" :key="project.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
+          <TableRow v-for="project in filteredProjects" :key="project.id">
+            <TableCell>
               <ResourceNameDisplay
                 :internal-name="project.internal_name"
                 :backward-compatibility="project.backward_compatibility"
               />
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            </TableCell>
+            <TableCell>
               <ToggleSmall
                 title="Enabled"
                 :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
                 :is-active="project.is_enabled"
                 :disabled="true"
               />
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            </TableCell>
+            <TableCell>
               <ToggleSmall
                 title="Launched"
                 :status-text="project.is_launched ? 'Launched' : 'Not Launched'"
                 :is-active="project.is_launched"
                 :disabled="true"
               />
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            </TableCell>
+            <TableCell>
               <ToggleSmall
                 v-if="project.launch_date"
                 title="Launch Date"
@@ -133,19 +110,19 @@
                 :is-active="isLaunchDatePassed(project.launch_date)"
                 :disabled="true"
               />
-              <span v-else class="text-sm text-gray-500">Not scheduled</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              <DateDisplay :date="project.created_at" />
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+            </TableCell>
+            <TableCell>
+              <DateDisplay :date="project.created_at" variant="small-dark" />
+            </TableCell>
+            <TableCell variant="actions">
               <div class="flex justify-end space-x-2">
                 <ViewButton @click="router.push(`/projects/${project.id}`)" />
                 <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
                 <DeleteButton @click="confirmDelete(project)" />
               </div>
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         </template>
       </TableView>
     </template>
@@ -168,16 +145,20 @@
   import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
-  import DeleteConfirmationModal from '@/components/layout/DeleteConfirmationModal.vue'
+  import DeleteConfirmationModal from '@/components/layout/modals/DeleteConfirmationModal.vue'
   import type { ProjectResource } from '@metanull/inventory-app-api-client'
   import ViewButton from '@/components/actions/table/ViewButton.vue'
   import EditButton from '@/components/actions/table/EditButton.vue'
   import DeleteButton from '@/components/actions/table/DeleteButton.vue'
   import DateDisplay from '@/components/format/Date.vue'
+  import DisplayText from '@/components/format/DisplayText.vue'
   import ResourceNameDisplay from '@/components/format/InternalName.vue'
   import FilterButton from '@/components/actions/list/FilterButton.vue'
   import ListView from '@/components/layout/ListView.vue'
   import TableView from '@/components/layout/TableView.vue'
+  import TableHeader from '@/components/layout/table/TableHeader.vue'
+  import TableRow from '@/components/layout/table/TableRow.vue'
+  import TableCell from '@/components/layout/table/TableCell.vue'
   import ToggleSmall from '@/components/format/ToggleSmall.vue'
 
   const router = useRouter()

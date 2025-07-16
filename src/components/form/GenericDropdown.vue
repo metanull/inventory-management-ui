@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, withDefaults } from 'vue'
+  import { computed } from 'vue'
   import {
     getDropdownOptionClasses,
     getDropdownOptionLabel,

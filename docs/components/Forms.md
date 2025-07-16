@@ -420,6 +420,131 @@ const handleSubmit = async () => {
 </script>
 ```
 
+## FormInput.vue
+
+A reusable input component with consistent styling and v-model support for form inputs.
+
+### Features
+
+- **Consistent Styling**: Standardized appearance across all input fields
+- **v-model Support**: Seamless two-way data binding
+- **Input Type Support**: Supports all HTML input types (text, email, date, password, etc.)
+- **Accessibility**: Proper attributes and semantic markup
+- **Validation States**: Visual feedback for required fields
+- **Disabled State**: Proper disabled styling and behavior
+- **Placeholder Support**: Helpful placeholder text
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `modelValue` | `string` | - | Input value (v-model) |
+| `type` | `string` | `'text'` | HTML input type |
+| `placeholder` | `string` | `undefined` | Placeholder text |
+| `required` | `boolean` | `false` | Whether the field is required |
+| `disabled` | `boolean` | `false` | Whether the input is disabled |
+
+### Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `update:modelValue` | `string` | Emitted when input value changes (v-model) |
+
+### Usage
+
+```vue
+<template>
+  <div class="space-y-4">
+    <!-- Basic text input -->
+    <FormInput
+      v-model="formData.name"
+      type="text"
+      placeholder="Enter project name"
+      :required="true"
+    />
+    
+    <!-- Email input -->
+    <FormInput
+      v-model="formData.email"
+      type="email"
+      placeholder="Enter email address"
+    />
+    
+    <!-- Date input -->
+    <FormInput
+      v-model="formData.launchDate"
+      type="date"
+    />
+    
+    <!-- Password input -->
+    <FormInput
+      v-model="formData.password"
+      type="password"
+      placeholder="Enter password"
+      :required="true"
+    />
+    
+    <!-- Disabled input -->
+    <FormInput
+      v-model="formData.id"
+      type="text"
+      :disabled="true"
+      placeholder="Auto-generated ID"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import FormInput from '@/components/form/FormInput.vue'
+
+const formData = ref({
+  name: '',
+  email: '',
+  launchDate: '',
+  password: '',
+  id: 'auto-generated-id'
+})
+</script>
+```
+
+### Used In
+- ProjectDetail.vue (project creation and editing forms)
+- Any form that needs consistent input styling
+- Replaces repetitive input element markup
+
+### Integration with Description Lists
+
+FormInput components work seamlessly with the Description List components:
+
+```vue
+<template>
+  <DescriptionList>
+    <DescriptionRow variant="gray">
+      <DescriptionTerm>Internal Name</DescriptionTerm>
+      <DescriptionDetail>
+        <FormInput
+          v-model="editForm.internal_name"
+          type="text"
+          placeholder="Enter project name"
+          :required="true"
+        />
+      </DescriptionDetail>
+    </DescriptionRow>
+    
+    <DescriptionRow variant="white">
+      <DescriptionTerm>Launch Date</DescriptionTerm>
+      <DescriptionDetail>
+        <FormInput
+          v-model="editForm.launch_date"
+          type="date"
+        />
+      </DescriptionDetail>
+    </DescriptionRow>
+  </DescriptionList>
+</template>
+```
+
 ## Design Principles
 
 ### Consistency

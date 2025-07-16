@@ -19,9 +19,9 @@
       </div>
 
       <!-- Header -->
-      <DetailHeader
-        :internal-name="resource.internal_name"
-        :backward-compatibility="resource.backward_compatibility"
+      <DetailViewHeader
+        :internal-name="resource?.internal_name || ''"
+        :backward-compatibility="resource?.backward_compatibility || null"
         :is-editing="isEditing"
         :save-loading="saveLoading"
         :save-disabled="isSaveDisabled"
@@ -42,8 +42,12 @@
           v-for="(card, index) in statusCards"
           :key="index"
           :title="card.title"
+          :description="card.description"
+          :main-color="card.mainColor"
           :status-text="card.statusText"
+          :toggle-title="card.toggleTitle"
           :is-active="card.isActive"
+          :loading="card.loading"
           :disabled="card.disabled || actionLoading"
           :active-icon-background-class="card.activeIconBackgroundClass"
           :inactive-icon-background-class="card.inactiveIconBackgroundClass"
@@ -74,9 +78,9 @@
       <!-- System Properties -->
       <div :class="{ 'opacity-50 pointer-events-none': actionLoading }">
         <SystemProperties
-          :id="resource.id"
-          :created-at="resource.created_at"
-          :updated-at="resource.updated_at"
+          :id="resource?.id || ''"
+          :created-at="resource?.created_at || ''"
+          :updated-at="resource?.updated_at || ''"
         />
       </div>
     </div>
@@ -107,20 +111,23 @@
     type NavigationGuardNext,
     type RouteLocationNormalized,
   } from 'vue-router'
-  import LoadingSpinner from '@/components/layout/LoadingSpinner.vue'
+  import LoadingSpinner from '@/components/layout/modals/LoadingSpinner.vue'
   import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
-  import DetailHeader from '@/components/layout/DetailHeader.vue'
-  import StatusCard from '@/components/format/Toggle.vue'
+  import DetailViewHeader from '@/components/layout/DetailViewHeader.vue'
+  import StatusCard from '@/components/home/StatusCard.vue'
   import SystemProperties from '@/components/detail/SystemProperties.vue'
-  import DeleteConfirmationModal from '@/components/layout/DeleteConfirmationModal.vue'
-  import UnsavedChangesModal from '@/components/layout/UnsavedChangesModal.vue'
+  import DeleteConfirmationModal from '@/components/layout/modals/DeleteConfirmationModal.vue'
+  import UnsavedChangesModal from '@/components/layout/modals/UnsavedChangesModal.vue'
 
   interface StatusCardConfig {
     title: string
+    description: string
+    mainColor: string
     statusText: string
+    toggleTitle: string
     isActive: boolean
+    loading: boolean
     disabled?: boolean
-    loading?: boolean
     activeIconBackgroundClass: string
     inactiveIconBackgroundClass: string
     activeIconClass: string
