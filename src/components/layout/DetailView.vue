@@ -7,7 +7,7 @@
     <ErrorDisplay v-else-if="error" :error="error" @retry="handleRetry" />
 
     <!-- Detail Content -->
-    <div v-else-if="resource" class="relative space-y-6">
+    <div v-else-if="resource || isCreating" class="relative space-y-6">
       <!-- Action Loading Overlay (for status toggles, etc.) -->
       <div
         v-if="actionLoading"
@@ -20,21 +20,22 @@
 
       <!-- Header -->
       <DetailViewHeader
-        :internal-name="resource?.internal_name || ''"
+        :internal-name="headerTitle"
         :backward-compatibility="resource?.backward_compatibility || null"
-        :is-editing="isEditing"
+        :is-editing="isEditing || (isCreating ?? false)"
+        :is-creating="isCreating ?? false"
         :save-loading="saveLoading"
         :save-disabled="isSaveDisabled"
         :back-link="backLink"
         @edit="$emit('edit')"
         @delete="$emit('delete')"
         @save="$emit('save')"
-        @cancel="$emit('cancel')"
+        @cancel="handleCancel"
       />
 
-      <!-- Status Cards -->
+      <!-- Status Cards (hidden during creation) -->
       <div
-        v-if="statusCards && statusCards.length > 0"
+        v-if="statusCards && statusCards.length > 0 && !isCreating"
         class="grid grid-cols-1 gap-4 sm:grid-cols-2"
         :class="{ 'opacity-50 pointer-events-none': isEditing || actionLoading }"
       >
@@ -75,8 +76,8 @@
         </div>
       </div>
 
-      <!-- System Properties -->
-      <div :class="{ 'opacity-50 pointer-events-none': actionLoading }">
+      <!-- System Properties (hidden during creation) -->
+      <div v-if="!isCreating" :class="{ 'opacity-50 pointer-events-none': actionLoading }">
         <SystemProperties
           :id="resource?.id || ''"
           :created-at="resource?.created_at || ''"
@@ -152,9 +153,14 @@
 
     // Edit states
     isEditing: boolean
+    isCreating?: boolean // New prop to support creation mode
     saveLoading?: boolean
     actionLoading?: boolean
     hasUnsavedChanges?: boolean // New prop to track unsaved changes
+
+    // Creation mode customization
+    createTitle?: string // Custom title for creation mode
+    createSubtitle?: string // Custom subtitle for creation mode
 
     // Navigation
     backLink?: {
@@ -197,16 +203,28 @@
   // Unsaved changes modal state
   const showUnsavedChangesModal = ref(false)
   const pendingNavigation = ref<(() => void) | null>(null)
+  const pendingDestination = ref<RouteLocationNormalized | null>(null)
+  const isCancelInProgress = ref(false)
 
   // Computed loading state - prioritize initial loading over store loading
-  const loading = computed(() => initialLoading.value || (props.storeLoading && !props.resource))
+  const loading = computed(
+    () => initialLoading.value || (props.storeLoading && !props.resource && !props.isCreating)
+  )
 
   // Disable save button if no unsaved changes
   const isSaveDisabled = computed(() => !props.hasUnsavedChanges)
 
+  // Header title - use custom title for creation mode or resource name
+  const headerTitle = computed(() => {
+    if (props.isCreating) {
+      return props.createTitle || 'New Record'
+    }
+    return props.resource?.internal_name || ''
+  })
+
   // Browser beforeunload event handler
   const handleBeforeUnload = (event: Event) => {
-    if (props.isEditing && props.hasUnsavedChanges) {
+    if ((props.isEditing || props.isCreating) && props.hasUnsavedChanges) {
       event.preventDefault()
       // Modern browsers show a generic message, but we still need to set returnValue
       Object.assign(event, { returnValue: '' })
@@ -216,9 +234,23 @@
 
   // Navigation guard to prevent leaving with unsaved changes
   onBeforeRouteLeave(
-    (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
-      if (props.isEditing && props.hasUnsavedChanges) {
+    (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      // If modal is already shown or we have a pending navigation, don't interfere
+      if (showUnsavedChangesModal.value || pendingNavigation.value) {
+        next(false)
+        return
+      }
+
+      // If cancel is in progress, allow navigation without showing modal
+      if (isCancelInProgress.value) {
+        isCancelInProgress.value = false // Reset the flag
+        next()
+        return
+      }
+
+      if ((props.isEditing || props.isCreating) && props.hasUnsavedChanges) {
         showUnsavedChangesModal.value = true
+        pendingDestination.value = to
         pendingNavigation.value = () => next()
         next(false) // Prevent navigation
       } else {
@@ -227,11 +259,11 @@
     }
   )
 
-  // Watch for editing state changes to add/remove beforeunload listener
+  // Watch for editing/creating state changes to add/remove beforeunload listener
   watch(
-    () => props.isEditing,
-    (isEditing: boolean) => {
-      if (isEditing) {
+    () => props.isEditing || props.isCreating,
+    (isEditingOrCreating: boolean) => {
+      if (isEditingOrCreating) {
         window.addEventListener('beforeunload', handleBeforeUnload)
       } else {
         window.removeEventListener('beforeunload', handleBeforeUnload)
@@ -248,16 +280,23 @@
   // Handle confirmation to leave without saving
   const handleConfirmLeave = () => {
     showUnsavedChangesModal.value = false
-    if (pendingNavigation.value) {
-      pendingNavigation.value()
-      pendingNavigation.value = null
+    const navigationCallback = pendingNavigation.value
+
+    // Reset immediately to prevent multiple calls
+    pendingNavigation.value = null
+    pendingDestination.value = null
+
+    if (navigationCallback) {
+      // Use the original navigation callback which calls next()
+      navigationCallback()
     }
   }
 
   // Handle cancellation of leaving
   const handleCancelLeave = () => {
     showUnsavedChangesModal.value = false
-    pendingNavigation.value = null
+    pendingNavigation.value = null // Clear the pending navigation
+    pendingDestination.value = null // Clear the pending destination
   }
 
   // Handle field changes from child components
@@ -265,9 +304,15 @@
     emit('unsavedChanges', true)
   }
 
+  // Handle cancel action - bypass unsaved changes modal
+  const handleCancel = () => {
+    isCancelInProgress.value = true
+    emit('cancel')
+  }
+
   // Fetch data on mount
   onMounted(async () => {
-    if (!props.resource) {
+    if (!props.resource && !props.isCreating) {
       initialLoading.value = true
       try {
         await props.fetchData()

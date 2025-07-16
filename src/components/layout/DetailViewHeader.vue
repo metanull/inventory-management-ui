@@ -17,14 +17,17 @@
 
           <h1 class="text-2xl font-bold text-gray-900">
             {{ internalName }}
-            <span v-if="isEditing" class="text-sm font-normal text-blue-600 ml-2">(Editing)</span>
+            <span v-if="isCreating" class="text-sm font-normal text-blue-600 ml-2">(Creating)</span>
+            <span v-else-if="isEditing" class="text-sm font-normal text-blue-600 ml-2"
+              >(Editing)</span
+            >
           </h1>
           <p v-if="backwardCompatibility" class="text-sm text-gray-500">
             Legacy ID: {{ backwardCompatibility }}
           </p>
         </div>
         <div class="flex space-x-3">
-          <template v-if="!isEditing">
+          <template v-if="!isEditing && !isCreating">
             <EditButton @click="$emit('edit')" />
             <DeleteButton @click="$emit('delete')" />
           </template>
@@ -56,6 +59,7 @@
     internalName: string
     backwardCompatibility?: string | null
     isEditing: boolean
+    isCreating?: boolean
     saveLoading?: boolean
     saveDisabled?: boolean
     backLink?: BackLink

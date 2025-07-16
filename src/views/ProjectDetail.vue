@@ -1,102 +1,10 @@
 <template>
-  <!-- New Project Creation -->
-  <div v-if="isNewProject && initialLoading" class="flex justify-center py-8">
-    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-    <span class="ml-2">Loading project creation form...</span>
-  </div>
-
-  <!-- New Project Creation Form -->
-  <div v-else-if="isNewProject" class="relative space-y-6">
-    <!-- Header for New Project -->
-    <div class="bg-white shadow border-l-4 border-blue-500">
-      <div class="px-4 py-5 sm:px-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">
-              New Project
-              <span class="text-sm font-normal text-blue-600 ml-2">(Creating)</span>
-            </h1>
-          </div>
-          <div class="flex space-x-3">
-            <SaveButton :loading="saveLoading" @click="saveEdit" />
-            <CancelButton @click="cancelEdit" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Information Section for New Project -->
-    <div class="bg-white shadow rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Project Information</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">
-          Create a new project in your inventory system.
-        </p>
-      </div>
-      <div class="border-t border-gray-200">
-        <DescriptionList>
-          <DescriptionRow variant="gray">
-            <DescriptionTerm>Internal Name</DescriptionTerm>
-            <DescriptionDetail>
-              <FormInput
-                v-model="editForm.internal_name"
-                type="text"
-                placeholder="Enter project name"
-                :required="true"
-              />
-            </DescriptionDetail>
-          </DescriptionRow>
-          <DescriptionRow variant="white">
-            <DescriptionTerm>Legacy ID</DescriptionTerm>
-            <DescriptionDetail>
-              <FormInput
-                v-model="editForm.backward_compatibility"
-                type="text"
-                placeholder="Optional legacy identifier"
-              />
-            </DescriptionDetail>
-          </DescriptionRow>
-          <DescriptionRow variant="gray">
-            <DescriptionTerm>Launch Date</DescriptionTerm>
-            <DescriptionDetail>
-              <FormInput v-model="editForm.launch_date" type="date" />
-            </DescriptionDetail>
-          </DescriptionRow>
-          <DescriptionRow variant="white">
-            <DescriptionTerm>Default Context</DescriptionTerm>
-            <DescriptionDetail>
-              <GenericDropdown
-                v-model="editForm.context_id"
-                :options="contexts"
-                :show-no-default-option="true"
-                no-default-label="No default context"
-                no-default-value=""
-              />
-            </DescriptionDetail>
-          </DescriptionRow>
-          <DescriptionRow variant="gray">
-            <DescriptionTerm>Default Language</DescriptionTerm>
-            <DescriptionDetail>
-              <GenericDropdown
-                v-model="editForm.language_id"
-                :options="languages"
-                :show-no-default-option="true"
-                no-default-label="No default language"
-                no-default-value=""
-              />
-            </DescriptionDetail>
-          </DescriptionRow>
-        </DescriptionList>
-      </div>
-    </div>
-  </div>
-
-  <!-- Existing Project Detail -->
+  <!-- Unified Project Detail View -->
   <DetailView
-    v-else
     :store-loading="projectStore.loading"
     :error="error"
-    :resource="project"
+    :resource="isNewProject ? null : project"
+    :is-creating="isNewProject"
     :is-editing="isEditing"
     :save-loading="saveLoading"
     :save-disabled="!hasUnsavedChanges"
@@ -104,8 +12,14 @@
     :action-loading="toggleLoading"
     :back-link="backLink"
     :status-cards="statusCardsConfig"
+    :create-title="'New Project'"
+    :create-subtitle="'(Creating)'"
     information-title="Project Information"
-    information-description="Detailed information about this project."
+    :information-description="
+      isNewProject
+        ? 'Create a new project in your inventory system.'
+        : 'Detailed information about this project.'
+    "
     :show-delete-modal="showDeleteModal"
     delete-modal-title="Delete Project"
     :delete-modal-message="deleteModalMessage"
@@ -125,19 +39,23 @@
           <DescriptionTerm>Internal Name</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
-              v-if="isEditing"
+              v-if="isEditing || isNewProject"
               v-model="editForm.internal_name"
               type="text"
+              placeholder="Enter project name"
               :required="true"
             />
             <DisplayText v-else>{{ project?.internal_name }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="project?.backward_compatibility || isEditing" variant="white">
+        <DescriptionRow
+          v-if="project?.backward_compatibility || isEditing || isNewProject"
+          variant="white"
+        >
           <DescriptionTerm>Legacy ID</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
-              v-if="isEditing"
+              v-if="isEditing || isNewProject"
               v-model="editForm.backward_compatibility"
               type="text"
               placeholder="Optional legacy identifier"
@@ -148,7 +66,11 @@
         <DescriptionRow variant="gray">
           <DescriptionTerm>Launch Date</DescriptionTerm>
           <DescriptionDetail>
-            <FormInput v-if="isEditing" v-model="editForm.launch_date" type="date" />
+            <FormInput
+              v-if="isEditing || isNewProject"
+              v-model="editForm.launch_date"
+              type="date"
+            />
             <template v-else>
               <DateDisplay
                 v-if="project?.launch_date"
@@ -164,7 +86,7 @@
           <DescriptionTerm>Default Context</DescriptionTerm>
           <DescriptionDetail>
             <GenericDropdown
-              v-if="isEditing"
+              v-if="isEditing || isNewProject"
               v-model="editForm.context_id"
               :options="contexts"
               :show-no-default-option="true"
@@ -181,7 +103,7 @@
           <DescriptionTerm>Default Language</DescriptionTerm>
           <DescriptionDetail>
             <GenericDropdown
-              v-if="isEditing"
+              v-if="isEditing || isNewProject"
               v-model="editForm.language_id"
               :options="languages"
               :show-no-default-option="true"
@@ -210,8 +132,6 @@
   import DateDisplay from '@/components/format/Date.vue'
   import DisplayText from '@/components/format/DisplayText.vue'
   import DetailView from '@/components/layout/DetailView.vue'
-  import SaveButton from '@/components/actions/detail/SaveButton.vue'
-  import CancelButton from '@/components/actions/detail/CancelButton.vue'
   import GenericDropdown from '@/components/form/GenericDropdown.vue'
   import FormInput from '@/components/form/FormInput.vue'
   import DescriptionList from '@/components/layout/description/DescriptionList.vue'
@@ -266,7 +186,6 @@
   const showDeleteModal = ref(false)
   const deleteLoading = ref(false)
   const toggleLoading = ref(false)
-  const initialLoading = ref(false)
   const isEditing = ref(false)
   const saveLoading = ref(false)
 
@@ -281,7 +200,7 @@
 
   // Track unsaved changes
   const hasUnsavedChanges = computed(() => {
-    if (!isEditing.value || !project.value) return false
+    if (!isEditing.value && !isNewProject.value) return false
 
     // For new projects, any non-empty field indicates changes
     if (isNewProject.value) {
@@ -295,6 +214,8 @@
     }
 
     // For existing projects, compare with original values
+    if (!project.value) return false
+
     let originalLaunchDate = ''
     if (project.value.launch_date) {
       originalLaunchDate = project.value.launch_date.split('T')[0]
@@ -337,7 +258,6 @@
   onMounted(async () => {
     const projectId = route.params.id as string
 
-    initialLoading.value = true
     try {
       if (isNewProject.value) {
         // For new projects, only fetch dropdown options and start in edit mode
@@ -365,8 +285,6 @@
       }
     } catch (error) {
       console.error('Failed to fetch project or dropdown data:', error)
-    } finally {
-      initialLoading.value = false
     }
   })
 
@@ -479,6 +397,17 @@
       if (isNewProject.value) {
         // Create new project
         const newProject = await projectStore.createProject(projectData)
+
+        // Clear the form and reset editing state before navigation
+        editForm.value = {
+          internal_name: '',
+          backward_compatibility: '',
+          launch_date: '',
+          context_id: '',
+          language_id: '',
+        }
+        isEditing.value = false
+
         // Navigate to the new project's detail page
         router.replace(`/projects/${newProject.id}`)
       } else if (project.value) {
