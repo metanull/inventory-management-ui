@@ -12,7 +12,9 @@
     :empty-message="
       filterMode === 'all'
         ? 'Get started by creating a new project.'
-        : `No ${filterMode} projects found.`
+        : filterMode === 'visible'
+          ? 'No visible projects found. Projects are visible when they are enabled, launched, and the launch date has passed.'
+          : `No ${filterMode} projects found.`
     "
     :show-empty-add-button="filterMode === 'all'"
     empty-add-button-label="New Project"
@@ -32,10 +34,16 @@
     <!-- Filter Buttons -->
     <template #filters>
       <FilterButton
+        label="Visible"
+        :is-active="filterMode === 'visible'"
+        :count="visibleProjects.length"
+        variant="primary"
+        @click="filterMode = 'visible'"
+      />
+      <FilterButton
         label="All Projects"
         :is-active="filterMode === 'all'"
         :count="projects.length"
-        variant="primary"
         @click="filterMode = 'all'"
       />
       <FilterButton
@@ -168,13 +176,14 @@
   const projectStore = useProjectStore()
 
   const projects = computed(() => projectStore.projects)
+  const visibleProjects = computed(() => projectStore.visibleProjects)
   const enabledProjects = computed(() => projectStore.enabledProjects)
   const launchedProjects = computed(() => projectStore.launchedProjects)
   const loading = computed(() => projectStore.loading && projects.value.length === 0)
   const error = computed(() => projectStore.error)
 
-  // Filter state
-  const filterMode = ref<'all' | 'enabled' | 'launched'>('all')
+  // Filter state - default to 'visible'
+  const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('visible')
 
   // Delete modal state
   const showDeleteModal = ref(false)
@@ -184,6 +193,8 @@
   // Computed filtered projects
   const filteredProjects = computed(() => {
     switch (filterMode.value) {
+      case 'visible':
+        return visibleProjects.value
       case 'enabled':
         return enabledProjects.value
       case 'launched':
@@ -196,6 +207,9 @@
   // Fetch projects on mount
   onMounted(async () => {
     try {
+      // Fetch visible projects first (default filter)
+      await projectStore.fetchEnabledProjects()
+      // Also fetch all projects for other filters
       await projectStore.fetchProjects()
     } catch (error) {
       console.error('Failed to fetch projects:', error)
@@ -231,7 +245,11 @@
   // Fetch projects function for retry
   const fetchProjects = async () => {
     try {
-      await projectStore.fetchProjects()
+      if (filterMode.value === 'visible') {
+        await projectStore.fetchEnabledProjects()
+      } else {
+        await projectStore.fetchProjects()
+      }
     } catch (error) {
       console.error('Failed to fetch projects:', error)
     }

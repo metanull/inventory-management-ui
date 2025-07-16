@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-  import { withDefaults, defineProps, defineEmits } from 'vue'
+  import { defineEmits } from 'vue'
 
   const props = withDefaults(
     defineProps<{

@@ -382,7 +382,7 @@ describe('Project Store', () => {
       expect(projectStore.loading).toBe(false)
       expect(projectStore.error).toBeNull()
       expect(mockProjectApi.projectSetLaunched).toHaveBeenCalledWith(projectId, {
-        launch_date: expect.any(String),
+        is_launched: true,
       })
     })
 
@@ -414,7 +414,7 @@ describe('Project Store', () => {
       expect(projectStore.loading).toBe(false)
       expect(projectStore.error).toBeNull()
       expect(mockProjectApi.projectSetLaunched).toHaveBeenCalledWith(projectId, {
-        launch_date: undefined,
+        is_launched: false,
       })
     })
 

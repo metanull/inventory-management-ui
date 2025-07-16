@@ -18,6 +18,7 @@ declare const process: {
 
 export const useProjectStore = defineStore('project', () => {
   const projects = ref<ProjectResource[]>([])
+  const visibleProjects = ref<ProjectResource[]>([])
   const currentProject = ref<ProjectResource | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -78,7 +79,7 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  // Fetch enabled projects only
+  // Fetch enabled projects only (visible projects)
   const fetchEnabledProjects = async () => {
     loading.value = true
     error.value = null
@@ -86,7 +87,7 @@ export const useProjectStore = defineStore('project', () => {
     try {
       const apiClient = createApiClient()
       const response = await apiClient.projectEnabled()
-      projects.value = response.data.data || []
+      visibleProjects.value = response.data.data || []
     } catch (err: unknown) {
       ErrorHandler.handleError(err, 'Failed to fetch enabled projects')
       error.value = 'Failed to fetch enabled projects'
@@ -231,7 +232,7 @@ export const useProjectStore = defineStore('project', () => {
     try {
       const apiClient = createApiClient()
       const requestData: ProjectSetLaunchedRequest = {
-        launch_date: isLaunched ? new Date().toISOString() : undefined,
+        is_launched: isLaunched,
       }
       const response = await apiClient.projectSetLaunched(id, requestData)
       const updatedProject = response.data.data
@@ -265,6 +266,7 @@ export const useProjectStore = defineStore('project', () => {
   // Clear all projects
   const clearProjects = () => {
     projects.value = []
+    visibleProjects.value = []
     currentProject.value = null
   }
 
@@ -293,6 +295,7 @@ export const useProjectStore = defineStore('project', () => {
   return {
     // State
     projects,
+    visibleProjects,
     currentProject,
     loading,
     error,
