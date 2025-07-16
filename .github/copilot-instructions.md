@@ -68,10 +68,14 @@
       - The Package is private, authentication with a GitHub token to install the package
         - The authentication token is stored in user's .npmrc file.
       - The Package is hosted on github packages, project's `.npmrc` is configured with `@metanull:registry=https://npm.pkg.github.com/`.
-- Handle errors consistently with user feedback
-- Show loading states during API calls
-  - Prefer overlay spinners for full-screen loading
-- Cache data appropriately with reactive state
+- Handle errors consistently with user feedback.
+- Show loading states during API calls.
+  - Prefer overlay spinners for full-screen loading.
+- Cache data appropriately with reactive state.
+**CRITICAL: Never use src\api\inventory-app.json.**
+**CRITICAL: Use the api client package: @metanull/inventory-app-api-client.**
+  - **CRITICAL: It has a docs directory with markdown documentation.**
+  - **CRITICAL: It is a typescript client fully aligned on the API specifications exposed by the backend.**
 
 # Layout, Reusability, Consistency
 
