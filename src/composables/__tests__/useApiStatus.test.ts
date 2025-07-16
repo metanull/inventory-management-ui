@@ -1,6 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useApiStatus } from '../useApiStatus'
 
+// Mock Vue lifecycle hooks
+vi.mock('vue', async () => {
+  const actual = await vi.importActual('vue')
+  return {
+    ...actual,
+    onMounted: vi.fn(_fn => {
+      // Mock onMounted to not run during tests
+      // In a real component, this would be called by Vue
+    }),
+  }
+})
+
 // Mock the API client
 vi.mock('@metanull/inventory-app-api-client', () => ({
   Configuration: vi.fn(),

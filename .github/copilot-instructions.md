@@ -8,6 +8,10 @@
 - This is a windows system
   - The console is powershell.
     - **CRITICAL: Awlays use PowerShell syntax when using `run_in_terminal`**
+      - **CRITICAL: Always use `windows` or `powershell` syntax in the terminal.**
+      - E.g. `Find-String`, `Get-ChildItem`, `Set-Location`, etc.
+    - **CRITICAL: Never use `linux` or `bash` syntax in the terminal.**
+      - **CRITICAL: Never use `linux` commands such as `grep`, `sed`, `awk`, etc.**
   - The `docs/` directory contains a **distinct** `Ruby` application based on `Jekyll`.
     - **CRITICAL: Always use `wsl` when interacting with Ruby or Jekyll.**
 

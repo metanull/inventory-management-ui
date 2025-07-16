@@ -5,6 +5,7 @@ import { createRouter, createWebHistory, type Router } from 'vue-router'
 import LanguageDetail from '../LanguageDetail.vue'
 import { useLanguageStore } from '@/stores/language'
 import type { LanguageResource } from '@metanull/inventory-app-api-client'
+import DateDisplay from '@/components/format/Date.vue'
 
 // Mock the ErrorHandler
 vi.mock('@/utils/errorHandler', () => ({
@@ -67,6 +68,9 @@ describe('LanguageDetail View', () => {
     const wrapper = mount(LanguageDetail, {
       global: {
         plugins: [pinia, router],
+        components: {
+          DateDisplay,
+        },
       },
     })
 
@@ -84,6 +88,9 @@ describe('LanguageDetail View', () => {
     const wrapper = mount(LanguageDetail, {
       global: {
         plugins: [pinia, router],
+        components: {
+          DateDisplay,
+        },
       },
     })
 
@@ -100,6 +107,9 @@ describe('LanguageDetail View', () => {
     const wrapper = mount(LanguageDetail, {
       global: {
         plugins: [pinia, router],
+        components: {
+          DateDisplay,
+        },
       },
     })
 
@@ -116,6 +126,9 @@ describe('LanguageDetail View', () => {
     const wrapper = mount(LanguageDetail, {
       global: {
         plugins: [pinia, router],
+        components: {
+          DateDisplay,
+        },
       },
     })
 
@@ -132,6 +145,9 @@ describe('LanguageDetail View', () => {
     const wrapper = mount(LanguageDetail, {
       global: {
         plugins: [pinia, router],
+        components: {
+          DateDisplay,
+        },
       },
     })
 
@@ -148,6 +164,9 @@ describe('LanguageDetail View', () => {
     const wrapper = mount(LanguageDetail, {
       global: {
         plugins: [pinia, router],
+        components: {
+          DateDisplay,
+        },
       },
     })
 
