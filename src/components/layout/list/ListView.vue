@@ -22,14 +22,8 @@
       <slot name="filters" />
     </div>
 
-    <!-- Loading State -->
-    <LoadingSpinner v-if="loading" />
-
-    <!-- Error State -->
-    <ErrorDisplay v-else-if="error" :error="error" @retry="$emit('retry')" />
-
     <!-- Empty State -->
-    <div v-else-if="isEmpty" class="text-center py-12">
+    <div v-if="isEmpty" class="text-center py-12">
       <div v-if="$slots.icon" :class="iconClasses" class="mx-auto h-12 w-12 mb-4">
         <slot name="icon" />
       </div>
@@ -37,9 +31,6 @@
       <Title variant="empty" :description="emptyMessage">
         {{ emptyTitle }}
       </Title>
-      <div v-if="showEmptyAddButton && addButtonRoute" class="mt-6">
-        <AddButton :to="addButtonRoute" :label="emptyAddButtonLabel" :color="color" />
-      </div>
     </div>
 
     <!-- Content Slot -->
@@ -69,8 +60,6 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import ErrorDisplay from '@/components/layout/app/ErrorDisplay.vue'
-  import LoadingSpinner from '@/components/layout/modals/LoadingSpinner.vue'
   import AddButton from '@/components/layout/list/AddButton.vue'
   import Title from '@/components/format/title/Title.vue'
   import TableElement from '@/components/format/table/TableElement.vue'
@@ -81,13 +70,9 @@
     description?: string
     addButtonRoute?: string
     addButtonLabel?: string
-    loading: boolean
-    error: string | null
     isEmpty: boolean
     emptyTitle: string
     emptyMessage: string
-    showEmptyAddButton?: boolean
-    emptyAddButtonLabel?: string
     filters?: Array<{ label: string; count?: number; isActive: boolean; variant?: string }>
     color?: string
   }>()
@@ -111,8 +96,4 @@
 
     return colorMap[props.color] || 'text-gray-600'
   })
-
-  defineEmits<{
-    retry: []
-  }>()
 </script>

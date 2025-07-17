@@ -1,43 +1,63 @@
 <template>
   <div>
-    <!-- Initial Loading State (for first load) -->
-    <LoadingSpinner v-if="loading" />
-
-    <!-- Error State -->
-    <ErrorDisplay v-else-if="error" :error="error" @retry="handleRetry" />
-
     <!-- Detail Content -->
-    <div v-else-if="resource || isCreating" class="relative space-y-6">
-      <!-- Action Loading Overlay (for status toggles, etc.) -->
+    <div v-if="resource || isCreating" class="relative space-y-6">
+      <!-- Header -->
       <div
-        v-if="actionLoading"
-        class="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50 rounded-lg"
+        class="bg-white shadow"
+        :class="{ 'border-l-4 border-blue-500': isEditing || isCreating }"
       >
-        <div class="bg-white rounded-lg p-4 shadow-lg">
-          <LoadingSpinner />
+        <div class="px-4 py-5 sm:px-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <!-- Back Navigation Link -->
+              <div v-if="backLink" class="mb-2">
+                <router-link
+                  :to="backLink.route"
+                  :class="backLinkClasses"
+                  class="inline-flex items-center text-sm font-medium transition-colors hover:underline"
+                >
+                  <component :is="backLink.icon" class="w-4 h-4 mr-1" />
+                  {{ backLink.title }}
+                </router-link>
+              </div>
+
+              <Title
+                variant="page"
+                :description="
+                  resource?.backward_compatibility
+                    ? `Legacy ID: ${resource.backward_compatibility}`
+                    : undefined
+                "
+              >
+                {{ headerTitle }}
+                <span v-if="isCreating" class="text-sm font-normal text-blue-600 ml-2"
+                  >(Creating)</span
+                >
+                <span v-else-if="isEditing" class="text-sm font-normal text-blue-600 ml-2"
+                  >(Editing)</span
+                >
+              </Title>
+            </div>
+            <div class="flex space-x-3">
+              <template v-if="!isEditing && !isCreating">
+                <EditButton @click="$emit('edit')" />
+                <DeleteButton @click="$emit('delete')" />
+              </template>
+              <template v-else>
+                <SaveButton :disabled="isSaveDisabled" @click="$emit('save')" />
+                <CancelButton @click="handleCancel" />
+              </template>
+            </div>
+          </div>
         </div>
       </div>
-
-      <!-- Header -->
-      <DetailViewHeader
-        :internal-name="headerTitle"
-        :backward-compatibility="resource?.backward_compatibility || null"
-        :is-editing="isEditing || (isCreating ?? false)"
-        :is-creating="isCreating ?? false"
-        :save-loading="saveLoading"
-        :save-disabled="isSaveDisabled"
-        :back-link="backLink"
-        @edit="$emit('edit')"
-        @delete="$emit('delete')"
-        @save="$emit('save')"
-        @cancel="handleCancel"
-      />
 
       <!-- Status Cards (hidden during creation) -->
       <div
         v-if="statusCards && statusCards.length > 0 && !isCreating"
         class="grid grid-cols-1 gap-4 sm:grid-cols-2"
-        :class="{ 'opacity-50 pointer-events-none': isEditing || actionLoading }"
+        :class="{ 'opacity-50 pointer-events-none': isEditing }"
       >
         <StatusCard
           v-for="(card, index) in statusCards"
@@ -49,7 +69,7 @@
           :toggle-title="card.toggleTitle"
           :is-active="card.isActive"
           :loading="card.loading"
-          :disabled="card.disabled || actionLoading"
+          :disabled="card.disabled"
           :active-icon-background-class="card.activeIconBackgroundClass"
           :inactive-icon-background-class="card.inactiveIconBackgroundClass"
           :active-icon-class="card.activeIconClass"
@@ -61,10 +81,7 @@
       </div>
 
       <!-- Information Section (Slot) -->
-      <div
-        class="bg-white shadow overflow-hidden sm:rounded-lg"
-        :class="{ 'opacity-50 pointer-events-none': actionLoading }"
-      >
+      <div class="bg-white shadow overflow-hidden sm:rounded-lg" :class="{}">
         <div class="px-4 py-5 sm:px-6">
           <Title variant="section" :description="informationDescription">
             {{ informationTitle }}
@@ -76,7 +93,7 @@
       </div>
 
       <!-- System Properties (hidden during creation) -->
-      <div v-if="!isCreating" :class="{ 'opacity-50 pointer-events-none': actionLoading }">
+      <div v-if="!isCreating">
         <SystemProperties
           :id="resource?.id || ''"
           :created-at="resource?.created_at || ''"
@@ -84,40 +101,17 @@
         />
       </div>
     </div>
-
-    <!-- Delete Confirmation Modal -->
-    <DeleteConfirmationModal
-      :show="showDeleteModal"
-      :title="deleteModalTitle"
-      :message="deleteModalMessage"
-      :loading="deleteLoading"
-      @confirm="$emit('confirmDelete')"
-      @cancel="$emit('cancelDelete')"
-    />
-
-    <!-- Unsaved Changes Modal -->
-    <UnsavedChangesModal
-      :show="showUnsavedChangesModal"
-      @confirm="handleConfirmLeave"
-      @cancel="handleCancelLeave"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, onUnmounted, watch, type Component } from 'vue'
-  import {
-    onBeforeRouteLeave,
-    type NavigationGuardNext,
-    type RouteLocationNormalized,
-  } from 'vue-router'
-  import LoadingSpinner from '@/components/layout/modals/LoadingSpinner.vue'
-  import ErrorDisplay from '@/components/layout/app/ErrorDisplay.vue'
-  import DetailViewHeader from '@/components/layout/detail/DetailViewHeader.vue'
+  import { ref, computed, onMounted, type Component } from 'vue'
+  import EditButton from '@/components/layout/detail/EditButton.vue'
+  import DeleteButton from '@/components/layout/detail/DeleteButton.vue'
+  import SaveButton from '@/components/layout/detail/SaveButton.vue'
+  import CancelButton from '@/components/layout/detail/CancelButton.vue'
   import StatusCard from '@/components/format/card/StatusCard.vue'
   import SystemProperties from '@/components/layout/detail/SystemProperties.vue'
-  import DeleteConfirmationModal from '@/components/layout/modals/DeleteConfirmationModal.vue'
-  import UnsavedChangesModal from '@/components/layout/modals/UnsavedChangesModal.vue'
   import Title from '@/components/format/title/Title.vue'
 
   interface StatusCardConfig {
@@ -148,14 +142,11 @@
   const props = defineProps<{
     // Loading states
     storeLoading?: boolean // Store's internal loading state (optional)
-    error: any
     resource: Resource | null
 
     // Edit states
     isEditing: boolean
     isCreating?: boolean // New prop to support creation mode
-    saveLoading?: boolean
-    actionLoading?: boolean
     hasUnsavedChanges?: boolean // New prop to track unsaved changes
 
     // Creation mode customization
@@ -175,41 +166,21 @@
     informationTitle: string
     informationDescription: string
 
-    // Modal states
-    showDeleteModal: boolean
-    deleteModalTitle: string
-    deleteModalMessage: string
-    deleteLoading?: boolean
-
     // Fetch function for initial load
     fetchData: () => Promise<void>
   }>()
 
   const emit = defineEmits<{
-    retry: []
     edit: []
-    delete: []
     save: []
     cancel: []
+    delete: []
     statusToggle: [index: number]
-    confirmDelete: []
-    cancelDelete: []
     unsavedChanges: [hasChanges: boolean] // New emit for parent to notify of changes
   }>()
 
   // Internal loading state for initial page load
   const initialLoading = ref(false)
-
-  // Unsaved changes modal state
-  const showUnsavedChangesModal = ref(false)
-  const pendingNavigation = ref<(() => void) | null>(null)
-  const pendingDestination = ref<RouteLocationNormalized | null>(null)
-  const isCancelInProgress = ref(false)
-
-  // Computed loading state - prioritize initial loading over store loading
-  const loading = computed(
-    () => initialLoading.value || (props.storeLoading && !props.resource && !props.isCreating)
-  )
 
   // Disable save button if no unsaved changes
   const isSaveDisabled = computed(() => !props.hasUnsavedChanges)
@@ -222,91 +193,28 @@
     return props.resource?.internal_name || ''
   })
 
-  // Browser beforeunload event handler
-  const handleBeforeUnload = (event: Event) => {
-    if ((props.isEditing || props.isCreating) && props.hasUnsavedChanges) {
-      event.preventDefault()
-      // Modern browsers show a generic message, but we still need to set returnValue
-      Object.assign(event, { returnValue: '' })
-      return ''
+  // Back link classes for dynamic coloring
+  const backLinkClasses = computed(() => {
+    if (!props.backLink?.color) return 'text-gray-600 hover:text-gray-800'
+
+    const colorMap: Record<string, string> = {
+      blue: 'text-blue-600 hover:text-blue-800',
+      green: 'text-green-600 hover:text-green-800',
+      purple: 'text-purple-600 hover:text-purple-800',
+      orange: 'text-orange-600 hover:text-orange-800',
+      red: 'text-red-600 hover:text-red-800',
+      gray: 'text-gray-600 hover:text-gray-800',
     }
-  }
-
-  // Navigation guard to prevent leaving with unsaved changes
-  onBeforeRouteLeave(
-    (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
-      // If modal is already shown or we have a pending navigation, don't interfere
-      if (showUnsavedChangesModal.value || pendingNavigation.value) {
-        next(false)
-        return
-      }
-
-      // If cancel is in progress, allow navigation without showing modal
-      if (isCancelInProgress.value) {
-        isCancelInProgress.value = false // Reset the flag
-        next()
-        return
-      }
-
-      if ((props.isEditing || props.isCreating) && props.hasUnsavedChanges) {
-        showUnsavedChangesModal.value = true
-        pendingDestination.value = to
-        pendingNavigation.value = () => next()
-        next(false) // Prevent navigation
-      } else {
-        next() // Allow navigation
-      }
-    }
-  )
-
-  // Watch for editing/creating state changes to add/remove beforeunload listener
-  watch(
-    () => props.isEditing || props.isCreating,
-    (isEditingOrCreating: boolean) => {
-      if (isEditingOrCreating) {
-        window.addEventListener('beforeunload', handleBeforeUnload)
-      } else {
-        window.removeEventListener('beforeunload', handleBeforeUnload)
-      }
-    },
-    { immediate: true }
-  )
-
-  // Clean up event listener on unmount
-  onUnmounted(() => {
-    window.removeEventListener('beforeunload', handleBeforeUnload)
+    return colorMap[props.backLink.color] || 'text-gray-600 hover:text-gray-800'
   })
-
-  // Handle confirmation to leave without saving
-  const handleConfirmLeave = () => {
-    showUnsavedChangesModal.value = false
-    const navigationCallback = pendingNavigation.value
-
-    // Reset immediately to prevent multiple calls
-    pendingNavigation.value = null
-    pendingDestination.value = null
-
-    if (navigationCallback) {
-      // Use the original navigation callback which calls next()
-      navigationCallback()
-    }
-  }
-
-  // Handle cancellation of leaving
-  const handleCancelLeave = () => {
-    showUnsavedChangesModal.value = false
-    pendingNavigation.value = null // Clear the pending navigation
-    pendingDestination.value = null // Clear the pending destination
-  }
 
   // Handle field changes from child components
   const handleFieldChange = () => {
     emit('unsavedChanges', true)
   }
 
-  // Handle cancel action - bypass unsaved changes modal
+  // Handle cancel action
   const handleCancel = () => {
-    isCancelInProgress.value = true
     emit('cancel')
   }
 
@@ -323,17 +231,4 @@
       }
     }
   })
-
-  // Retry function that uses internal loading state
-  const handleRetry = async () => {
-    initialLoading.value = true
-    try {
-      await props.fetchData()
-      emit('retry')
-    } catch (error) {
-      console.error('Failed to retry data fetch:', error)
-    } finally {
-      initialLoading.value = false
-    }
-  }
 </script>

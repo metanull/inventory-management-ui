@@ -158,10 +158,6 @@
                         :disabled="contextStore.loading"
                         @click="setAsDefault(context)"
                       />
-                      <DeleteButton
-                        :disabled="context.is_default"
-                        @click="openDeleteModal(context)"
-                      />
                     </div>
                   </td>
                 </tr>
@@ -179,60 +175,6 @@
       @close="closeModal"
       @success="handleFormSuccess"
     />
-
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
-          <p class="text-sm text-gray-600 mb-6">
-            Are you sure you want to delete the context "{{ contextToDelete?.internal_name }}" ({{
-              contextToDelete?.id
-            }})? This action cannot be undone.
-          </p>
-
-          <div class="flex justify-end gap-3">
-            <button
-              type="button"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md"
-              @click="closeDeleteModal"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="contextStore.loading"
-              class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              @click="confirmDelete"
-            >
-              <svg
-                v-if="contextStore.loading"
-                class="animate-spin h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -244,7 +186,6 @@
   import type { ContextResource } from '@metanull/inventory-app-api-client'
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
-  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
   import SetDefaultButton from '@/components/_obsolete/SetDefaultButton.vue'
   import DateDisplay from '@/components/format/Date.vue'
   import ResourceNameDisplay from '@/components/format/InternalName.vue'
@@ -253,9 +194,7 @@
   const contextStore = useContextStore()
 
   const showModal = ref(false)
-  const showDeleteModal = ref(false)
   const currentEditContext = ref<ContextResource | null>(null)
-  const contextToDelete = ref<ContextResource | null>(null)
 
   // Filter state
   const filterMode = ref<'all' | 'default'>('all')
@@ -289,29 +228,6 @@
   const handleFormSuccess = () => {
     // Refresh the contexts list after successful create/update
     refreshContexts()
-  }
-
-  const openDeleteModal = (context: ContextResource) => {
-    contextToDelete.value = context
-    showDeleteModal.value = true
-  }
-
-  const closeDeleteModal = () => {
-    showDeleteModal.value = false
-    contextToDelete.value = null
-    contextStore.clearError()
-  }
-
-  const confirmDelete = async () => {
-    if (!contextToDelete.value) return
-
-    try {
-      await contextStore.deleteContext(contextToDelete.value.id)
-      closeDeleteModal()
-    } catch (error) {
-      // Error is handled by the store
-      console.error('Delete error:', error)
-    }
   }
 
   const setAsDefault = async (context: ContextResource) => {

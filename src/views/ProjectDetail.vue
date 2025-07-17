@@ -2,14 +2,11 @@
   <!-- Unified Project Detail View -->
   <DetailView
     :store-loading="projectStore.loading"
-    :error="error"
     :resource="isNewProject ? null : project"
     :is-creating="isNewProject"
     :is-editing="isEditing"
-    :save-loading="saveLoading"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
-    :action-loading="toggleLoading"
     :back-link="backLink"
     :status-cards="statusCardsConfig"
     :create-title="'New Project'"
@@ -20,18 +17,12 @@
         ? 'Create a new project in your inventory system.'
         : 'Detailed information about this project.'
     "
-    :show-delete-modal="showDeleteModal"
-    delete-modal-title="Delete Project"
-    :delete-modal-message="deleteModalMessage"
-    :delete-loading="deleteLoading"
     :fetch-data="fetchProject"
     @edit="startEdit"
-    @delete="confirmDelete"
     @save="saveEdit"
     @cancel="cancelEdit"
+    @delete="handleDelete"
     @status-toggle="handleStatusToggle"
-    @confirm-delete="deleteProject"
-    @cancel-delete="cancelDelete"
   >
     <template #information>
       <DescriptionList>
@@ -42,8 +33,6 @@
               v-if="isEditing || isNewProject"
               v-model="editForm.internal_name"
               type="text"
-              placeholder="Enter project name"
-              :required="true"
             />
             <DisplayText v-else>{{ project?.internal_name }}</DisplayText>
           </DescriptionDetail>
@@ -124,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch, h } from 'vue'
+  import { ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter, type LocationQueryValue } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
@@ -142,6 +131,7 @@
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import RocketIcon from '@/components/icons/RocketIcon.vue'
   import PackageIcon from '@/components/icons/PackageIcon.vue'
+  import ProjectIcon from '@/components/icons/ProjectIcon.vue'
 
   const route = useRoute()
   const router = useRouter()
@@ -150,29 +140,12 @@
   const languageStore = useLanguageStore()
 
   const project = computed(() => projectStore.currentProject)
-  const error = computed(() => projectStore.error)
 
   // Back link configuration
   const backLink = computed(() => ({
     title: 'Back to Projects',
     route: '/projects',
-    icon: () =>
-      h(
-        'svg',
-        {
-          fill: 'none',
-          stroke: 'currentColor',
-          viewBox: '0 0 24 24',
-        },
-        [
-          h('path', {
-            'stroke-linecap': 'round',
-            'stroke-linejoin': 'round',
-            'stroke-width': '2',
-            d: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-          }),
-        ]
-      ),
+    icon: ProjectIcon,
     color: 'orange',
   }))
 
@@ -183,11 +156,7 @@
   const defaultLanguage = computed(() => languageStore.defaultLanguage)
 
   // Modal and action states
-  const showDeleteModal = ref(false)
-  const deleteLoading = ref(false)
-  const toggleLoading = ref(false)
   const isEditing = ref(false)
-  const saveLoading = ref(false)
 
   // Edit form data
   const editForm = ref({
@@ -292,13 +261,10 @@
   const toggleEnabled = async () => {
     if (!project.value) return
 
-    toggleLoading.value = true
     try {
       await projectStore.setProjectEnabled(project.value.id, !project.value.is_enabled)
     } catch (error) {
       console.error('Failed to toggle enabled status:', error)
-    } finally {
-      toggleLoading.value = false
     }
   }
 
@@ -306,35 +272,10 @@
   const toggleLaunched = async () => {
     if (!project.value) return
 
-    toggleLoading.value = true
     try {
       await projectStore.setProjectLaunched(project.value.id, !project.value.is_launched)
     } catch (error) {
       console.error('Failed to toggle launched status:', error)
-    } finally {
-      toggleLoading.value = false
-    }
-  }
-
-  // Delete confirmation
-  const confirmDelete = () => {
-    showDeleteModal.value = true
-  }
-
-  const cancelDelete = () => {
-    showDeleteModal.value = false
-  }
-
-  const deleteProject = async () => {
-    if (!project.value) return
-
-    deleteLoading.value = true
-    try {
-      await projectStore.deleteProject(project.value.id)
-      router.push('/projects')
-    } catch (error) {
-      console.error('Failed to delete project:', error)
-      deleteLoading.value = false
     }
   }
 
@@ -384,7 +325,6 @@
   }
 
   const saveEdit = async () => {
-    saveLoading.value = true
     try {
       const projectData = {
         internal_name: editForm.value.internal_name,
@@ -424,8 +364,6 @@
       }
     } catch (error) {
       console.error('Failed to save project:', error)
-    } finally {
-      saveLoading.value = false
     }
   }
 
@@ -481,10 +419,13 @@
     ]
   })
 
-  // Delete modal message
-  const deleteModalMessage = computed(() => {
-    return `Are you sure you want to delete "${project.value?.internal_name}"? This action cannot be undone.`
-  })
+  // Handle delete
+  const handleDelete = async () => {
+    if (project.value?.id) {
+      await projectStore.deleteProject(project.value.id)
+      router.push('/projects')
+    }
+  }
 
   // Handle status toggle
   const handleStatusToggle = async (index: number) => {

@@ -5,8 +5,6 @@
     add-button-route="/projects/new"
     add-button-label="Add Project"
     color="orange"
-    :loading="loading"
-    :error="error"
     :is-empty="filteredProjects.length === 0"
     empty-title="No projects found"
     :empty-message="
@@ -71,11 +69,7 @@
     </template>
 
     <template #rows>
-      <TableRow
-        v-for="project in filteredProjects"
-        :key="project.id"
-        :class="{ 'opacity-50': deleteLoading && projectToDelete?.id === project.id }"
-      >
+      <TableRow v-for="project in filteredProjects" :key="project.id">
         <TableCell>
           <InternalNameSmall
             :internal-name="project.internal_name"
@@ -91,7 +85,6 @@
             title="Enabled"
             :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
             :is-active="project.is_enabled"
-            :disabled="deleteLoading && projectToDelete?.id === project.id"
             @toggle="updateProjectStatus(project, 'is_enabled', !project.is_enabled)"
           />
         </TableCell>
@@ -100,7 +93,6 @@
             title="Launched"
             :status-text="project.is_launched ? 'Launched' : 'Not launched'"
             :is-active="project.is_launched"
-            :disabled="deleteLoading && projectToDelete?.id === project.id"
             @toggle="updateProjectStatus(project, 'is_launched', !project.is_launched)"
           />
         </TableCell>
@@ -120,21 +112,10 @@
           <div class="flex space-x-2">
             <ViewButton @click="router.push(`/projects/${project.id}`)" />
             <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
-            <DeleteButton @click="confirmDelete(project)" />
+            <DeleteButton @click="projectStore.deleteProject(project.id)" />
           </div>
         </TableCell>
       </TableRow>
-    </template>
-    <!-- Delete Confirmation Modal -->
-    <template #modals>
-      <DeleteConfirmationModal
-        :show="showDeleteModal"
-        title="Delete Project"
-        :message="`Are you sure you want to delete &quot;${projectToDelete?.internal_name}&quot;? This action cannot be undone.`"
-        :loading="deleteLoading"
-        @confirm="deleteProject"
-        @cancel="cancelDelete"
-      />
     </template>
   </ListView>
 </template>
@@ -143,7 +124,6 @@
   import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
-  import DeleteConfirmationModal from '@/components/layout/modals/DeleteConfirmationModal.vue'
   import type { ProjectResource } from '@metanull/inventory-app-api-client'
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
@@ -167,16 +147,9 @@
   const visibleProjects = computed(() => projectStore.visibleProjects)
   const enabledProjects = computed(() => projectStore.enabledProjects)
   const launchedProjects = computed(() => projectStore.launchedProjects)
-  const loading = computed(() => projectStore.loading && projects.value.length === 0)
-  const error = computed(() => projectStore.error)
 
   // Filter state - default to 'visible'
   const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('visible')
-
-  // Delete modal state
-  const showDeleteModal = ref(false)
-  const projectToDelete = ref<ProjectResource | null>(null)
-  const deleteLoading = ref(false)
 
   // Computed filtered projects
   const filteredProjects = computed(() => {
@@ -204,12 +177,6 @@
     }
   })
 
-  // Delete confirmation
-  const confirmDelete = (project: ProjectResource) => {
-    projectToDelete.value = project
-    showDeleteModal.value = true
-  }
-
   // Update project status
   const updateProjectStatus = async (project: ProjectResource, field: string, value: boolean) => {
     try {
@@ -220,26 +187,6 @@
       }
     } catch (error) {
       console.error(`Failed to update project ${field}:`, error)
-    }
-  }
-
-  const cancelDelete = () => {
-    showDeleteModal.value = false
-    projectToDelete.value = null
-  }
-
-  const deleteProject = async () => {
-    if (!projectToDelete.value) return
-
-    deleteLoading.value = true
-    try {
-      await projectStore.deleteProject(projectToDelete.value.id)
-      showDeleteModal.value = false
-      projectToDelete.value = null
-    } catch (error) {
-      console.error('Failed to delete project:', error)
-    } finally {
-      deleteLoading.value = false
     }
   }
 

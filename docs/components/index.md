@@ -7,45 +7,61 @@ has_children: true
 
 # Component Documentation
 
-This section contains comprehensive documentation for all reusable Vue.js components in the Inventory Management UI application.
+This documentation covers all Vue components in the Inventory Management UI application.
 
-## Directory Structure
+## Component Categories
 
-The components are organized into the following main directories:
+### [Format Components](./Format.md)
+Components for displaying and formatting data, including text display, form inputs, dropdowns, and specialized formatters.
 
-- **`src/components/actions/`** - Action button components (currently empty, functionality moved to layout subdirectories)
-- **`src/components/format/`** - Data formatting and display components
-- **`src/components/icons/`** - SVG icon components
-- **`src/components/layout/`** - Structural layout components
-- **`src/components/_obsolete/`** - Deprecated components (marked for removal)
+### [Layout Components](./Layout.md)
+High-level layout components for structuring pages and sections, including detail views, list views, and application layout.
 
-## Sections
+### [Icon Components](./Icons.md)
+SVG icon components used throughout the application.
 
-### [Actions](Actions)
-Action button components for common operations like save, cancel, edit, delete, add, and view functionalities. These components are now organized within the layout subdirectories.
+### [Action Components](./Actions.md)
+Button components for various user actions like editing, saving, deleting, etc.
 
-### [Format](Format)
-Data formatting components for displaying and manipulating various data types including:
-- **Cards** (`format/card/`): Card, InformationCard, NavigationCard, StatusCard
-- **Tables** (`format/table/`): TableElement, TableHeader, TableRow, TableCell
-- **Titles** (`format/title/`): Title component with multiple variants
-- **Descriptions** (`format/description/`): DescriptionList, DescriptionRow, DescriptionTerm, DescriptionDetail
-- **Other formatting**: Toggle, ToggleSmall, Date, DisplayText, FormInput, GenericDropdown, InternalName, InternalNameSmall, Uuid
+## Component Structure
 
-### [Icons](Icons)
-SVG icon components providing consistent iconography throughout the application:
-- CheckCircleIcon, XCircleIcon, RocketIcon, PackageIcon, ProjectIcon, IconProject, GenericIcon
+All components follow these conventions:
 
-### [Layout](Layout)
-Structural layout components organized into specialized subdirectories:
-- **App components** (`layout/app/`): AppHeader, AppFooter, ErrorDisplay
-- **Detail components** (`layout/detail/`): DetailView, DetailViewHeader, SystemProperties, and action buttons
-- **List components** (`layout/list/`): ListView and related action buttons
-- **Modals** (`layout/modals/`): DeleteConfirmationModal, LoadingSpinner, UnsavedChangesModal
+- **TypeScript**: All components are written in TypeScript with strict type definitions
+- **Composition API**: Using Vue 3's `<script setup>` syntax
+- **Props Interface**: Clear TypeScript interfaces for all props
+- **Emits**: Typed emit definitions for component events
+- **Tailwind CSS**: Utility-first CSS framework for styling
+- **Slots**: Named and scoped slots for flexible content composition
 
-### [Generic Dropdown](GenericDropdown)
-Comprehensive documentation for the reusable dropdown component with priority sorting and custom styling.
+## Common Patterns
 
----
+### Props Validation
+```typescript
+interface Props {
+  required: string
+  optional?: boolean
+  withDefault?: string
+}
 
-These components follow Vue.js 3 Composition API patterns with TypeScript, ensuring consistency, reusability, and maintainability across the entire application.
+const props = withDefaults(defineProps<Props>(), {
+  optional: false,
+  withDefault: 'default value'
+})
+```
+
+### Event Emissions
+```typescript
+const emit = defineEmits<{
+  click: []
+  change: [value: string]
+  customEvent: [data: CustomType]
+}>()
+```
+
+### Computed Properties
+```typescript
+const computedValue = computed(() => {
+  return props.someValue ? 'active' : 'inactive'
+})
+```

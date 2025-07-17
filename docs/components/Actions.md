@@ -1,280 +1,266 @@
 # Action Components
 
-Action components provide consistent buttons and interactive elements for the inventory management UI.
+Button and interactive components for user actions throughout the application.
 
 ## Overview
 
-Action components are now organized within the layout subdirectories based on their usage context:
-
-- **Detail Actions** (`layout/detail/`): SaveButton, CancelButton, EditButton, DeleteButton
-- **List Actions** (`layout/list/`): AddButton, ViewButton, EditButton, DeleteButton, FilterButton
-
-This organization ensures that action components are grouped with the layouts where they are primarily used, making the codebase more maintainable and intuitive.
-
-## Detail Actions (`layout/detail/`)
-
-### SaveButton.vue
-
-A reusable save button component with loading state and consistent styling for detail views.
-
-### Features
-- **Loading State**: Shows spinner animation when processing
-- **Disabled State**: Prevents interactions when disabled
-- **Consistent Styling**: Green button with hover and focus states
-- **Accessibility**: Proper ARIA attributes and keyboard navigation
-- **Icon Support**: Check icon when idle, spinner when loading
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `disabled` | `boolean` | `false` | Whether the button is disabled |
-| `loading` | `boolean` | `false` | Whether to show loading spinner |
-| `label` | `string` | `'Save'` | Button text label |
-
-### Events
-
-| Event | Description |
-|-------|-------------|
-| `click` | Emitted when button is clicked (only if not disabled or loading) |
-
-### Usage
-
-```vue
-<template>
-  <SaveButton 
-    :loading="saveInProgress" 
-    :disabled="!hasChanges"
-    @click="handleSave"
-  />
-</template>
-
-<script setup lang="ts">
-import SaveButton from '@/components/actions/detail/SaveButton.vue'
-
-const saveInProgress = ref(false)
-const hasChanges = ref(true)
-
-const handleSave = async () => {
-  saveInProgress.value = true
-  // Save logic here
-  saveInProgress.value = false
-}
-</script>
-```
-
-### Used In
-- ProjectDetail.vue (edit mode)
-- All detail views for saving changes
-
-## CancelButton
-
-A reusable cancel button component with consistent styling.
-
-### Features
-- **Consistent Styling**: Gray button with hover and focus states
-- **Accessibility**: Proper ARIA attributes and keyboard navigation
-- **Icon Support**: X icon for cancel action
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `disabled` | `boolean` | `false` | Whether the button is disabled |
-| `label` | `string` | `'Cancel'` | Button text label |
-
-### Events
-
-| Event | Description |
-|-------|-------------|
-| `click` | Emitted when button is clicked |
-
-### Usage
-
-```vue
-<template>
-  <CancelButton @click="handleCancel" />
-</template>
-
-<script setup lang="ts">
-import CancelButton from '@/components/actions/detail/CancelButton.vue'
-
-const handleCancel = () => {
-  // Cancel logic here
-}
-</script>
-```
-
-### Used In
-- ProjectDetail.vue (edit mode)
-- All detail views for canceling changes
-
-## EditButton
-
-A reusable edit button component with consistent styling.
-
-### Features
-- **Consistent Styling**: Blue button with hover and focus states
-- **Accessibility**: Proper ARIA attributes and keyboard navigation
-- **Icon Support**: Edit icon
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `disabled` | `boolean` | `false` | Whether the button is disabled |
-| `label` | `string` | `'Edit'` | Button text label |
-
-### Events
-
-| Event | Description |
-|-------|-------------|
-| `click` | Emitted when button is clicked |
-
-### Usage
-
-```vue
-<template>
-  <EditButton @click="startEdit" />
-</template>
-
-<script setup lang="ts">
-import EditButton from '@/components/actions/detail/EditButton.vue'
-
-const startEdit = () => {
-  // Edit logic here
-}
-</script>
-```
-
-### Used In
-- ProjectDetail.vue (view mode)
-- All detail views for entering edit mode
-
-## DeleteButton
-
-A reusable delete button component with loading state and consistent styling.
-
-### Features
-- **Loading State**: Shows spinner animation when processing
-- **Disabled State**: Prevents interactions when disabled
-- **Consistent Styling**: Red button with hover and focus states
-- **Accessibility**: Proper ARIA attributes and keyboard navigation
-- **Icon Support**: Trash icon when idle, spinner when loading
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `disabled` | `boolean` | `false` | Whether the button is disabled |
-| `loading` | `boolean` | `false` | Whether to show loading spinner |
-| `label` | `string` | `'Delete'` | Button text label |
-
-### Events
-
-| Event | Description |
-|-------|-------------|
-| `click` | Emitted when button is clicked (only if not disabled or loading) |
-
-### Usage
-
-```vue
-<template>
-  <DeleteButton 
-    :loading="deleteInProgress" 
-    @click="handleDelete"
-  />
-</template>
-
-<script setup lang="ts">
-import DeleteButton from '@/components/actions/detail/DeleteButton.vue'
-
-const deleteInProgress = ref(false)
-
-const handleDelete = async () => {
-  deleteInProgress.value = true
-  // Delete logic here
-  deleteInProgress.value = false
-}
-</script>
-```
-
-### Used In
-- ProjectDetail.vue (view mode)
-- All detail views for deleting resources
+Action components provide consistent styling and behavior for user interactions. They are categorized by context and usage patterns.
 
 ## List Action Components
 
+Action buttons used in list views and table interfaces.
+
 ### AddButton
+Primary action button for creating new resources.
 
-A reusable add button component for list views.
+**Props:**
+- `to: string` - Router link destination for navigation
+- `label?: string` - Button text (defaults to "Add")
+- `color?: string` - Theme color for styling
 
-### Features
-- **Consistent Styling**: Green button with plus icon
-- **Accessibility**: Proper ARIA attributes
-- **Router Integration**: Can navigate to add/create routes
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `label` | `string` | `'Add'` | Button text label |
-| `to` | `string` | `undefined` | Router path to navigate to |
-
-### Usage
-
+**Usage:**
 ```vue
-<template>
-  <AddButton label="Add Project" to="/projects/new" />
-</template>
-
-<script setup lang="ts">
-import AddButton from '@/components/actions/list/AddButton.vue'
-</script>
+<AddButton 
+  to="/projects/new" 
+  label="New Project" 
+  color="blue" 
+/>
 ```
-
-### Used In
-- Projects.vue (list view)
-- All list views for adding new resources
-
-## Table Action Components
 
 ### ViewButton
+Action button for viewing resource details.
 
-A small button for viewing/navigating to detail views from table rows.
+**Props:**
+- `to: string` - Router link destination
+- `label?: string` - Button text
 
-### Features
-- **Compact Design**: Small size for table cells
-- **Consistent Styling**: Blue button with eye icon
-- **Router Integration**: Navigates to detail views
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `to` | `string` | `required` | Router path to navigate to |
-
-### Usage
-
+**Usage:**
 ```vue
-<template>
-  <ViewButton :to="`/projects/${project.id}`" />
-</template>
-
-<script setup lang="ts">
-import ViewButton from '@/components/actions/table/ViewButton.vue'
-</script>
+<ViewButton to="/projects/123" label="View Details" />
 ```
 
-### Used In
-- Projects.vue (table view)
-- All table views for viewing resource details
+### EditButton (List)
+Action button for editing resources from list views.
 
-## Design Principles
+**Props:**
+- `to: string` - Router link destination for edit page
 
-1. **Consistency**: All action buttons follow the same design patterns
-2. **Accessibility**: Proper ARIA labels and keyboard navigation
-3. **Loading States**: Visual feedback for async operations
-4. **Color Coding**: Semantic colors (green for save, red for delete, blue for edit)
-5. **Icon Integration**: Meaningful icons for better UX
-6. **TypeScript Support**: Fully typed props and events
+**Usage:**
+```vue
+<EditButton to="/projects/123?edit=true" />
+```
+
+### DeleteButton (List)
+Action button for deleting resources from lists.
+
+**Events:**
+- `click: []` - Emitted when delete is requested
+
+**Usage:**
+```vue
+<DeleteButton @click="confirmDelete(item.id)" />
+```
+
+### FilterButton
+Toggle button for filtering list content.
+
+**Props:**
+- `label: string` - Filter label
+- `count?: number` - Number of items matching filter
+- `isActive: boolean` - Whether filter is currently active
+- `variant?: string` - Visual style variant
+
+**Events:**
+- `click: []` - Emitted when filter is toggled
+
+**Usage:**
+```vue
+<FilterButton
+  label="Active"
+  :count="activeCount"
+  :is-active="activeFilter"
+  variant="green"
+  @click="toggleFilter('active')"
+/>
+```
+
+## Detail Action Components
+
+Action buttons used in detail views and forms.
+
+### EditButton (Detail)
+Initiates edit mode in detail views.
+
+**Props:**
+- `disabled?: boolean` - Whether the button is disabled
+
+**Events:**
+- `click: []` - Emitted when edit mode is requested
+
+**Usage:**
+```vue
+<EditButton :disabled="!canEdit" @click="startEdit" />
+```
+
+### SaveButton
+Saves changes in forms and detail views.
+
+**Props:**
+- `disabled?: boolean` - Whether the button is disabled
+- `loading?: boolean` - Shows loading state (deprecated - no longer used)
+
+**Events:**
+- `click: []` - Emitted when save is requested
+
+**Usage:**
+```vue
+<SaveButton 
+  :disabled="!hasUnsavedChanges" 
+  @click="saveChanges" 
+/>
+```
+
+### CancelButton
+Cancels edit mode or form changes.
+
+**Events:**
+- `click: []` - Emitted when cancel is requested
+
+**Usage:**
+```vue
+<CancelButton @click="cancelEdit" />
+```
+
+### DeleteButton (Detail)
+Deletes the current resource in detail views.
+
+**Events:**
+- `click: []` - Emitted when delete is requested
+
+**Usage:**
+```vue
+<DeleteButton @click="confirmDelete" />
+```
+
+## Button Patterns
+
+### Action Button Groups
+
+#### List Row Actions
+```vue
+<div class="flex space-x-2">
+  <ViewButton :to="`/projects/${project.id}`" />
+  <EditButton :to="`/projects/${project.id}?edit=true`" />
+  <DeleteButton @click="deleteProject(project.id)" />
+</div>
+```
+
+#### Detail View Actions
+```vue
+<div class="flex space-x-3">
+  <template v-if="!isEditing">
+    <EditButton @click="startEdit" />
+    <DeleteButton @click="confirmDelete" />
+  </template>
+  <template v-else>
+    <SaveButton :disabled="!hasChanges" @click="save" />
+    <CancelButton @click="cancel" />
+  </template>
+</div>
+```
+
+#### Filter Bar
+```vue
+<div class="flex space-x-1">
+  <FilterButton
+    label="All"
+    :count="totalCount"
+    :is-active="!activeFilter"
+    @click="clearFilter"
+  />
+  <FilterButton
+    label="Active"
+    :count="activeCount"
+    :is-active="activeFilter === 'active'"
+    variant="green"
+    @click="setFilter('active')"
+  />
+  <FilterButton
+    label="Inactive"
+    :count="inactiveCount"
+    :is-active="activeFilter === 'inactive'"
+    variant="red"
+    @click="setFilter('inactive')"
+  />
+</div>
+```
+
+## Styling and Theming
+
+### Color Variants
+- **Blue**: Primary actions (Add, Save)
+- **Green**: Positive actions (Enable, Activate)
+- **Red**: Destructive actions (Delete, Disable)
+- **Gray**: Secondary actions (Cancel, View)
+- **Orange**: Navigation actions (Edit from list)
+
+### Size Variants
+- **Small**: Compact buttons for table rows
+- **Medium**: Standard buttons for forms
+- **Large**: Primary page actions
+
+### State Variants
+- **Default**: Normal interactive state
+- **Disabled**: Non-interactive state
+- **Loading**: Processing state (deprecated)
+- **Active**: Currently selected/active state
+
+## Accessibility
+
+All action components include:
+- Proper ARIA labels
+- Keyboard navigation support
+- Focus management
+- Screen reader compatibility
+- Semantic HTML elements
+
+## Examples
+
+### Complete List Action Example
+```vue
+<template>
+  <tr>
+    <td>{{ project.name }}</td>
+    <td>{{ project.status }}</td>
+    <td>
+      <div class="flex justify-end space-x-2">
+        <ViewButton :to="`/projects/${project.id}`" />
+        <EditButton :to="`/projects/${project.id}?edit=true`" />
+        <DeleteButton @click="handleDelete(project.id)" />
+      </div>
+    </td>
+  </tr>
+</template>
+```
+
+### Complete Detail Action Example
+```vue
+<template>
+  <div class="flex items-center justify-between">
+    <Title>{{ project.name }}</Title>
+    <div class="flex space-x-3">
+      <template v-if="!isEditing">
+        <EditButton @click="isEditing = true" />
+        <DeleteButton @click="confirmDelete" />
+      </template>
+      <template v-else>
+        <SaveButton 
+          :disabled="!hasUnsavedChanges" 
+          @click="saveProject" 
+        />
+        <CancelButton @click="cancelEdit" />
+      </template>
+    </div>
+  </div>
+</template>
+```

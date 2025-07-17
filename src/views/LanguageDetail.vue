@@ -113,21 +113,6 @@
             </svg>
             Set as Default
           </button>
-          <button
-            :disabled="languageStore.currentLanguage && languageStore.currentLanguage.is_default"
-            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-            @click="deleteLanguage"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              ></path>
-            </svg>
-            Delete
-          </button>
         </div>
       </div>
 
@@ -237,63 +222,11 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
-          <p class="text-sm text-gray-600 mb-6">
-            Are you sure you want to delete the language "{{
-              languageStore.currentLanguage?.internal_name
-            }}" ({{ languageStore.currentLanguage?.id }})? This action cannot be undone.
-          </p>
-
-          <div class="flex justify-end gap-3">
-            <button
-              type="button"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md"
-              @click="showDeleteModal = false"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="languageStore.loading"
-              class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              @click="confirmDelete"
-            >
-              <svg
-                v-if="languageStore.loading"
-                class="animate-spin h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { onMounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useLanguageStore } from '@/stores/language'
 
@@ -301,31 +234,12 @@
   const router = useRouter()
   const languageStore = useLanguageStore()
 
-  const showDeleteModal = ref(false)
-
   const editLanguage = () => {
     // Navigate back to languages list with edit mode
     router.push({
       path: '/languages',
       query: { edit: languageStore.currentLanguage?.id },
     })
-  }
-
-  const deleteLanguage = () => {
-    showDeleteModal.value = true
-  }
-
-  const confirmDelete = async () => {
-    if (!languageStore.currentLanguage) return
-
-    try {
-      await languageStore.deleteLanguage(languageStore.currentLanguage.id)
-      showDeleteModal.value = false
-      router.push('/languages')
-    } catch (error) {
-      // Error is handled by the store/ErrorHandler
-      console.error('Delete error:', error)
-    }
   }
 
   const setAsDefault = async () => {

@@ -4,8 +4,6 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <RouterView />
     </main>
-    <!-- Global Error Display -->
-    <ErrorDisplay />
     <AppFooter />
   </div>
 </template>
@@ -14,5 +12,4 @@
   import { RouterView } from 'vue-router'
   import AppHeader from '@/components/layout/app/AppHeader.vue'
   import AppFooter from '@/components/layout/app/AppFooter.vue'
-  import ErrorDisplay from '@/components/layout/app/ErrorDisplay.vue'
 </script>
