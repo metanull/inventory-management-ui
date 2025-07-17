@@ -11,6 +11,9 @@ This documentation covers all Vue components in the Inventory Management UI appl
 
 ## Component Categories
 
+### [Global Components](./Global.md)
+Centrally managed features that provide consistent user interaction patterns across the entire application. These components are rendered globally in App.vue and controlled via Pinia stores, including loading overlays, error displays, and confirmation modals.
+
 ### [Format Components](./Format.md)
 Components for displaying and formatting data, including text display, form inputs, dropdowns, and specialized formatters.
 
