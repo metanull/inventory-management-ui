@@ -112,7 +112,7 @@
           <div class="flex space-x-2">
             <ViewButton @click="router.push(`/projects/${project.id}`)" />
             <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
-            <DeleteButton @click="projectStore.deleteProject(project.id)" />
+            <DeleteButton @click="handleDeleteProject(project)" />
           </div>
         </TableCell>
       </TableRow>
@@ -124,6 +124,9 @@
   import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
   import type { ProjectResource } from '@metanull/inventory-app-api-client'
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
@@ -142,6 +145,9 @@
   const router = useRouter()
 
   const projectStore = useProjectStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
 
   const projects = computed(() => projectStore.projects)
   const visibleProjects = computed(() => projectStore.visibleProjects)
@@ -168,38 +174,74 @@
   // Fetch projects on mount
   onMounted(async () => {
     try {
+      loadingStore.show()
       // Fetch visible projects first (default filter)
       await projectStore.fetchEnabledProjects()
       // Also fetch all projects for other filters
       await projectStore.fetchProjects()
     } catch (error) {
       console.error('Failed to fetch projects:', error)
+      errorStore.addMessage('error', 'Failed to fetch projects. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
   })
 
   // Update project status
   const updateProjectStatus = async (project: ProjectResource, field: string, value: boolean) => {
     try {
+      loadingStore.show()
       if (field === 'is_enabled') {
         await projectStore.setProjectEnabled(project.id, value)
+        errorStore.addMessage('info', `Project ${value ? 'enabled' : 'disabled'} successfully.`)
       } else if (field === 'is_launched') {
         await projectStore.setProjectLaunched(project.id, value)
+        errorStore.addMessage('info', `Project ${value ? 'launched' : 'unlaunched'} successfully.`)
       }
     } catch (error) {
       console.error(`Failed to update project ${field}:`, error)
+      errorStore.addMessage('error', `Failed to update project status. Please try again.`)
+    } finally {
+      loadingStore.hide()
     }
   }
 
   // Fetch projects function for retry
   const fetchProjects = async () => {
     try {
+      loadingStore.show()
       if (filterMode.value === 'visible') {
         await projectStore.fetchEnabledProjects()
       } else {
         await projectStore.fetchProjects()
       }
+      errorStore.addMessage('info', 'Projects refreshed successfully.')
     } catch (error) {
       console.error('Failed to fetch projects:', error)
+      errorStore.addMessage('error', 'Failed to refresh projects. Please try again.')
+    } finally {
+      loadingStore.hide()
+    }
+  }
+
+  // Delete project with confirmation
+  const handleDeleteProject = async (projectToDelete: ProjectResource) => {
+    const result = await deleteStore.trigger(
+      'Delete Project',
+      `Are you sure you want to delete "${projectToDelete.internal_name}"? This action cannot be undone.`
+    )
+
+    if (result === 'delete') {
+      try {
+        loadingStore.show()
+        await projectStore.deleteProject(projectToDelete.id)
+        errorStore.addMessage('info', 'Project deleted successfully.')
+      } catch (error) {
+        console.error('Failed to delete project:', error)
+        errorStore.addMessage('error', 'Failed to delete project. Please try again.')
+      } finally {
+        loadingStore.hide()
+      }
     }
   }
 </script>

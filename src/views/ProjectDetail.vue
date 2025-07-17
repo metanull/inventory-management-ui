@@ -108,11 +108,15 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
+  import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
   import DateDisplay from '@/components/format/Date.vue'
   import DisplayText from '@/components/format/DisplayText.vue'
   import DetailView from '@/components/layout/detail/DetailView.vue'
@@ -145,6 +149,10 @@
   const projectStore = useProjectStore()
   const contextStore = useContextStore()
   const languageStore = useLanguageStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
+  const cancelChangesStore = useCancelChangesConfirmationStore()
 
   // Reactive state - Single source of truth for mode
   const mode = ref<Mode>('view')
@@ -283,6 +291,15 @@
     ]
   })
 
+  // Watch for unsaved changes and sync with cancel changes store
+  watch(hasUnsavedChanges, (hasChanges: boolean) => {
+    if (hasChanges) {
+      cancelChangesStore.addChange()
+    } else {
+      cancelChangesStore.resetChanges()
+    }
+  })
+
   // Mode management functions
   const enterCreateMode = () => {
     mode.value = 'create'
@@ -304,6 +321,7 @@
   // Action handlers
   const saveProject = async () => {
     try {
+      loadingStore.show()
       const projectData = {
         internal_name: editForm.value.internal_name,
         backward_compatibility: editForm.value.backward_compatibility || null,
@@ -315,6 +333,8 @@
       if (mode.value === 'create') {
         // Create new project
         const newProject = await projectStore.createProject(projectData)
+        errorStore.addMessage('info', 'Project created successfully.')
+        cancelChangesStore.resetChanges()
 
         // Navigate to the new project's detail page in view mode
         await router.replace(`/projects/${newProject.id}`)
@@ -322,6 +342,8 @@
       } else if (mode.value === 'edit' && project.value) {
         // Update existing project
         await projectStore.updateProject(project.value.id, projectData)
+        errorStore.addMessage('info', 'Project updated successfully.')
+        cancelChangesStore.resetChanges()
         enterViewMode()
 
         // Remove edit query parameter if present
@@ -333,17 +355,40 @@
       }
     } catch (error) {
       console.error('Failed to save project:', error)
+      errorStore.addMessage(
+        'error',
+        'Failed to save project. Please check your input and try again.'
+      )
+    } finally {
+      loadingStore.hide()
     }
   }
 
-  const cancelAction = () => {
+  const cancelAction = async () => {
     if (mode.value === 'create') {
-      // For create mode, navigate back to projects list
+      // For create mode, check if there are unsaved changes
+      if (hasUnsavedChanges.value) {
+        const result = await cancelChangesStore.trigger(
+          'New Project has unsaved changes',
+          'There are unsaved changes to this new project. If you navigate away, the changes will be lost. Are you sure you want to navigate away? This action cannot be undone.'
+        )
+        if (result === 'stay') return
+      }
+      // Navigate back to projects list
       router.push('/projects')
       return
     }
 
     if (mode.value === 'edit') {
+      // For edit mode, check if there are unsaved changes
+      if (hasUnsavedChanges.value) {
+        const result = await cancelChangesStore.trigger(
+          'Project has unsaved changes',
+          `There are unsaved changes to "${project.value?.internal_name}". If you navigate away, the changes will be lost. Are you sure you want to navigate away? This action cannot be undone.`
+        )
+        if (result === 'stay') return
+      }
+
       enterViewMode()
 
       // Remove edit query parameter if present
@@ -357,8 +402,24 @@
 
   const deleteProject = async () => {
     if (project.value?.id) {
-      await projectStore.deleteProject(project.value.id)
-      router.push('/projects')
+      const result = await deleteStore.trigger(
+        'Delete Project',
+        `Are you sure you want to delete "${project.value.internal_name}"? This action cannot be undone.`
+      )
+
+      if (result === 'delete') {
+        try {
+          loadingStore.show()
+          await projectStore.deleteProject(project.value.id)
+          errorStore.addMessage('info', 'Project deleted successfully.')
+          router.push('/projects')
+        } catch (error) {
+          console.error('Failed to delete project:', error)
+          errorStore.addMessage('error', 'Failed to delete project. Please try again.')
+        } finally {
+          loadingStore.hide()
+        }
+      }
     }
   }
 
@@ -367,9 +428,15 @@
     if (!project.value) return
 
     try {
-      await projectStore.setProjectEnabled(project.value.id, !project.value.is_enabled)
+      loadingStore.show()
+      const newStatus = !project.value.is_enabled
+      await projectStore.setProjectEnabled(project.value.id, newStatus)
+      errorStore.addMessage('info', `Project ${newStatus ? 'enabled' : 'disabled'} successfully.`)
     } catch (error) {
       console.error('Failed to toggle enabled status:', error)
+      errorStore.addMessage('error', 'Failed to update project status. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
   }
 
@@ -377,9 +444,18 @@
     if (!project.value) return
 
     try {
-      await projectStore.setProjectLaunched(project.value.id, !project.value.is_launched)
+      loadingStore.show()
+      const newStatus = !project.value.is_launched
+      await projectStore.setProjectLaunched(project.value.id, newStatus)
+      errorStore.addMessage(
+        'info',
+        `Project ${newStatus ? 'launched' : 'unlaunched'} successfully.`
+      )
     } catch (error) {
       console.error('Failed to toggle launched status:', error)
+      errorStore.addMessage('error', 'Failed to update project launch status. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
   }
 
@@ -397,9 +473,13 @@
     if (!projectId || mode.value === 'create') return
 
     try {
+      loadingStore.show()
       await projectStore.fetchProject(projectId)
     } catch (error) {
       console.error('Failed to fetch project:', error)
+      errorStore.addMessage('error', 'Failed to load project. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
   }
 
