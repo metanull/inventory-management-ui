@@ -22,14 +22,7 @@
   >
     <!-- Icon -->
     <template #icon>
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-        />
-      </svg>
+      <ProjectIcon />
     </template>
     <!-- Filter Buttons -->
     <template #filters>
@@ -63,70 +56,75 @@
     </template>
 
     <!-- Projects Table -->
-    <template #content>
-      <TableView>
-        <template #headers>
-          <TableRow>
-            <TableHeader>Project</TableHeader>
-            <TableHeader>Enabled</TableHeader>
-            <TableHeader>Launched</TableHeader>
-            <TableHeader>Launch Date</TableHeader>
-            <TableHeader>Created</TableHeader>
-            <TableHeader variant="actions">
-              <span class="sr-only">Actions</span>
-            </TableHeader>
-          </TableRow>
-        </template>
-
-        <template #rows>
-          <TableRow v-for="project in filteredProjects" :key="project.id">
-            <TableCell>
-              <ResourceNameDisplay
-                :internal-name="project.internal_name"
-                :backward-compatibility="project.backward_compatibility"
-              />
-            </TableCell>
-            <TableCell>
-              <ToggleSmall
-                title="Enabled"
-                :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
-                :is-active="project.is_enabled"
-                :disabled="true"
-              />
-            </TableCell>
-            <TableCell>
-              <ToggleSmall
-                title="Launched"
-                :status-text="project.is_launched ? 'Launched' : 'Not Launched'"
-                :is-active="project.is_launched"
-                :disabled="true"
-              />
-            </TableCell>
-            <TableCell>
-              <ToggleSmall
-                v-if="project.launch_date"
-                title="Launch Date"
-                :status-text="formatLaunchDate(project.launch_date)"
-                :is-active="isLaunchDatePassed(project.launch_date)"
-                :disabled="true"
-              />
-              <DisplayText v-else variant="gray">Not scheduled</DisplayText>
-            </TableCell>
-            <TableCell>
-              <DateDisplay :date="project.created_at" variant="small-dark" />
-            </TableCell>
-            <TableCell variant="actions">
-              <div class="flex justify-end space-x-2">
-                <ViewButton @click="router.push(`/projects/${project.id}`)" />
-                <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
-                <DeleteButton @click="confirmDelete(project)" />
-              </div>
-            </TableCell>
-          </TableRow>
-        </template>
-      </TableView>
+    <!-- Projects Table -->
+    <template #headers>
+      <TableRow>
+        <TableHeader>Project</TableHeader>
+        <TableHeader>Enabled</TableHeader>
+        <TableHeader>Launched</TableHeader>
+        <TableHeader>Launch Date</TableHeader>
+        <TableHeader>Created</TableHeader>
+        <TableHeader variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
     </template>
 
+    <template #rows>
+      <TableRow
+        v-for="project in filteredProjects"
+        :key="project.id"
+        :class="{ 'opacity-50': deleteLoading && projectToDelete?.id === project.id }"
+      >
+        <TableCell>
+          <InternalNameSmall
+            :internal-name="project.internal_name"
+            :backward-compatibility="project.backward_compatibility"
+          >
+            <template #icon>
+              <ProjectIcon class="h-5 w-5 text-gray-600" />
+            </template>
+          </InternalNameSmall>
+        </TableCell>
+        <TableCell>
+          <ToggleSmall
+            title="Enabled"
+            :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
+            :is-active="project.is_enabled"
+            :disabled="deleteLoading && projectToDelete?.id === project.id"
+            @toggle="updateProjectStatus(project, 'is_enabled', !project.is_enabled)"
+          />
+        </TableCell>
+        <TableCell>
+          <ToggleSmall
+            title="Launched"
+            :status-text="project.is_launched ? 'Launched' : 'Not launched'"
+            :is-active="project.is_launched"
+            :disabled="deleteLoading && projectToDelete?.id === project.id"
+            @toggle="updateProjectStatus(project, 'is_launched', !project.is_launched)"
+          />
+        </TableCell>
+        <TableCell>
+          <DateDisplay
+            v-if="project.launch_date"
+            :date="project.launch_date"
+            format="short"
+            variant="small-dark"
+          />
+          <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+        </TableCell>
+        <TableCell>
+          <DateDisplay :date="project.created_at" format="short" variant="small-dark" />
+        </TableCell>
+        <TableCell>
+          <div class="flex space-x-2">
+            <ViewButton @click="router.push(`/projects/${project.id}`)" />
+            <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
+            <DeleteButton @click="confirmDelete(project)" />
+          </div>
+        </TableCell>
+      </TableRow>
+    </template>
     <!-- Delete Confirmation Modal -->
     <template #modals>
       <DeleteConfirmationModal
@@ -152,14 +150,14 @@
   import DeleteButton from '@/components/layout/list/DeleteButton.vue'
   import DateDisplay from '@/components/format/Date.vue'
   import DisplayText from '@/components/format/DisplayText.vue'
-  import ResourceNameDisplay from '@/components/format/InternalName.vue'
   import FilterButton from '@/components/layout/list/FilterButton.vue'
   import ListView from '@/components/layout/list/ListView.vue'
-  import TableView from '@/components/layout/list/TableView.vue'
   import TableHeader from '@/components/format/table/TableHeader.vue'
   import TableRow from '@/components/format/table/TableRow.vue'
   import TableCell from '@/components/format/table/TableCell.vue'
   import ToggleSmall from '@/components/format/ToggleSmall.vue'
+  import InternalNameSmall from '@/components/format/InternalNameSmall.vue'
+  import ProjectIcon from '@/components/icons/ProjectIcon.vue'
 
   const router = useRouter()
 
@@ -179,22 +177,6 @@
   const showDeleteModal = ref(false)
   const projectToDelete = ref<ProjectResource | null>(null)
   const deleteLoading = ref(false)
-
-  // Helper functions for launch date handling
-  const formatLaunchDate = (launchDate: string): string => {
-    const date = new Date(launchDate)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
-  const isLaunchDatePassed = (launchDate: string): boolean => {
-    const today = new Date()
-    const launch = new Date(launchDate)
-    return launch <= today
-  }
 
   // Computed filtered projects
   const filteredProjects = computed(() => {
@@ -226,6 +208,19 @@
   const confirmDelete = (project: ProjectResource) => {
     projectToDelete.value = project
     showDeleteModal.value = true
+  }
+
+  // Update project status
+  const updateProjectStatus = async (project: ProjectResource, field: string, value: boolean) => {
+    try {
+      if (field === 'is_enabled') {
+        await projectStore.setProjectEnabled(project.id, value)
+      } else if (field === 'is_launched') {
+        await projectStore.setProjectLaunched(project.id, value)
+      }
+    } catch (error) {
+      console.error(`Failed to update project ${field}:`, error)
+    }
   }
 
   const cancelDelete = () => {

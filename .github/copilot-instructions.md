@@ -44,23 +44,27 @@
   - Use Vue Router 4 for client-side routing
   - Use Pinia for state management
   - Use Tailwind CSS for utility-first styling
-- **CRITICAL: Always fix all typescript errors and warnings before committing.**
-  - Run `npm run type-check` to check for typescript errors (it calls `vue tsc`).
   - **CRITICAL: Always declare variables with proper TypeScript type.**
   - **CRITICAL: Never use the `Any` type.**
   - **CRITICAL: Never leave unused variables.**
-- **CRITICAL: Always fix all linting errors and warnings before committing.**
-  - Run `npm run lint` to check and fix linting errors (it calls `eslint --fix`).
-- **CRITICAL: Always fix all formatting errors and warnings before committing.**
-  - Run `npm run format` to check and fix formatting errors (it calls `Prettier`).
-- **CRITICAL: Always fix all errors and warnings in tests before committing.**
-  - Run `npm test` to run tests (it calls `vitest run`).
+  - Use reusable components to avoid duplicating code, html and styles.
+    - **CRITICAL: Keep components focused and single-purpose.**
+
 - Git hooks are in place using Husky.
-  - It automaticaly rejects pushes that do not pass type checking, linting, testing, and building
+  - It automaticaly rejects pushes that do not pass type checking, linting, testing, and building.
+    - **CRITICAL: Before a `git push`:**
+      - Run `npm test` to run tests (it calls `vitest run`).
+        - **CRITICAL: Fix all test errors and warnings.**
+      - Run `npm run lint` to check and fix linting errors (it calls `eslint --fix`).
+        - **CRITICAL: Fix all linting errors and warnings.**
+      - Run `npm run type-check` to check for typescript errors (it calls `vue tsc`).
+        - **CRITICAL: Fix all typescript errors and warnings.**
+      - Run `npm run build` to build the project (it calls `vite build`).
+        - **CRITICAL: Fix all build errors and warnings.**
+      - Run `npm run format` to check and fix formatting errors (it calls `Prettier`).
+        - **CRITICAL: Fix all formatting errors and warnings.**
   - Coverage requirements of 0% minimum test coverage
 - Prefer composition over inheritance
-- Do not duplicate code, create reusable components where appropriate.
-  - **CRITICAL: Keep components focused and single-purpose.**
 - Maintain distinct `.env` files for distinct environments.
 
 # API Integration

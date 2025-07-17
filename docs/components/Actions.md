@@ -2,9 +2,20 @@
 
 Action components provide consistent buttons and interactive elements for the inventory management UI.
 
-## SaveButton
+## Overview
 
-A reusable save button component with loading state and consistent styling.
+Action components are now organized within the layout subdirectories based on their usage context:
+
+- **Detail Actions** (`layout/detail/`): SaveButton, CancelButton, EditButton, DeleteButton
+- **List Actions** (`layout/list/`): AddButton, ViewButton, EditButton, DeleteButton, FilterButton
+
+This organization ensures that action components are grouped with the layouts where they are primarily used, making the codebase more maintainable and intuitive.
+
+## Detail Actions (`layout/detail/`)
+
+### SaveButton.vue
+
+A reusable save button component with loading state and consistent styling for detail views.
 
 ### Features
 - **Loading State**: Shows spinner animation when processing

@@ -66,10 +66,9 @@
         :class="{ 'opacity-50 pointer-events-none': actionLoading }"
       >
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">{{ informationTitle }}</h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500">
-            {{ informationDescription }}
-          </p>
+          <Title variant="section" :description="informationDescription">
+            {{ informationTitle }}
+          </Title>
         </div>
         <div class="border-t border-gray-200">
           <slot name="information" :on-field-change="handleFieldChange" />
@@ -119,6 +118,7 @@
   import SystemProperties from '@/components/layout/detail/SystemProperties.vue'
   import DeleteConfirmationModal from '@/components/layout/modals/DeleteConfirmationModal.vue'
   import UnsavedChangesModal from '@/components/layout/modals/UnsavedChangesModal.vue'
+  import Title from '@/components/format/title/Title.vue'
 
   interface StatusCardConfig {
     title: string

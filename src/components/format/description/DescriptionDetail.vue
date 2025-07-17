@@ -1,9 +1,22 @@
 <template>
-  <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+  <dd :class="detailClasses">
     <slot />
   </dd>
 </template>
 
 <script setup lang="ts">
-  // Component for description details (content)
+  import { computed } from 'vue'
+
+  const props = defineProps<{
+    variant?: 'default' | 'small-gray'
+  }>()
+
+  const detailClasses = computed(() => {
+    switch (props.variant) {
+      case 'small-gray':
+        return 'mt-1 sm:mt-0 sm:col-span-2 text-xs text-gray-600'
+      default:
+        return 'mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2'
+    }
+  })
 </script>

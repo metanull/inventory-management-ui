@@ -6,6 +6,36 @@ This directory contains SVG icon components that provide consistent iconography 
 
 All icon components are simple Vue components that render SVG elements using the `currentColor` property for color inheritance. They are designed to be flexible and work with any color scheme through CSS classes.
 
+## Available Icons
+
+### CheckCircleIcon.vue
+
+A filled circle icon with a checkmark, typically used to indicate success states, completion, or positive status.
+
+### XCircleIcon.vue
+
+A filled circle icon with an X, typically used to indicate error states, cancellation, or negative status.
+
+### RocketIcon.vue
+
+A rocket icon typically used to indicate launch status, deployment, or active projects.
+
+### PackageIcon.vue
+
+A package/box icon typically used to represent packages, resources, or inventory items.
+
+### ProjectIcon.vue
+
+A project folder icon specifically used to represent projects throughout the application.
+
+### IconProject.vue
+
+Alternative project icon component with different styling or usage context.
+
+### GenericIcon.vue
+
+A generic folder icon used as a fallback for empty states or when no specific icon is available.
+
 ## CheckCircleIcon.vue
 
 A filled circle icon with a checkmark, typically used to indicate success states, completion, or positive status.

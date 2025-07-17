@@ -2,7 +2,158 @@
 
 Format components provide consistent formatting and display elements for data presentation.
 
-## Toggle
+## Directory Structure
+
+The format components are organized into the following subdirectories:
+
+- **`src/components/format/card/`** - Card components (Card, InformationCard, NavigationCard, StatusCard)
+- **`src/components/format/table/`** - Table components (TableElement, TableHeader, TableRow, TableCell)
+- **`src/components/format/title/`** - Title component with multiple variants
+- **`src/components/format/description/`** - Description list components (DescriptionList, DescriptionRow, DescriptionTerm, DescriptionDetail)
+- **`src/components/format/`** - Other formatting components (Toggle, ToggleSmall, Date, DisplayText, FormInput, GenericDropdown, InternalName, InternalNameSmall, Uuid)
+
+## Card Components (`format/card/`)
+
+### Card.vue
+
+Base card component that provides consistent styling and structure for all card types.
+
+### Features
+- **Consistent Styling**: White background with rounded corners and shadow
+- **Icon Support**: Icon slot for visual indicators
+- **Title Component**: Uses Title component for consistent headings
+- **Extensible**: Serves as base for specialized card types
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `string` | Card title text |
+| `description` | `string` | Card description text |
+| `mainColor` | `string` | Color scheme for icon (blue, green, purple, orange, red, gray) |
+
+### Slots
+
+| Slot | Description |
+|------|-------------|
+| `icon` | Icon to display in the card header |
+| `default` | Main card content |
+
+### InformationCard.vue
+
+Extends Card component to display information with a colored status pill.
+
+### Features
+- **Status Pill**: Colored pill displaying status text
+- **Color Variants**: Supports multiple color schemes
+- **Consistent Layout**: Based on Card component
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `string` | Card title text |
+| `description` | `string` | Card description text |
+| `mainColor` | `string` | Color scheme (blue, green, purple, orange, red, gray) |
+| `pillText` | `string` | Text to display in the status pill |
+
+### NavigationCard.vue
+
+Extends Card component to provide navigation with a call-to-action button.
+
+### Features
+- **Navigation Button**: Styled button with color variants
+- **Router Integration**: Uses router-link for navigation
+- **Consistent Layout**: Based on Card component
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `string` | Card title text |
+| `description` | `string` | Card description text |
+| `mainColor` | `string` | Color scheme (blue, green, purple, orange, red, gray) |
+| `buttonText` | `string` | Text for the navigation button |
+| `buttonRoute` | `string` | Route path for navigation |
+
+### StatusCard.vue
+
+Extends Card component to display status with a toggle component.
+
+### Features
+- **Status Toggle**: Includes Toggle component for status changes
+- **Loading States**: Supports loading and disabled states
+- **Consistent Layout**: Based on Card component
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `string` | Card title text |
+| `description` | `string` | Card description text |
+| `mainColor` | `string` | Color scheme (blue, green, purple, orange, red, gray) |
+| `statusText` | `string` | Current status text |
+| `toggleTitle` | `string` | Title for the toggle component |
+| `isActive` | `boolean` | Current toggle state |
+| `loading` | `boolean` | Loading state |
+| `disabled` | `boolean` | Disabled state |
+| `activeIconBackgroundClass` | `string` | CSS class for active icon background |
+| `inactiveIconBackgroundClass` | `string` | CSS class for inactive icon background |
+| `activeIconClass` | `string` | CSS class for active icon |
+| `inactiveIconClass` | `string` | CSS class for inactive icon |
+| `activeIconComponent` | `Component` | Vue component for active icon |
+| `inactiveIconComponent` | `Component` | Vue component for inactive icon |
+
+## Table Components (`format/table/`)
+
+### TableElement.vue
+Base table wrapper component providing consistent styling.
+
+### TableHeader.vue
+Table header component with sorting and filtering capabilities.
+
+### TableRow.vue
+Table row component with hover effects and consistent styling.
+
+### TableCell.vue
+Table cell component with proper padding and alignment.
+
+## Title Components (`format/title/`)
+
+### Title.vue
+
+Versatile title component with multiple variants for different contexts.
+
+### Features
+- **Multiple Variants**: page, section, card, system, empty
+- **Dynamic Headings**: Uses appropriate heading tags (h1-h6)
+- **Consistent Styling**: Unified appearance across the application
+- **Description Support**: Optional description text
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `variant` | `string` | Title variant (page, section, card, system, empty) |
+| `description` | `string` | Optional description text |
+
+## Description Components (`format/description/`)
+
+### DescriptionList.vue
+Container component for description lists with consistent styling.
+
+### DescriptionRow.vue
+Row component for description lists with proper spacing.
+
+### DescriptionTerm.vue
+Term component for description lists with consistent labeling.
+
+### DescriptionDetail.vue
+Detail component for description lists with proper value display.
+
+## Toggle Components
+
+### Toggle
 
 A comprehensive toggle switch component with status display and dynamic icons.
 

@@ -3,13 +3,14 @@
     <!-- Header -->
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <div class="flex items-center mb-2">
+        <div class="flex items-center">
           <div v-if="$slots.icon" :class="iconClasses" class="h-8 w-8 mr-3">
             <slot name="icon" />
           </div>
-          <h1 class="text-2xl font-semibold text-gray-900">{{ title }}</h1>
+          <Title variant="page" :description="description">
+            {{ title }}
+          </Title>
         </div>
-        <p v-if="description" class="mt-2 text-sm text-gray-700">{{ description }}</p>
       </div>
       <div v-if="addButtonRoute" class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
         <AddButton :to="addButtonRoute" :label="addButtonLabel" :color="color" />
@@ -29,23 +30,13 @@
 
     <!-- Empty State -->
     <div v-else-if="isEmpty" class="text-center py-12">
-      <svg
-        class="mx-auto h-12 w-12 text-gray-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          vector-effect="non-scaling-stroke"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-        />
-      </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">{{ emptyTitle }}</h3>
-      <p class="mt-1 text-sm text-gray-500">{{ emptyMessage }}</p>
+      <div v-if="$slots.icon" :class="iconClasses" class="mx-auto h-12 w-12 mb-4">
+        <slot name="icon" />
+      </div>
+      <GenericIcon v-else />
+      <Title variant="empty" :description="emptyMessage">
+        {{ emptyTitle }}
+      </Title>
       <div v-if="showEmptyAddButton && addButtonRoute" class="mt-6">
         <AddButton :to="addButtonRoute" :label="emptyAddButtonLabel" :color="color" />
       </div>
@@ -53,7 +44,22 @@
 
     <!-- Content Slot -->
     <div v-else class="mt-8">
-      <slot name="content" />
+      <div class="flow-root">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+              <TableElement>
+                <template #headers>
+                  <slot name="headers" />
+                </template>
+                <template #rows>
+                  <slot name="rows" />
+                </template>
+              </TableElement>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Modal Slot -->
@@ -66,6 +72,9 @@
   import ErrorDisplay from '@/components/layout/app/ErrorDisplay.vue'
   import LoadingSpinner from '@/components/layout/modals/LoadingSpinner.vue'
   import AddButton from '@/components/layout/list/AddButton.vue'
+  import Title from '@/components/format/title/Title.vue'
+  import TableElement from '@/components/format/table/TableElement.vue'
+  import GenericIcon from '@/components/icons/GenericIcon.vue'
 
   const props = defineProps<{
     title: string

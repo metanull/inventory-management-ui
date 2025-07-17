@@ -1,23 +1,21 @@
 <template>
-  <div class="bg-gray-50 rounded-lg shadow-md p-6">
-    <div class="flex items-center mb-4">
-      <div :class="iconClasses" class="h-8 w-8 mr-3">
-        <slot name="icon" />
-      </div>
-      <h2 class="text-xl font-semibold text-gray-500">{{ title }}</h2>
-    </div>
-    <p class="text-gray-500 mb-4">{{ description }}</p>
+  <Card :title="title" :description="description" :main-color="mainColor">
+    <template #icon>
+      <slot name="icon" />
+    </template>
+
     <div
       :class="pillClasses"
       class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full"
     >
       {{ pillText }}
     </div>
-  </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
   import { computed } from 'vue'
+  import Card from './Card.vue'
 
   const props = defineProps<{
     title: string
@@ -25,18 +23,6 @@
     mainColor: string
     pillText: string
   }>()
-
-  const iconClasses = computed(() => {
-    const colorMap: Record<string, string> = {
-      blue: 'text-blue-400',
-      green: 'text-green-400',
-      purple: 'text-purple-400',
-      orange: 'text-orange-400',
-      red: 'text-red-400',
-      gray: 'text-gray-400',
-    }
-    return colorMap[props.mainColor] || 'text-blue-400'
-  })
 
   const pillClasses = computed(() => {
     const colorMap: Record<string, string> = {

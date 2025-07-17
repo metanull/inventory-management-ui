@@ -6,14 +6,27 @@ This directory contains layout components that provide structural organization a
 
 The layout components are organized into the following subdirectories:
 
-- **`src/components/layout/`** - Main layout components (DetailView, ListView, TableView, etc.)
-- **`src/components/layout/description/`** - Description list components (DescriptionList, DescriptionRow, etc.)
-- **`src/components/layout/table/`** - Table components (TableElement, TableHeader, TableRow, TableCell)
+- **`src/components/layout/app/`** - Application-level components (AppHeader, AppFooter, ErrorDisplay)
+- **`src/components/layout/detail/`** - Detail view components (DetailView, DetailViewHeader, SystemProperties, action buttons)
+- **`src/components/layout/list/`** - List view components (ListView, action buttons)
 - **`src/components/layout/modals/`** - Modal and loading components (LoadingSpinner, DeleteConfirmationModal, UnsavedChangesModal)
 
 This organization ensures that related components are grouped together and makes it easier to find and maintain the codebase.
 
-## DetailView.vue
+## App Components (`layout/app/`)
+
+### AppHeader.vue
+Application header component with navigation and user controls.
+
+### AppFooter.vue
+Application footer component with links and information.
+
+### ErrorDisplay.vue
+Global error display component for consistent error handling across the application.
+
+## Detail Components (`layout/detail/`)
+
+### DetailView.vue
 
 A comprehensive layout component for detail/edit pages that provides consistent structure with loading states, error handling, editing capabilities, and unsaved changes protection.
 
