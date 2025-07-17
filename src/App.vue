@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router'
-  import AppHeader from '@/components/layout/AppHeader.vue'
-  import AppFooter from '@/components/layout/AppFooter.vue'
-  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
+  import AppHeader from '@/components/layout/app/AppHeader.vue'
+  import AppFooter from '@/components/layout/app/AppFooter.vue'
+  import ErrorDisplay from '@/components/layout/app/ErrorDisplay.vue'
 </script>

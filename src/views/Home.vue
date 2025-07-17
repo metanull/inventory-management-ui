@@ -140,9 +140,9 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import NavigationCard from '@/components/home/NavigationCard.vue'
-  import StatusCard from '@/components/home/StatusCard.vue'
-  import InformationCard from '@/components/home/InformationCard.vue'
+  import NavigationCard from '@/components/format/card/NavigationCard.vue'
+  import StatusCard from '@/components/format/card/StatusCard.vue'
+  import InformationCard from '@/components/format/card/InformationCard.vue'
   import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
   import XCircleIcon from '@/components/icons/XCircleIcon.vue'
   import { useApiStatus } from '@/composables/useApiStatus'

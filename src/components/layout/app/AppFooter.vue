@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-  import pkg from '../../../package.json'
+  import pkg from '../../../../package.json'
   import apiPkg from '@metanull/inventory-app-api-client/package.json'
 
   const appTitle = import.meta.env.VITE_APP_TITLE || pkg.name

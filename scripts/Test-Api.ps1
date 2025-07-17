@@ -13,5 +13,10 @@ Process {
     $HealthCheckUrl = "$AppUrl/api/health"
     Write-Information "Checking API health at $HealthCheckUrl with timeout of $TimeoutSec seconds..."
 
-    Invoke-RestMethod -Uri $HealthCheckUrl -TimeoutSec $TimeoutSec -ErrorAction Stop
+    try {
+        Invoke-RestMethod -Uri $HealthCheckUrl -TimeoutSec $TimeoutSec -ErrorAction Stop
+    } catch {
+        Write-Information "Failed to reach API at $HealthCheckUrl. Error: $_"
+        return $false
+    }
 }

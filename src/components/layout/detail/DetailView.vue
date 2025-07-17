@@ -113,10 +113,10 @@
     type RouteLocationNormalized,
   } from 'vue-router'
   import LoadingSpinner from '@/components/layout/modals/LoadingSpinner.vue'
-  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
-  import DetailViewHeader from '@/components/layout/DetailViewHeader.vue'
-  import StatusCard from '@/components/home/StatusCard.vue'
-  import SystemProperties from '@/components/detail/SystemProperties.vue'
+  import ErrorDisplay from '@/components/layout/app/ErrorDisplay.vue'
+  import DetailViewHeader from '@/components/layout/detail/DetailViewHeader.vue'
+  import StatusCard from '@/components/format/card/StatusCard.vue'
+  import SystemProperties from '@/components/layout/detail/SystemProperties.vue'
   import DeleteConfirmationModal from '@/components/layout/modals/DeleteConfirmationModal.vue'
   import UnsavedChangesModal from '@/components/layout/modals/UnsavedChangesModal.vue'
 

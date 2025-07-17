@@ -43,10 +43,10 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import EditButton from '@/components/actions/detail/EditButton.vue'
-  import DeleteButton from '@/components/actions/detail/DeleteButton.vue'
-  import SaveButton from '@/components/actions/detail/SaveButton.vue'
-  import CancelButton from '@/components/actions/detail/CancelButton.vue'
+  import EditButton from '@/components/layout/detail/EditButton.vue'
+  import DeleteButton from '@/components/layout/detail/DeleteButton.vue'
+  import SaveButton from '@/components/layout/detail/SaveButton.vue'
+  import CancelButton from '@/components/layout/detail/CancelButton.vue'
 
   interface BackLink {
     title: string

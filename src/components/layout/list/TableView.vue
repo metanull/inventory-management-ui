@@ -18,5 +18,5 @@
 </template>
 
 <script setup lang="ts">
-  import TableElement from './table/TableElement.vue'
+  import TableElement from '../../format/table/TableElement.vue'
 </script>

@@ -293,8 +293,8 @@
   import { ref, onMounted, watch } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
   import { useCountryStore } from '@/stores/country'
-  import CountryForm from '@/components/CountryForm.vue'
-  import ErrorDisplay from '@/components/layout/ErrorDisplay.vue'
+  import CountryForm from '@/components/_obsolete/CountryForm.vue'
+  import ErrorDisplay from '@/components/layout/app/ErrorDisplay.vue'
   import DateDisplay from '@/components/format/Date.vue'
 
   const router = useRouter()
