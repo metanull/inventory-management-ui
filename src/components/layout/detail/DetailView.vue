@@ -1,11 +1,11 @@
 <template>
   <div>
     <!-- Detail Content -->
-    <div v-if="resource || isCreating" class="relative space-y-6">
+    <div v-if="resource || mode === 'create'" class="relative space-y-6">
       <!-- Header -->
       <div
         class="bg-white shadow"
-        :class="{ 'border-l-4 border-blue-500': isEditing || isCreating }"
+        :class="{ 'border-l-4 border-blue-500': mode === 'edit' || mode === 'create' }"
       >
         <div class="px-4 py-5 sm:px-6">
           <div class="flex items-center justify-between">
@@ -31,16 +31,16 @@
                 "
               >
                 {{ headerTitle }}
-                <span v-if="isCreating" class="text-sm font-normal text-blue-600 ml-2"
+                <span v-if="mode === 'create'" class="text-sm font-normal text-blue-600 ml-2"
                   >(Creating)</span
                 >
-                <span v-else-if="isEditing" class="text-sm font-normal text-blue-600 ml-2"
+                <span v-else-if="mode === 'edit'" class="text-sm font-normal text-blue-600 ml-2"
                   >(Editing)</span
                 >
               </Title>
             </div>
             <div class="flex space-x-3">
-              <template v-if="!isEditing && !isCreating">
+              <template v-if="mode === 'view'">
                 <EditButton @click="$emit('edit')" />
                 <DeleteButton @click="$emit('delete')" />
               </template>
@@ -55,9 +55,9 @@
 
       <!-- Status Cards (hidden during creation) -->
       <div
-        v-if="statusCards && statusCards.length > 0 && !isCreating"
+        v-if="statusCards && statusCards.length > 0 && mode !== 'create'"
         class="grid grid-cols-1 gap-4 sm:grid-cols-2"
-        :class="{ 'opacity-50 pointer-events-none': isEditing }"
+        :class="{ 'opacity-50 pointer-events-none': mode === 'edit' }"
       >
         <StatusCard
           v-for="(card, index) in statusCards"
@@ -88,12 +88,12 @@
           </Title>
         </div>
         <div class="border-t border-gray-200">
-          <slot name="information" :on-field-change="handleFieldChange" />
+          <slot name="information" :mode="mode" :on-field-change="handleFieldChange" />
         </div>
       </div>
 
       <!-- System Properties (hidden during creation) -->
-      <div v-if="!isCreating">
+      <div v-if="mode !== 'create'">
         <SystemProperties
           :id="resource?.id || ''"
           :created-at="resource?.created_at || ''"
@@ -113,6 +113,9 @@
   import StatusCard from '@/components/format/card/StatusCard.vue'
   import SystemProperties from '@/components/layout/detail/SystemProperties.vue'
   import Title from '@/components/format/title/Title.vue'
+
+  // Types
+  type Mode = 'view' | 'edit' | 'create'
 
   interface StatusCardConfig {
     title: string
@@ -144,9 +147,8 @@
     storeLoading?: boolean // Store's internal loading state (optional)
     resource: Resource | null
 
-    // Edit states
-    isEditing: boolean
-    isCreating?: boolean // New prop to support creation mode
+    // Mode state - Single source of truth
+    mode: Mode
     hasUnsavedChanges?: boolean // New prop to track unsaved changes
 
     // Creation mode customization
@@ -187,7 +189,7 @@
 
   // Header title - use custom title for creation mode or resource name
   const headerTitle = computed(() => {
-    if (props.isCreating) {
+    if (props.mode === 'create') {
       return props.createTitle || 'New Record'
     }
     return props.resource?.internal_name || ''
@@ -220,7 +222,7 @@
 
   // Fetch data on mount
   onMounted(async () => {
-    if (!props.resource && !props.isCreating) {
+    if (!props.resource && props.mode !== 'create') {
       initialLoading.value = true
       try {
         await props.fetchData()

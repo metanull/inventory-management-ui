@@ -2,9 +2,8 @@
   <!-- Unified Project Detail View -->
   <DetailView
     :store-loading="projectStore.loading"
-    :resource="isNewProject ? null : project"
-    :is-creating="isNewProject"
-    :is-editing="isEditing"
+    :resource="mode === 'create' ? null : project"
+    :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
     :back-link="backLink"
@@ -12,16 +11,12 @@
     :create-title="'New Project'"
     :create-subtitle="'(Creating)'"
     information-title="Project Information"
-    :information-description="
-      isNewProject
-        ? 'Create a new project in your inventory system.'
-        : 'Detailed information about this project.'
-    "
+    :information-description="informationDescription"
     :fetch-data="fetchProject"
-    @edit="startEdit"
-    @save="saveEdit"
-    @cancel="cancelEdit"
-    @delete="handleDelete"
+    @edit="enterEditMode"
+    @save="saveProject"
+    @cancel="cancelAction"
+    @delete="deleteProject"
     @status-toggle="handleStatusToggle"
   >
     <template #information>
@@ -30,7 +25,7 @@
           <DescriptionTerm>Internal Name</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
-              v-if="isEditing || isNewProject"
+              v-if="mode === 'edit' || mode === 'create'"
               v-model="editForm.internal_name"
               type="text"
             />
@@ -38,13 +33,13 @@
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
-          v-if="project?.backward_compatibility || isEditing || isNewProject"
+          v-if="project?.backward_compatibility || mode === 'edit' || mode === 'create'"
           variant="white"
         >
           <DescriptionTerm>Legacy ID</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
-              v-if="isEditing || isNewProject"
+              v-if="mode === 'edit' || mode === 'create'"
               v-model="editForm.backward_compatibility"
               type="text"
               placeholder="Optional legacy identifier"
@@ -56,7 +51,7 @@
           <DescriptionTerm>Launch Date</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
-              v-if="isEditing || isNewProject"
+              v-if="mode === 'edit' || mode === 'create'"
               v-model="editForm.launch_date"
               type="date"
             />
@@ -75,7 +70,7 @@
           <DescriptionTerm>Default Context</DescriptionTerm>
           <DescriptionDetail>
             <GenericDropdown
-              v-if="isEditing || isNewProject"
+              v-if="mode === 'edit' || mode === 'create'"
               v-model="editForm.context_id"
               :options="contexts"
               :show-no-default-option="true"
@@ -92,7 +87,7 @@
           <DescriptionTerm>Default Language</DescriptionTerm>
           <DescriptionDetail>
             <GenericDropdown
-              v-if="isEditing || isNewProject"
+              v-if="mode === 'edit' || mode === 'create'"
               v-model="editForm.language_id"
               :options="languages"
               :show-no-default-option="true"
@@ -113,8 +108,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
-  import { useRoute, useRouter, type LocationQueryValue } from 'vue-router'
+  import { ref, computed, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
   import { useProjectStore } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
@@ -133,13 +128,47 @@
   import PackageIcon from '@/components/icons/PackageIcon.vue'
   import ProjectIcon from '@/components/icons/ProjectIcon.vue'
 
+  // Types
+  type Mode = 'view' | 'edit' | 'create'
+
+  interface ProjectFormData {
+    internal_name: string
+    backward_compatibility: string
+    launch_date: string
+    context_id: string
+    language_id: string
+  }
+
+  // Composables
   const route = useRoute()
   const router = useRouter()
   const projectStore = useProjectStore()
   const contextStore = useContextStore()
   const languageStore = useLanguageStore()
 
+  // Reactive state - Single source of truth for mode
+  const mode = ref<Mode>('view')
+
+  // Computed properties
   const project = computed(() => projectStore.currentProject)
+
+  // Dropdown options
+  const contexts = computed(() => contextStore.contexts)
+  const languages = computed(() => languageStore.languages)
+  const defaultContext = computed(() => contextStore.defaultContext)
+  const defaultLanguage = computed(() => languageStore.defaultLanguage)
+
+  // Information description based on mode
+  const informationDescription = computed(() => {
+    switch (mode.value) {
+      case 'create':
+        return 'Create a new project in your inventory system.'
+      case 'edit':
+        return 'Edit detailed information about this project.'
+      default:
+        return 'Detailed information about this project.'
+    }
+  })
 
   // Back link configuration
   const backLink = computed(() => ({
@@ -149,17 +178,8 @@
     color: 'orange',
   }))
 
-  // Dropdown options
-  const contexts = computed(() => contextStore.contexts)
-  const languages = computed(() => languageStore.languages)
-  const defaultContext = computed(() => contextStore.defaultContext)
-  const defaultLanguage = computed(() => languageStore.defaultLanguage)
-
-  // Modal and action states
-  const isEditing = ref(false)
-
   // Edit form data
-  const editForm = ref({
+  const editForm = ref<ProjectFormData>({
     internal_name: '',
     backward_compatibility: '',
     launch_date: '',
@@ -167,12 +187,40 @@
     language_id: '',
   })
 
+  // Get default form values
+  const getDefaultFormValues = (): ProjectFormData => ({
+    internal_name: '',
+    backward_compatibility: '',
+    launch_date: '',
+    context_id: defaultContext.value?.id || '',
+    language_id: defaultLanguage.value?.id || '',
+  })
+
+  // Get form values from project
+  const getFormValuesFromProject = (): ProjectFormData => {
+    if (!project.value) return getDefaultFormValues()
+
+    // Format launch_date for HTML date input (YYYY-MM-DD)
+    let formattedLaunchDate = ''
+    if (project.value.launch_date) {
+      formattedLaunchDate = project.value.launch_date.split('T')[0]
+    }
+
+    return {
+      internal_name: project.value.internal_name,
+      backward_compatibility: project.value.backward_compatibility || '',
+      launch_date: formattedLaunchDate,
+      context_id: project.value.context?.id || '',
+      language_id: project.value.language?.id || '',
+    }
+  }
+
   // Track unsaved changes
   const hasUnsavedChanges = computed(() => {
-    if (!isEditing.value && !isNewProject.value) return false
+    if (mode.value === 'view') return false
 
-    // For new projects, any non-empty field indicates changes
-    if (isNewProject.value) {
+    // For create mode, any non-empty field indicates changes
+    if (mode.value === 'create') {
       return (
         editForm.value.internal_name.trim() !== '' ||
         editForm.value.backward_compatibility.trim() !== '' ||
@@ -182,202 +230,18 @@
       )
     }
 
-    // For existing projects, compare with original values
+    // For edit mode, compare with original values
     if (!project.value) return false
 
-    let originalLaunchDate = ''
-    if (project.value.launch_date) {
-      originalLaunchDate = project.value.launch_date.split('T')[0]
-    }
-
+    const originalValues = getFormValuesFromProject()
     return (
-      editForm.value.internal_name !== project.value.internal_name ||
-      editForm.value.backward_compatibility !== (project.value.backward_compatibility || '') ||
-      editForm.value.launch_date !== originalLaunchDate ||
-      editForm.value.context_id !== (project.value.context?.id || '') ||
-      editForm.value.language_id !== (project.value.language?.id || '')
+      editForm.value.internal_name !== originalValues.internal_name ||
+      editForm.value.backward_compatibility !== originalValues.backward_compatibility ||
+      editForm.value.launch_date !== originalValues.launch_date ||
+      editForm.value.context_id !== originalValues.context_id ||
+      editForm.value.language_id !== originalValues.language_id
     )
   })
-
-  // Check for edit mode from query parameter
-  const checkEditMode = () => {
-    if (route.query.edit === 'true' && project.value) {
-      startEdit()
-    }
-  }
-
-  // Watch for route query changes
-  watch(
-    () => route.query.edit,
-    (newEditValue: LocationQueryValue | LocationQueryValue[]) => {
-      if (newEditValue === 'true' && project.value) {
-        startEdit()
-      } else if (newEditValue !== 'true' && isEditing.value) {
-        cancelEdit()
-      }
-    }
-  )
-
-  // Check if this is a new project creation
-  const isNewProject = computed(
-    () => route.name === 'project-new' || route.path === '/projects/new'
-  )
-
-  // Fetch project on mount
-  onMounted(async () => {
-    const projectId = route.params.id as string
-
-    try {
-      if (isNewProject.value) {
-        // For new projects, only fetch dropdown options and start in edit mode
-        await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])
-
-        // Initialize edit form with defaults
-        editForm.value = {
-          internal_name: '',
-          backward_compatibility: '',
-          launch_date: '',
-          context_id: defaultContext.value?.id || '',
-          language_id: defaultLanguage.value?.id || '',
-        }
-        isEditing.value = true
-      } else if (projectId) {
-        // Fetch project data and dropdown options in parallel
-        await Promise.all([
-          projectStore.fetchProject(projectId),
-          contextStore.fetchContexts(),
-          languageStore.fetchLanguages(),
-        ])
-
-        // Check if we should start in edit mode after data is loaded
-        checkEditMode()
-      }
-    } catch (error) {
-      console.error('Failed to fetch project or dropdown data:', error)
-    }
-  })
-
-  // Toggle enabled status
-  const toggleEnabled = async () => {
-    if (!project.value) return
-
-    try {
-      await projectStore.setProjectEnabled(project.value.id, !project.value.is_enabled)
-    } catch (error) {
-      console.error('Failed to toggle enabled status:', error)
-    }
-  }
-
-  // Toggle launched status
-  const toggleLaunched = async () => {
-    if (!project.value) return
-
-    try {
-      await projectStore.setProjectLaunched(project.value.id, !project.value.is_launched)
-    } catch (error) {
-      console.error('Failed to toggle launched status:', error)
-    }
-  }
-
-  // Edit functionality
-  const startEdit = () => {
-    if (!project.value) return
-
-    // Format launch_date for HTML date input (YYYY-MM-DD)
-    let formattedLaunchDate = ''
-    if (project.value.launch_date) {
-      // Extract just the date part if it's in ISO format (YYYY-MM-DDTHH:mm:ss)
-      formattedLaunchDate = project.value.launch_date.split('T')[0]
-    }
-
-    editForm.value = {
-      internal_name: project.value.internal_name,
-      backward_compatibility: project.value.backward_compatibility || '',
-      launch_date: formattedLaunchDate,
-      context_id: project.value.context?.id || '',
-      language_id: project.value.language?.id || '',
-    }
-    isEditing.value = true
-  }
-
-  const cancelEdit = () => {
-    if (isNewProject.value) {
-      // For new projects, navigate back to projects list
-      router.push('/projects')
-      return
-    }
-
-    isEditing.value = false
-    editForm.value = {
-      internal_name: '',
-      backward_compatibility: '',
-      launch_date: '',
-      context_id: '',
-      language_id: '',
-    }
-
-    // Remove edit query parameter if present
-    if (route.query.edit) {
-      const query = { ...route.query }
-      delete query.edit
-      router.replace({ query })
-    }
-  }
-
-  const saveEdit = async () => {
-    try {
-      const projectData = {
-        internal_name: editForm.value.internal_name,
-        backward_compatibility: editForm.value.backward_compatibility || null,
-        launch_date: editForm.value.launch_date || null,
-        context_id: editForm.value.context_id || null,
-        language_id: editForm.value.language_id || null,
-      }
-
-      if (isNewProject.value) {
-        // Create new project
-        const newProject = await projectStore.createProject(projectData)
-
-        // Clear the form and reset editing state before navigation
-        editForm.value = {
-          internal_name: '',
-          backward_compatibility: '',
-          launch_date: '',
-          context_id: '',
-          language_id: '',
-        }
-        isEditing.value = false
-
-        // Navigate to the new project's detail page
-        router.replace(`/projects/${newProject.id}`)
-      } else if (project.value) {
-        // Update existing project
-        await projectStore.updateProject(project.value.id, projectData)
-        isEditing.value = false
-
-        // Remove edit query parameter if present
-        if (route.query.edit) {
-          const query = { ...route.query }
-          delete query.edit
-          router.replace({ query })
-        }
-      }
-    } catch (error) {
-      console.error('Failed to save project:', error)
-    }
-  }
-
-  // Fetch project function for retry
-  const fetchProject = async () => {
-    const projectId = route.params.id as string
-    if (projectId && !isNewProject.value) {
-      try {
-        await projectStore.fetchProject(projectId)
-      } catch (error) {
-        console.error('Failed to fetch project:', error)
-      }
-    }
-  }
 
   // Status cards configuration
   const statusCardsConfig = computed(() => {
@@ -419,15 +283,106 @@
     ]
   })
 
-  // Handle delete
-  const handleDelete = async () => {
+  // Mode management functions
+  const enterCreateMode = () => {
+    mode.value = 'create'
+    editForm.value = getDefaultFormValues()
+  }
+
+  const enterEditMode = () => {
+    if (!project.value) return
+    mode.value = 'edit'
+    editForm.value = getFormValuesFromProject()
+  }
+
+  const enterViewMode = () => {
+    mode.value = 'view'
+    // Clear form data when returning to view mode
+    editForm.value = getDefaultFormValues()
+  }
+
+  // Action handlers
+  const saveProject = async () => {
+    try {
+      const projectData = {
+        internal_name: editForm.value.internal_name,
+        backward_compatibility: editForm.value.backward_compatibility || null,
+        launch_date: editForm.value.launch_date || null,
+        context_id: editForm.value.context_id || null,
+        language_id: editForm.value.language_id || null,
+      }
+
+      if (mode.value === 'create') {
+        // Create new project
+        const newProject = await projectStore.createProject(projectData)
+
+        // Navigate to the new project's detail page in view mode
+        await router.replace(`/projects/${newProject.id}`)
+        mode.value = 'view'
+      } else if (mode.value === 'edit' && project.value) {
+        // Update existing project
+        await projectStore.updateProject(project.value.id, projectData)
+        enterViewMode()
+
+        // Remove edit query parameter if present
+        if (route.query.edit) {
+          const query = { ...route.query }
+          delete query.edit
+          await router.replace({ query })
+        }
+      }
+    } catch (error) {
+      console.error('Failed to save project:', error)
+    }
+  }
+
+  const cancelAction = () => {
+    if (mode.value === 'create') {
+      // For create mode, navigate back to projects list
+      router.push('/projects')
+      return
+    }
+
+    if (mode.value === 'edit') {
+      enterViewMode()
+
+      // Remove edit query parameter if present
+      if (route.query.edit) {
+        const query = { ...route.query }
+        delete query.edit
+        router.replace({ query })
+      }
+    }
+  }
+
+  const deleteProject = async () => {
     if (project.value?.id) {
       await projectStore.deleteProject(project.value.id)
       router.push('/projects')
     }
   }
 
-  // Handle status toggle
+  // Status toggle handlers
+  const toggleEnabled = async () => {
+    if (!project.value) return
+
+    try {
+      await projectStore.setProjectEnabled(project.value.id, !project.value.is_enabled)
+    } catch (error) {
+      console.error('Failed to toggle enabled status:', error)
+    }
+  }
+
+  const toggleLaunched = async () => {
+    if (!project.value) return
+
+    try {
+      await projectStore.setProjectLaunched(project.value.id, !project.value.is_launched)
+    } catch (error) {
+      console.error('Failed to toggle launched status:', error)
+    }
+  }
+
   const handleStatusToggle = async (index: number) => {
     if (index === 0) {
       await toggleEnabled()
@@ -435,4 +390,49 @@
       await toggleLaunched()
     }
   }
+
+  // Fetch project function
+  const fetchProject = async () => {
+    const projectId = route.params.id as string
+    if (!projectId || mode.value === 'create') return
+
+    try {
+      await projectStore.fetchProject(projectId)
+    } catch (error) {
+      console.error('Failed to fetch project:', error)
+    }
+  }
+
+  // Initialize component
+  const initializeComponent = async () => {
+    const projectId = route.params.id as string
+    const isCreateRoute = route.name === 'project-new' || route.path === '/projects/new'
+
+    try {
+      if (isCreateRoute) {
+        // For create mode, only fetch dropdown options
+        await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])
+        enterCreateMode()
+      } else if (projectId) {
+        // For view/edit mode, fetch project data and dropdown options
+        await Promise.all([
+          fetchProject(),
+          contextStore.fetchContexts(),
+          languageStore.fetchLanguages(),
+        ])
+
+        // Check if we should start in edit mode from query parameter
+        if (route.query.edit === 'true' && project.value) {
+          enterEditMode()
+        } else {
+          enterViewMode()
+        }
+      }
+    } catch (error) {
+      console.error('Failed to initialize component:', error)
+    }
+  }
+
+  // Lifecycle
+  onMounted(initializeComponent)
 </script>
