@@ -180,17 +180,27 @@
 
   // Fetch projects on mount
   onMounted(async () => {
-    try {
+    let usedCache = false
+    // If cache exists, display immediately and refresh in background
+    if (projects.value && projects.value.length > 0) {
+      usedCache = true
+    } else {
       loadingStore.show()
-      // Also fetch all projects for other filters
+    }
+    try {
+      // Always refresh in background
       await projectStore.fetchProjects()
-      // Fetch visible projects
       await projectStore.fetchEnabledProjects()
+      if (usedCache) {
+        errorStore.addMessage('info', 'List refreshed')
+      }
     } catch (error) {
       console.error('Failed to fetch projects:', error)
       errorStore.addMessage('error', 'Failed to fetch projects. Please try again.')
     } finally {
-      loadingStore.hide()
+      if (!usedCache) {
+        loadingStore.hide()
+      }
     }
   })
 
