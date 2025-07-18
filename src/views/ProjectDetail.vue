@@ -327,7 +327,7 @@
   // Action handlers
   const saveProject = async () => {
     try {
-      loadingStore.show()
+      loadingStore.show('Saving...')
       const projectData = {
         internal_name: editForm.value.internal_name,
         backward_compatibility: editForm.value.backward_compatibility || null,
@@ -340,7 +340,6 @@
         // Create new project
         const newProject = await projectStore.createProject(projectData)
         errorStore.addMessage('info', 'Project created successfully.')
-        cancelChangesStore.resetChanges()
 
         // Navigate to the new project's detail page in view mode
         await router.replace(`/projects/${newProject.id}`)
@@ -349,7 +348,7 @@
         // Update existing project
         await projectStore.updateProject(project.value.id, projectData)
         errorStore.addMessage('info', 'Project updated successfully.')
-        cancelChangesStore.resetChanges()
+
         enterViewMode()
 
         // Remove edit query parameter if present
@@ -419,7 +418,7 @@
 
       if (result === 'delete') {
         try {
-          loadingStore.show()
+          loadingStore.show('Deleting...')
           await projectStore.deleteProject(project.value.id)
           errorStore.addMessage('info', 'Project deleted successfully.')
           router.push('/projects')
@@ -438,7 +437,7 @@
     if (!project.value) return
 
     try {
-      loadingStore.show()
+      loadingStore.show('Updating...')
       const newStatus = !project.value.is_enabled
       await projectStore.setProjectEnabled(project.value.id, newStatus)
       errorStore.addMessage('info', `Project ${newStatus ? 'enabled' : 'disabled'} successfully.`)
@@ -454,7 +453,7 @@
     if (!project.value) return
 
     try {
-      loadingStore.show()
+      loadingStore.show('Updating...')
       const newStatus = !project.value.is_launched
       await projectStore.setProjectLaunched(project.value.id, newStatus)
       errorStore.addMessage(

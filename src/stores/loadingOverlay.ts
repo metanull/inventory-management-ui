@@ -4,9 +4,11 @@ import { ref } from 'vue'
 export const useLoadingOverlayStore = defineStore('loadingOverlay', () => {
   const visible = ref<boolean>(false)
   const disabled = ref<boolean>(false)
+  const text = ref<string>('Loading...')
 
-  const show = (): void => {
+  const show = (loadingText: string = 'Loading...'): void => {
     if (!disabled.value) {
+      text.value = loadingText
       visible.value = true
     }
   }
@@ -28,6 +30,7 @@ export const useLoadingOverlayStore = defineStore('loadingOverlay', () => {
     // State
     visible,
     disabled,
+    text,
     // Actions
     show,
     hide,

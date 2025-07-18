@@ -190,7 +190,7 @@
   // Update project status
   const updateProjectStatus = async (project: ProjectResource, field: string, value: boolean) => {
     try {
-      loadingStore.show()
+      loadingStore.show('Updating...')
       if (field === 'is_enabled') {
         await projectStore.setProjectEnabled(project.id, value)
         errorStore.addMessage('info', `Project ${value ? 'enabled' : 'disabled'} successfully.`)
@@ -233,7 +233,7 @@
 
     if (result === 'delete') {
       try {
-        loadingStore.show()
+        loadingStore.show('Deleting...')
         await projectStore.deleteProject(projectToDelete.id)
         errorStore.addMessage('info', 'Project deleted successfully.')
       } catch (error) {
