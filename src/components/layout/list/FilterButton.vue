@@ -7,7 +7,26 @@
     @click="$emit('click')"
   >
     {{ label }}
-    <span v-if="count !== undefined" class="ml-1">({{ count }})</span>
+    <!-- Count pill/text responsive display -->
+    <span
+      v-if="count !== undefined"
+      :class="[
+        'ml-1',
+        // Hide on xs
+        'hidden sm:inline',
+        // Pill style on md+
+        count !== undefined
+          ? 'md:inline-flex md:items-center md:justify-center md:px-2 md:py-0.5 md:text-xs md:font-semibold md:rounded-full'
+          : '',
+        // Color for pill
+        count === 0 ? 'md:bg-orange-100 md:text-orange-700' : '',
+        count > 0 ? 'md:bg-blue-100 md:text-blue-700' : '',
+      ]"
+    >
+      <!-- Pill on md+, text on sm+ -->
+      <span class="md:hidden">({{ count }})</span>
+      <span class="hidden md:inline">{{ count }}</span>
+    </span>
   </button>
 </template>
 

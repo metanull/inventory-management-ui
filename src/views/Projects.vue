@@ -63,12 +63,12 @@
     <!-- Projects Table -->
     <template #headers>
       <TableRow>
-        <TableHeader class="sm:table-cell">Project</TableHeader>
-        <TableHeader class="hidden lg:table-cell">Enabled</TableHeader>
-        <TableHeader class="hidden lg:table-cell">Launched</TableHeader>
-        <TableHeader class="hidden xl:table-cell">Launch Date</TableHeader>
-        <TableHeader class="hidden xl:table-cell">Created</TableHeader>
-        <TableHeader class="hidden md:table-cell" variant="actions">
+        <TableHeader>Project</TableHeader>
+        <TableHeader class="hidden md:table-cell">Enabled</TableHeader>
+        <TableHeader class="hidden md:table-cell">Launched</TableHeader>
+        <TableHeader class="hidden lg:table-cell">Launch Date</TableHeader>
+        <TableHeader class="hidden lg:table-cell">Created</TableHeader>
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -76,7 +76,7 @@
 
     <template #rows>
       <TableRow v-for="project in filteredProjects" :key="project.id">
-        <TableCell class="sm:table-cell">
+        <TableCell>
           <InternalNameSmall
             :internal-name="project.internal_name"
             :backward-compatibility="project.backward_compatibility"
@@ -86,7 +86,7 @@
             </template>
           </InternalNameSmall>
         </TableCell>
-        <TableCell class="hidden lg:table-cell">
+        <TableCell class="hidden md:table-cell">
           <ToggleSmall
             title="Enabled"
             :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
@@ -94,7 +94,7 @@
             @toggle="updateProjectStatus(project, 'is_enabled', !project.is_enabled)"
           />
         </TableCell>
-        <TableCell class="hidden lg:table-cell">
+        <TableCell class="hidden md:table-cell">
           <ToggleSmall
             title="Launched"
             :status-text="project.is_launched ? 'Launched' : 'Not launched'"
@@ -102,7 +102,7 @@
             @toggle="updateProjectStatus(project, 'is_launched', !project.is_launched)"
           />
         </TableCell>
-        <TableCell class="hidden xl:table-cell">
+        <TableCell class="hidden lg:table-cell">
           <DateDisplay
             v-if="project.launch_date"
             :date="project.launch_date"
@@ -111,10 +111,10 @@
           />
           <DisplayText v-else variant="gray">Not scheduled</DisplayText>
         </TableCell>
-        <TableCell class="hidden xl:table-cell">
+        <TableCell class="hidden lg:table-cell">
           <DateDisplay :date="project.created_at" format="short" variant="small-dark" />
         </TableCell>
-        <TableCell class="hidden md:table-cell">
+        <TableCell class="hidden sm:table-cell">
           <div class="flex space-x-2">
             <ViewButton @click="router.push(`/projects/${project.id}`)" />
             <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
