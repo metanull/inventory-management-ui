@@ -381,6 +381,7 @@
         )
         if (result === 'stay') return
       }*/
+
       // Navigate back to projects list
       router.push('/projects')
       return
@@ -397,6 +398,7 @@
         if (result === 'stay') return
       }*/
 
+      // "Navigate" back to project detail in view mode
       enterViewMode()
 
       // Remove edit query parameter if present

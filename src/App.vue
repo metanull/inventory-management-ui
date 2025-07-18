@@ -1,15 +1,21 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
+    <!-- Application Header -->
     <AppHeader />
+    <!-- Global Component: Error Display -->
     <ErrorDisplay />
+    <!-- Application Body -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <RouterView />
     </main>
+    <!-- Application Footer -->
     <AppFooter />
 
-    <!-- Global Components -->
+    <!-- Global Component: Loading spinner -->
     <LoadingOverlay />
+    <!-- Global Component: Confirmation Modals -->
     <DeleteConfirmation />
+    <!-- Global Component: Cancel Changes Confirmation -->
     <CancelChangesConfirmation />
   </div>
 </template>
