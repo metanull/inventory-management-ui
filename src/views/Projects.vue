@@ -54,6 +54,11 @@
       />
     </template>
 
+    <!-- Search Slot -->
+    <template #search>
+      <SearchControl />
+    </template>
+
     <!-- Projects Table -->
     <!-- Projects Table -->
     <template #headers>
@@ -142,6 +147,7 @@
   import ToggleSmall from '@/components/format/ToggleSmall.vue'
   import InternalNameSmall from '@/components/format/InternalNameSmall.vue'
   import ProjectIcon from '@/components/icons/ProjectIcon.vue'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
 
   const router = useRouter()
 
