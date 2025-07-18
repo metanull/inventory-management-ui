@@ -365,10 +365,6 @@
         // Load the new project and enter view mode
         await projectStore.fetchProject(newProject.id)
         enterViewMode()
-
-        //// Navigate to the new project's detail page in view mode
-        //await router.replace(`/projects/${newProject.id}`)
-        //mode.value = 'view'
       } else if (mode.value === 'edit' && project.value) {
         // Update existing project
         await projectStore.updateProject(project.value.id, projectData)
