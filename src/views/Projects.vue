@@ -56,7 +56,7 @@
 
     <!-- Search Slot -->
     <template #search>
-      <SearchControl />
+      <SearchControl v-model="searchQuery" placeholder="Search projects..." />
     </template>
 
     <!-- Projects Table -->
@@ -202,6 +202,9 @@
   const sortKey = ref<string>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
+  // Search state
+  const searchQuery = ref<string>('')
+
   // Handle sort event from TableHeader
   function handleSort(key: string) {
     if (sortKey.value === key) {
@@ -227,6 +230,15 @@
         break
       default:
         list = projects.value
+    }
+    // Search filter
+    const query = searchQuery.value.trim().toLowerCase()
+    if (query.length > 0) {
+      list = list.filter(project => {
+        const name = project.internal_name?.toLowerCase() ?? ''
+        const compat = project.backward_compatibility?.toLowerCase() ?? ''
+        return name.includes(query) || compat.includes(query)
+      })
     }
     // Simple sorting logic
     return [...list].sort((a, b) => {
