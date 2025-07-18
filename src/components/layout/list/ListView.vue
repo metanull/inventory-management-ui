@@ -20,12 +20,12 @@
     <!-- Filter Buttons -->
     <div
       v-if="(filters && filters.length > 0) || $slots.filters || $slots.search"
-      class="mt-6 flex justify-between items-center"
+      class="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center"
     >
-      <div class="flex space-x-1">
+      <div class="flex flex-wrap gap-1">
         <slot name="filters" />
       </div>
-      <div v-if="$slots.search" class="flex-shrink-0">
+      <div v-if="$slots.search" class="flex-shrink-0 w-full sm:w-auto">
         <slot name="search" />
       </div>
     </div>
