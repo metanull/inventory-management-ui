@@ -63,12 +63,96 @@
     <!-- Projects Table -->
     <template #headers>
       <TableRow>
-        <TableHeader>Project</TableHeader>
-        <TableHeader class="hidden md:table-cell">Enabled</TableHeader>
-        <TableHeader class="hidden md:table-cell">Launched</TableHeader>
-        <TableHeader class="hidden lg:table-cell">Launch Date</TableHeader>
-        <TableHeader class="hidden lg:table-cell">Created</TableHeader>
-        <TableHeader class="hidden sm:table-cell" variant="actions">
+        <TableHeader
+          sortable
+          :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
+          @sort="handleSort('internal_name')"
+        >
+          Project
+          <template #sortIcon>
+            <SortAscIcon
+              v-if="sortKey === 'internal_name' && sortDirection === 'asc'"
+              class="h-4 w-4 text-blue-500"
+            />
+            <SortDescIcon
+              v-if="sortKey === 'internal_name' && sortDirection === 'desc'"
+              class="h-4 w-4 text-blue-500"
+            />
+          </template>
+        </TableHeader>
+        <TableHeader
+          class="hidden md:table-cell"
+          sortable
+          :sort-direction="sortKey === 'is_enabled' ? sortDirection : null"
+          @sort="handleSort('is_enabled')"
+        >
+          Enabled
+          <template #sortIcon>
+            <SortAscIcon
+              v-if="sortKey === 'is_enabled' && sortDirection === 'asc'"
+              class="h-4 w-4 text-blue-500"
+            />
+            <SortDescIcon
+              v-if="sortKey === 'is_enabled' && sortDirection === 'desc'"
+              class="h-4 w-4 text-blue-500"
+            />
+          </template>
+        </TableHeader>
+        <TableHeader
+          class="hidden md:table-cell"
+          sortable
+          :sort-direction="sortKey === 'is_launched' ? sortDirection : null"
+          @sort="handleSort('is_launched')"
+        >
+          Launched
+          <template #sortIcon>
+            <SortAscIcon
+              v-if="sortKey === 'is_launched' && sortDirection === 'asc'"
+              class="h-4 w-4 text-blue-500"
+            />
+            <SortDescIcon
+              v-if="sortKey === 'is_launched' && sortDirection === 'desc'"
+              class="h-4 w-4 text-blue-500"
+            />
+          </template>
+        </TableHeader>
+        <TableHeader
+          class="hidden lg:table-cell"
+          sortable
+          :sort-direction="sortKey === 'launch_date' ? sortDirection : null"
+          @sort="handleSort('launch_date')"
+        >
+          Launch Date
+          <template #sortIcon>
+            <SortAscIcon
+              v-if="sortKey === 'launch_date' && sortDirection === 'asc'"
+              class="h-4 w-4 text-blue-500"
+            />
+            <SortDescIcon
+              v-if="sortKey === 'launch_date' && sortDirection === 'desc'"
+              class="h-4 w-4 text-blue-500"
+            />
+          </template>
+        </TableHeader>
+        <TableHeader
+          class="hidden lg:table-cell"
+          sortable
+          :sort-direction="sortKey === 'created_at' ? sortDirection : null"
+          @sort="handleSort('created_at')"
+        >
+          Created
+          <template #sortIcon>
+            <SortAscIcon
+              v-if="sortKey === 'created_at' && sortDirection === 'asc'"
+              class="h-4 w-4 text-blue-500"
+            />
+            <SortDescIcon
+              v-if="sortKey === 'created_at' && sortDirection === 'desc'"
+              class="h-4 w-4 text-blue-500"
+            />
+          </template>
+        </TableHeader>
+        <TableHeader class="hidden sm:table-cell" variant="actions" sortable>
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -142,6 +226,8 @@
   import FilterButton from '@/components/layout/list/FilterButton.vue'
   import ListView from '@/components/layout/list/ListView.vue'
   import TableHeader from '@/components/format/table/TableHeader.vue'
+  import SortAscIcon from '@/components/icons/SortAscIcon.vue'
+  import SortDescIcon from '@/components/icons/SortDescIcon.vue'
   import TableRow from '@/components/format/table/TableRow.vue'
   import TableCell from '@/components/format/table/TableCell.vue'
   import ToggleSmall from '@/components/format/ToggleSmall.vue'
@@ -164,18 +250,82 @@
   // Filter state - default to 'visible'
   const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('all')
 
-  // Computed filtered projects
+  // Sorting state
+  const sortKey = ref<string>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
+
+  // Handle sort event from TableHeader
+  function handleSort(key: string) {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
+    }
+  }
+
+  // Computed filtered and sorted projects
   const filteredProjects = computed(() => {
+    let list: ProjectResource[]
     switch (filterMode.value) {
       case 'visible':
-        return visibleProjects.value
+        list = visibleProjects.value
+        break
       case 'enabled':
-        return enabledProjects.value
+        list = enabledProjects.value
+        break
       case 'launched':
-        return launchedProjects.value
+        list = launchedProjects.value
+        break
       default:
-        return projects.value
+        list = projects.value
     }
+    // Sorting logic
+    return [...list].sort((a, b) => {
+      const key = sortKey.value
+      let valA: unknown
+      let valB: unknown
+      if (key === 'internal_name') {
+        // Always compare only internal_name, never fallback to backward_compatibility
+        valA = a.internal_name ?? ''
+        valB = b.internal_name ?? ''
+      } else if (key === 'is_enabled') {
+        valA = a.is_enabled
+        valB = b.is_enabled
+      } else if (key === 'is_launched') {
+        valA = a.is_launched
+        valB = b.is_launched
+      } else if (key === 'launch_date') {
+        valA = a.launch_date
+        valB = b.launch_date
+      } else if (key === 'created_at') {
+        valA = a.created_at
+        valB = b.created_at
+      } else {
+        valA = ''
+        valB = ''
+      }
+      // Handle undefined/null
+      if (valA == null && valB == null) return 0
+      if (valA == null) return 1
+      if (valB == null) return -1
+      // Handle boolean
+      if (typeof valA === 'boolean' && typeof valB === 'boolean') {
+        return sortDirection.value === 'asc'
+          ? Number(valA) - Number(valB)
+          : Number(valB) - Number(valA)
+      }
+      // Handle date
+      if (key === 'launch_date' || key === 'created_at') {
+        return sortDirection.value === 'asc'
+          ? new Date(valA as string).getTime() - new Date(valB as string).getTime()
+          : new Date(valB as string).getTime() - new Date(valA as string).getTime()
+      }
+      // Default string/number
+      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
+      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
+      return 0
+    })
   })
 
   // Fetch projects on mount
