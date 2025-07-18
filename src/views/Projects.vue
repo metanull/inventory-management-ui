@@ -69,16 +69,6 @@
           @sort="handleSort('internal_name')"
         >
           Project
-          <template #sortIcon>
-            <SortAscIcon
-              v-if="sortKey === 'internal_name' && sortDirection === 'asc'"
-              class="h-4 w-4 text-blue-500"
-            />
-            <SortDescIcon
-              v-if="sortKey === 'internal_name' && sortDirection === 'desc'"
-              class="h-4 w-4 text-blue-500"
-            />
-          </template>
         </TableHeader>
         <TableHeader
           class="hidden md:table-cell"
@@ -87,16 +77,6 @@
           @sort="handleSort('is_enabled')"
         >
           Enabled
-          <template #sortIcon>
-            <SortAscIcon
-              v-if="sortKey === 'is_enabled' && sortDirection === 'asc'"
-              class="h-4 w-4 text-blue-500"
-            />
-            <SortDescIcon
-              v-if="sortKey === 'is_enabled' && sortDirection === 'desc'"
-              class="h-4 w-4 text-blue-500"
-            />
-          </template>
         </TableHeader>
         <TableHeader
           class="hidden md:table-cell"
@@ -105,16 +85,6 @@
           @sort="handleSort('is_launched')"
         >
           Launched
-          <template #sortIcon>
-            <SortAscIcon
-              v-if="sortKey === 'is_launched' && sortDirection === 'asc'"
-              class="h-4 w-4 text-blue-500"
-            />
-            <SortDescIcon
-              v-if="sortKey === 'is_launched' && sortDirection === 'desc'"
-              class="h-4 w-4 text-blue-500"
-            />
-          </template>
         </TableHeader>
         <TableHeader
           class="hidden lg:table-cell"
@@ -123,16 +93,6 @@
           @sort="handleSort('launch_date')"
         >
           Launch Date
-          <template #sortIcon>
-            <SortAscIcon
-              v-if="sortKey === 'launch_date' && sortDirection === 'asc'"
-              class="h-4 w-4 text-blue-500"
-            />
-            <SortDescIcon
-              v-if="sortKey === 'launch_date' && sortDirection === 'desc'"
-              class="h-4 w-4 text-blue-500"
-            />
-          </template>
         </TableHeader>
         <TableHeader
           class="hidden lg:table-cell"
@@ -141,18 +101,8 @@
           @sort="handleSort('created_at')"
         >
           Created
-          <template #sortIcon>
-            <SortAscIcon
-              v-if="sortKey === 'created_at' && sortDirection === 'asc'"
-              class="h-4 w-4 text-blue-500"
-            />
-            <SortDescIcon
-              v-if="sortKey === 'created_at' && sortDirection === 'desc'"
-              class="h-4 w-4 text-blue-500"
-            />
-          </template>
         </TableHeader>
-        <TableHeader class="hidden sm:table-cell" variant="actions" sortable>
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -226,8 +176,6 @@
   import FilterButton from '@/components/layout/list/FilterButton.vue'
   import ListView from '@/components/layout/list/ListView.vue'
   import TableHeader from '@/components/format/table/TableHeader.vue'
-  import SortAscIcon from '@/components/icons/SortAscIcon.vue'
-  import SortDescIcon from '@/components/icons/SortDescIcon.vue'
   import TableRow from '@/components/format/table/TableRow.vue'
   import TableCell from '@/components/format/table/TableCell.vue'
   import ToggleSmall from '@/components/format/ToggleSmall.vue'
@@ -280,48 +228,21 @@
       default:
         list = projects.value
     }
-    // Sorting logic
+    // Simple sorting logic
     return [...list].sort((a, b) => {
       const key = sortKey.value
       let valA: unknown
       let valB: unknown
       if (key === 'internal_name') {
-        // Always compare only internal_name, never fallback to backward_compatibility
         valA = a.internal_name ?? ''
         valB = b.internal_name ?? ''
-      } else if (key === 'is_enabled') {
-        valA = a.is_enabled
-        valB = b.is_enabled
-      } else if (key === 'is_launched') {
-        valA = a.is_launched
-        valB = b.is_launched
-      } else if (key === 'launch_date') {
-        valA = a.launch_date
-        valB = b.launch_date
-      } else if (key === 'created_at') {
-        valA = a.created_at
-        valB = b.created_at
       } else {
-        valA = ''
-        valB = ''
+        valA = (a as any)[key]
+        valB = (b as any)[key]
       }
-      // Handle undefined/null
       if (valA == null && valB == null) return 0
       if (valA == null) return 1
       if (valB == null) return -1
-      // Handle boolean
-      if (typeof valA === 'boolean' && typeof valB === 'boolean') {
-        return sortDirection.value === 'asc'
-          ? Number(valA) - Number(valB)
-          : Number(valB) - Number(valA)
-      }
-      // Handle date
-      if (key === 'launch_date' || key === 'created_at') {
-        return sortDirection.value === 'asc'
-          ? new Date(valA as string).getTime() - new Date(valB as string).getTime()
-          : new Date(valB as string).getTime() - new Date(valA as string).getTime()
-      }
-      // Default string/number
       if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
       if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
       return 0
