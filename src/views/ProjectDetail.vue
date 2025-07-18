@@ -233,14 +233,15 @@
   const hasUnsavedChanges = computed(() => {
     if (mode.value === 'view') return false
 
-    // For create mode, any non-empty field indicates changes
+    // For create mode, compare with default values
     if (mode.value === 'create') {
+      const defaultValues = getDefaultFormValues()
       return (
-        editForm.value.internal_name.trim() !== '' ||
-        editForm.value.backward_compatibility.trim() !== '' ||
-        editForm.value.launch_date.trim() !== '' ||
-        editForm.value.context_id !== '' ||
-        editForm.value.language_id !== ''
+        editForm.value.internal_name !== defaultValues.internal_name ||
+        editForm.value.backward_compatibility !== defaultValues.backward_compatibility ||
+        editForm.value.launch_date !== defaultValues.launch_date ||
+        editForm.value.context_id !== defaultValues.context_id ||
+        editForm.value.language_id !== defaultValues.language_id
       )
     }
 
@@ -325,6 +326,26 @@
   }
 
   // Action handlers
+  const cancelAction = async () => {
+    if (mode.value === 'create') {
+      // Navigate back to projects list
+      router.push('/projects')
+      return
+    }
+
+    if (mode.value === 'edit') {
+      // "Navigate" back to project detail in view mode
+      enterViewMode()
+
+      // Remove edit query parameter if present
+      if (route.query.edit) {
+        const query = { ...route.query }
+        delete query.edit
+        router.replace({ query })
+      }
+    }
+  }
+
   const saveProject = async () => {
     try {
       loadingStore.show('Saving...')
@@ -341,9 +362,13 @@
         const newProject = await projectStore.createProject(projectData)
         errorStore.addMessage('info', 'Project created successfully.')
 
-        // Navigate to the new project's detail page in view mode
-        await router.replace(`/projects/${newProject.id}`)
-        mode.value = 'view'
+        // Load the new project and enter view mode
+        await projectStore.fetchProject(newProject.id)
+        enterViewMode()
+
+        //// Navigate to the new project's detail page in view mode
+        //await router.replace(`/projects/${newProject.id}`)
+        //mode.value = 'view'
       } else if (mode.value === 'edit' && project.value) {
         // Update existing project
         await projectStore.updateProject(project.value.id, projectData)
@@ -366,46 +391,6 @@
       )
     } finally {
       loadingStore.hide()
-    }
-  }
-
-  const cancelAction = async () => {
-    if (mode.value === 'create') {
-      /* -- Explicit click on "Cancel" does not trigger hasUnsavedChanges check
-      // For create mode, check if there are unsaved changes
-      if (hasUnsavedChanges.value) {
-        const result = await cancelChangesStore.trigger(
-          'New Project has unsaved changes',
-          'There are unsaved changes to this new project. If you navigate away, the changes will be lost. Are you sure you want to navigate away? This action cannot be undone.'
-        )
-        if (result === 'stay') return
-      }*/
-
-      // Navigate back to projects list
-      router.push('/projects')
-      return
-    }
-
-    if (mode.value === 'edit') {
-      /* -- Explicit click on "Cancel" does not trigger hasUnsavedChanges check
-      // For edit mode, check if there are unsaved changes
-      if (hasUnsavedChanges.value) {
-        const result = await cancelChangesStore.trigger(
-          'Project has unsaved changes',
-          `There are unsaved changes to "${project.value?.internal_name}". If you navigate away, the changes will be lost. Are you sure you want to navigate away? This action cannot be undone.`
-        )
-        if (result === 'stay') return
-      }*/
-
-      // "Navigate" back to project detail in view mode
-      enterViewMode()
-
-      // Remove edit query parameter if present
-      if (route.query.edit) {
-        const query = { ...route.query }
-        delete query.edit
-        router.replace({ query })
-      }
     }
   }
 
