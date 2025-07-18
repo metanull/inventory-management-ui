@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center">
-    <div class="flex-shrink-0 h-10 w-10">
+    <div class="flex-shrink-0 h-10 w-10 hidden sm:flex">
       <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
         <slot name="icon">
           <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
