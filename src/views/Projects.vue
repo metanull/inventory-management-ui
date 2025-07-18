@@ -25,23 +25,17 @@
     <!-- Filter Buttons -->
     <template #filters>
       <FilterButton
-        label="Visible"
-        :is-active="filterMode === 'visible'"
-        :count="visibleProjects.length"
-        variant="primary"
-        @click="filterMode = 'visible'"
-      />
-      <FilterButton
         label="All Projects"
         :is-active="filterMode === 'all'"
         :count="projects.length"
+        variant="primary"
         @click="filterMode = 'all'"
       />
       <FilterButton
         label="Enabled"
         :is-active="filterMode === 'enabled'"
         :count="enabledProjects.length"
-        variant="success"
+        variant="info"
         @click="filterMode = 'enabled'"
       />
       <FilterButton
@@ -50,6 +44,13 @@
         :count="launchedProjects.length"
         variant="info"
         @click="filterMode = 'launched'"
+      />
+      <FilterButton
+        label="Visible"
+        :is-active="filterMode === 'visible'"
+        :count="visibleProjects.length"
+        variant="success"
+        @click="filterMode = 'visible'"
       />
     </template>
 
@@ -155,7 +156,7 @@
   const launchedProjects = computed(() => projectStore.launchedProjects)
 
   // Filter state - default to 'visible'
-  const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('visible')
+  const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('all')
 
   // Computed filtered projects
   const filteredProjects = computed(() => {
@@ -175,10 +176,10 @@
   onMounted(async () => {
     try {
       loadingStore.show()
-      // Fetch visible projects first (default filter)
-      await projectStore.fetchEnabledProjects()
       // Also fetch all projects for other filters
       await projectStore.fetchProjects()
+      // Fetch visible projects
+      await projectStore.fetchEnabledProjects()
     } catch (error) {
       console.error('Failed to fetch projects:', error)
       errorStore.addMessage('error', 'Failed to fetch projects. Please try again.')
