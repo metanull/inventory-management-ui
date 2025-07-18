@@ -18,8 +18,16 @@
     </div>
 
     <!-- Filter Buttons -->
-    <div v-if="(filters && filters.length > 0) || $slots.filters" class="mt-6 flex space-x-1">
-      <slot name="filters" />
+    <div
+      v-if="(filters && filters.length > 0) || $slots.filters || $slots.search"
+      class="mt-6 flex justify-between items-center"
+    >
+      <div class="flex space-x-1">
+        <slot name="filters" />
+      </div>
+      <div v-if="$slots.search" class="flex-shrink-0">
+        <slot name="search" />
+      </div>
     </div>
 
     <!-- Empty State -->
