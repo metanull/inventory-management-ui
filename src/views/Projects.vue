@@ -180,7 +180,7 @@
   import TableCell from '@/components/format/table/TableCell.vue'
   import ToggleSmall from '@/components/format/ToggleSmall.vue'
   import InternalNameSmall from '@/components/format/InternalNameSmall.vue'
-  import ProjectIcon from '@/components/icons/ProjectIcon.vue'
+  import { FolderIcon as ProjectIcon } from '@heroicons/vue/24/solid'
   import SearchControl from '@/components/layout/list/SearchControl.vue'
 
   const router = useRouter()

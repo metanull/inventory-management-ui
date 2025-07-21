@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
   import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
-  import ExclamationTriangleIcon from '@/components/icons/ExclamationTriangleIcon.vue'
+  import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid'
   import ModalOverlay from '@/components/global/ModalOverlay.vue'
   import { ref, watch, nextTick } from 'vue'
 

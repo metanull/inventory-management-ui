@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import SearchControl from '../../../layout/list/SearchControl.vue'
 
-// Mock SearchIcon component
-vi.mock('@/components/icons/SearchIcon.vue', () => ({
-  default: {
-    name: 'SearchIcon',
-    template: '<div class="mock-search-icon">🔍</div>',
+vi.mock('@heroicons/vue/24/outline', () => ({
+  MagnifyingGlassIcon: {
+    name: 'MagnifyingGlassIcon',
+    template: '<div class="mock-search-icon h-5 w-5">🔍</div>',
   },
 }))
+
+import SearchControl from '../../../layout/list/SearchControl.vue'
 
 describe('SearchControl', () => {
   it('renders correctly with default props', () => {
@@ -136,10 +136,10 @@ describe('SearchControl', () => {
     expect(button.classes()).toContain('focus:ring-offset-2')
   })
 
-  it('renders SearchIcon component', () => {
+  it('renders MagnifyingGlassIcon component', () => {
     const wrapper = mount(SearchControl)
 
-    const searchIcon = wrapper.findComponent({ name: 'SearchIcon' })
+    const searchIcon = wrapper.findComponent({ name: 'MagnifyingGlassIcon' })
     expect(searchIcon.exists()).toBe(true)
   })
 

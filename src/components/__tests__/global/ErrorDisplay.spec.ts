@@ -5,25 +5,16 @@ import ErrorDisplay from '../../global/ErrorDisplay.vue'
 import { useErrorDisplayStore } from '@/stores/errorDisplay'
 
 // Mock the icons to avoid import issues
-vi.mock('@/components/icons/ExclamationTriangleIcon.vue', () => ({
-  default: {
+vi.mock('@heroicons/vue/24/solid', () => ({
+  ExclamationTriangleIcon: {
     name: 'ExclamationTriangleIcon',
-    template: '<div class="mock-exclamation-icon h-5 w-5" aria-hidden="true">!</div>',
+    template: '<div class="mock-exclamation-icon" />',
   },
-}))
-
-vi.mock('@/components/icons/InformationCircleIcon.vue', () => ({
-  default: {
+  InformationCircleIcon: {
     name: 'InformationCircleIcon',
-    template: '<div class="mock-info-icon h-5 w-5" aria-hidden="true">i</div>',
+    template: '<div class="mock-info-icon" />',
   },
-}))
-
-vi.mock('@/components/icons/XMarkIcon.vue', () => ({
-  default: {
-    name: 'XMarkIcon',
-    template: '<div class="mock-x-icon h-5 w-5" aria-hidden="true">x</div>',
-  },
+  XMarkIcon: { name: 'XMarkIcon', template: '<div class="mock-x-icon" />' },
 }))
 
 describe('ErrorDisplay', () => {

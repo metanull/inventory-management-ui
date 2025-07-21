@@ -31,10 +31,10 @@ vi.mock('@/components/format/table/TableElement.vue', () => ({
   },
 }))
 
-vi.mock('@/components/icons/GenericIcon.vue', () => ({
-  default: {
-    name: 'GenericIcon',
-    template: '<div class="mock-generic-icon">Generic Icon</div>',
+vi.mock('@heroicons/vue/24/outline', () => ({
+  FolderIcon: {
+    name: 'FolderIcon',
+    template: '<div class="mock-generic-icon mx-auto h-12 w-12 text-gray-400">📁</div>',
   },
 }))
 
@@ -239,7 +239,7 @@ describe('ListView', () => {
     it('renders generic icon in empty state when no icon slot is provided', () => {
       const wrapper = createWrapper({ isEmpty: true })
 
-      expect(wrapper.findComponent({ name: 'GenericIcon' }).exists()).toBe(true)
+      expect(wrapper.findComponent({ name: 'FolderIcon' }).exists()).toBe(true)
     })
 
     it('does not display content table when isEmpty is true', () => {

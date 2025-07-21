@@ -103,14 +103,16 @@
   import StatusCard from '@/components/format/card/StatusCard.vue'
   import InformationCard from '@/components/format/card/InformationCard.vue'
   import Title from '@/components/format/title/Title.vue'
-  import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
-  import XCircleIcon from '@/components/icons/XCircleIcon.vue'
-  import LanguageIcon from '@/components/icons/LanguageIcon.vue'
-  import CountryIcon from '@/components/icons/CountryIcon.vue'
-  import ContextIcon from '@/components/icons/ContextIcon.vue'
-  import ProjectIcon from '@/components/icons/ProjectIcon.vue'
-  import SystemIcon from '@/components/icons/SystemIcon.vue'
-  import FeaturesIcon from '@/components/icons/FeaturesIcon.vue'
+  import {
+    CheckCircleIcon,
+    XCircleIcon,
+    LanguageIcon,
+    GlobeAltIcon as CountryIcon,
+    ServerIcon as ContextIcon,
+    FolderIcon as ProjectIcon,
+    CpuChipIcon as SystemIcon,
+    AdjustmentsHorizontalIcon as FeaturesIcon,
+  } from '@heroicons/vue/24/solid'
   import { useApiStatus } from '@/composables/useApiStatus'
 
   const { isApiUp, loading: apiLoading, checkApiStatus } = useApiStatus()

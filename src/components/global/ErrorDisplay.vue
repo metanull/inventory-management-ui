@@ -55,9 +55,11 @@
 
 <script setup lang="ts">
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
-  import ExclamationTriangleIcon from '@/components/icons/ExclamationTriangleIcon.vue'
-  import InformationCircleIcon from '@/components/icons/InformationCircleIcon.vue'
-  import XMarkIcon from '@/components/icons/XMarkIcon.vue'
+  import {
+    ExclamationTriangleIcon,
+    InformationCircleIcon,
+    XMarkIcon,
+  } from '@heroicons/vue/24/solid'
 
   const errorStore = useErrorDisplayStore()
 </script>

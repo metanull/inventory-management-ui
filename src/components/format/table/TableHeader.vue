@@ -8,15 +8,15 @@
     <div class="flex items-center">
       <slot />
       <span v-if="sortable" class="ml-2">
-        <SortAscIcon
+        <ChevronUpIcon
           v-if="sortDirection && sortDirection === 'asc'"
           class="h-4 w-4 text-blue-500"
         />
-        <SortDescIcon
+        <ChevronDownIcon
           v-else-if="sortDirection && sortDirection === 'desc'"
           class="h-4 w-4 text-blue-500"
         />
-        <SortIcon v-else class="h-4 w-4 text-blue-500" />
+        <ChevronUpDownIcon v-else class="h-4 w-4 text-blue-500" />
       </span>
     </div>
   </th>
@@ -24,9 +24,7 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import SortIcon from '@/components/icons/SortIcon.vue'
-  import SortAscIcon from '@/components/icons/SortAscIcon.vue'
-  import SortDescIcon from '@/components/icons/SortDescIcon.vue'
+  import { ChevronUpIcon, ChevronDownIcon, ChevronUpDownIcon } from '@heroicons/vue/24/outline'
 
   defineEmits(['sort'])
 

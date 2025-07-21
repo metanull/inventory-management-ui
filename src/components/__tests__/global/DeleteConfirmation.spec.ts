@@ -4,11 +4,12 @@ import { createTestingPinia } from '@pinia/testing'
 import DeleteConfirmation from '../../global/DeleteConfirmation.vue'
 import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
 
-// Mock the icons to avoid import issues
-vi.mock('@/components/icons/ExclamationTriangleIcon.vue', () => ({
-  default: {
+// Mock the HeroIcons to avoid import issues
+vi.mock('@heroicons/vue/24/solid', () => ({
+  ExclamationTriangleIcon: {
     name: 'ExclamationTriangleIcon',
-    template: '<div class="mock-exclamation-icon h-6 w-6 text-red-600" aria-hidden="true">!</div>',
+    template:
+      '<div class="mock-exclamation-icon h-6 w-6 text-yellow-600" aria-hidden="true">!</div>',
   },
 }))
 

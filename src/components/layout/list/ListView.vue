@@ -35,7 +35,7 @@
       <div v-if="$slots.icon" :class="iconClasses" class="mx-auto h-12 w-12 mb-4">
         <slot name="icon" />
       </div>
-      <GenericIcon v-else />
+      <FolderIcon v-else class="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
       <Title variant="empty" :description="emptyMessage">
         {{ emptyTitle }}
       </Title>
@@ -71,7 +71,7 @@
   import AddButton from '@/components/layout/list/AddButton.vue'
   import Title from '@/components/format/title/Title.vue'
   import TableElement from '@/components/format/table/TableElement.vue'
-  import GenericIcon from '@/components/icons/GenericIcon.vue'
+  import { FolderIcon } from '@heroicons/vue/24/outline'
 
   const props = defineProps<{
     title: string

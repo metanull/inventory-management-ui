@@ -132,11 +132,13 @@
   import DescriptionRow from '@/components/format/description/DescriptionRow.vue'
   import DescriptionTerm from '@/components/format/description/DescriptionTerm.vue'
   import DescriptionDetail from '@/components/format/description/DescriptionDetail.vue'
-  import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
-  import XCircleIcon from '@/components/icons/XCircleIcon.vue'
-  import RocketIcon from '@/components/icons/RocketIcon.vue'
-  import PackageIcon from '@/components/icons/PackageIcon.vue'
-  import ProjectIcon from '@/components/icons/ProjectIcon.vue'
+  import {
+    CheckCircleIcon,
+    XCircleIcon,
+    RocketLaunchIcon as RocketIcon,
+    ArchiveBoxIcon as PackageIcon,
+    FolderIcon as ProjectIcon,
+  } from '@heroicons/vue/24/solid'
 
   // Types
   type Mode = 'view' | 'edit' | 'create'

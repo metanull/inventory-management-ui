@@ -24,20 +24,10 @@
               @click="toggleDropdown"
             >
               Reference Data
-              <svg
+              <ChevronDownIcon
                 class="w-4 h-4 transition-transform"
                 :class="{ 'rotate-180': isDropdownOpen }"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                ></path>
-              </svg>
+              />
             </button>
 
             <div
@@ -95,28 +85,8 @@
             class="text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 p-2"
             @click="toggleMobileMenu"
           >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                v-if="!isMobileMenuOpen"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              ></path>
-              <path
-                v-else
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
+            <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" />
+            <XMarkIcon v-else class="w-6 h-6" />
           </button>
         </div>
       </div>
@@ -139,20 +109,10 @@
               @click="toggleMobileDropdown"
             >
               Reference Data
-              <svg
+              <ChevronDownIcon
                 class="w-4 h-4 transition-transform"
                 :class="{ 'rotate-180': isMobileDropdownOpen }"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                ></path>
-              </svg>
+              />
             </button>
 
             <div v-if="isMobileDropdownOpen" class="mt-2 space-y-2 pl-4 border-l-2 border-gray-200">
@@ -205,6 +165,7 @@
   import { ref } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/auth'
+  import { ChevronDownIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 
   const router = useRouter()
   const authStore = useAuthStore()

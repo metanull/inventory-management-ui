@@ -7,14 +7,7 @@
         class="flex items-center gap-2 text-blue-600 hover:text-blue-800"
         @click="router.push('/countries')"
       >
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          ></path>
-        </svg>
+        <ArrowLeftIcon class="h-4 w-4" />
         Back to Countries
       </button>
     </div>
@@ -61,14 +54,7 @@
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
             @click="openEditModal"
           >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              ></path>
-            </svg>
+            <PencilIcon class="h-4 w-4" />
             Edit Country
           </button>
         </div>
@@ -207,6 +193,7 @@
   import { useCountryStore } from '@/stores/country'
   import CountryForm from '@/components/_obsolete/CountryForm.vue'
   import DateDisplay from '@/components/format/Date.vue'
+  import { ArrowLeftIcon, PencilIcon } from '@heroicons/vue/24/outline'
 
   const router = useRouter()
   const route = useRoute()

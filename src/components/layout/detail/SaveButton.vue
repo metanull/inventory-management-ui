@@ -4,19 +4,13 @@
     :disabled="disabled || loading"
     @click="!disabled && !loading && $emit('click')"
   >
-    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M5 13l4 4L19 7"
-      ></path>
-    </svg>
+    <CheckIcon class="h-4 w-4 mr-2" />
     {{ label || 'Save' }}
   </button>
 </template>
 
 <script setup lang="ts">
+  import { CheckIcon } from '@heroicons/vue/24/outline'
   defineProps<{
     disabled?: boolean
     loading?: boolean
