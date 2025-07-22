@@ -116,18 +116,20 @@
         @click="openProjectDetail(project.id)"
       >
         <TableCell>
-          <InternalNameSmall
+          <InternalName
+            small
             :internal-name="project.internal_name"
             :backward-compatibility="project.backward_compatibility"
           >
             <template #icon>
               <ProjectIcon class="h-5 w-5 text-gray-600" />
             </template>
-          </InternalNameSmall>
+          </InternalName>
         </TableCell>
         <TableCell class="hidden md:table-cell">
           <div @click.stop>
-            <ToggleSmall
+            <Toggle
+              small
               title="Enabled"
               :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
               :is-active="project.is_enabled"
@@ -137,7 +139,8 @@
         </TableCell>
         <TableCell class="hidden md:table-cell">
           <div @click.stop>
-            <ToggleSmall
+            <Toggle
+              small
               title="Launched"
               :status-text="project.is_launched ? 'Launched' : 'Not launched'"
               :is-active="project.is_launched"
@@ -187,8 +190,8 @@
   import TableHeader from '@/components/format/table/TableHeader.vue'
   import TableRow from '@/components/format/table/TableRow.vue'
   import TableCell from '@/components/format/table/TableCell.vue'
-  import ToggleSmall from '@/components/format/ToggleSmall.vue'
-  import InternalNameSmall from '@/components/format/InternalNameSmall.vue'
+  import Toggle from '@/components/format/Toggle.vue'
+  import InternalName from '@/components/format/InternalName.vue'
   import { FolderIcon as ProjectIcon } from '@heroicons/vue/24/solid'
   import SearchControl from '@/components/layout/list/SearchControl.vue'
 

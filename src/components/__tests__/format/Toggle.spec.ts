@@ -191,4 +191,94 @@ describe('Toggle', () => {
     const button = wrapper.find('button')
     expect(button.exists()).toBe(true)
   })
+
+  // Small variant tests
+  describe('Small variant', () => {
+    const smallProps = {
+      title: 'Test Toggle',
+      statusText: 'Enabled',
+      isActive: true,
+      small: true,
+    }
+
+    it('renders small variant correctly', () => {
+      const wrapper = mount(Toggle, {
+        props: smallProps,
+      })
+
+      expect(wrapper.exists()).toBe(true)
+      // Should not have card styling in small mode
+      expect(wrapper.find('.bg-white.overflow-hidden.shadow.rounded-lg').exists()).toBe(false)
+      // Should have centered layout
+      expect(wrapper.find('.flex.items-center.justify-center').exists()).toBe(true)
+    })
+
+    it('displays only toggle button in small mode', () => {
+      const wrapper = mount(Toggle, {
+        props: smallProps,
+      })
+
+      expect(wrapper.text()).not.toContain('Test Toggle')
+      expect(wrapper.text()).not.toContain('Enabled')
+
+      const button = wrapper.find('button')
+      expect(button.exists()).toBe(true)
+    })
+
+    it('has tooltip with title and status in small mode', () => {
+      const wrapper = mount(Toggle, {
+        props: smallProps,
+      })
+
+      const button = wrapper.find('button')
+      expect(button.attributes('title')).toBe('Test Toggle: Enabled')
+      expect(button.attributes('aria-label')).toBe('Toggle test toggle')
+    })
+
+    it('emits toggle event when clicked in small mode', () => {
+      const wrapper = mount(Toggle, {
+        props: smallProps,
+      })
+
+      const button = wrapper.find('button')
+      button.trigger('click')
+
+      expect(wrapper.emitted().toggle).toHaveLength(1)
+    })
+
+    it('shows correct toggle state in small mode', () => {
+      const wrapper = mount(Toggle, {
+        props: { ...smallProps, isActive: true },
+      })
+
+      const button = wrapper.find('button')
+      expect(button.classes()).toContain('bg-indigo-600')
+
+      const wrapper2 = mount(Toggle, {
+        props: { ...smallProps, isActive: false },
+      })
+
+      const button2 = wrapper2.find('button')
+      expect(button2.classes()).toContain('bg-gray-200')
+    })
+
+    it('disables button when disabled prop is true in small mode', () => {
+      const wrapper = mount(Toggle, {
+        props: { ...smallProps, disabled: true },
+      })
+
+      const button = wrapper.find('button')
+      expect(button.attributes('disabled')).toBeDefined()
+      expect(button.classes()).toContain('disabled:opacity-50')
+    })
+
+    it('disables button when loading prop is true in small mode', () => {
+      const wrapper = mount(Toggle, {
+        props: { ...smallProps, loading: true },
+      })
+
+      const button = wrapper.find('button')
+      expect(button.attributes('disabled')).toBeDefined()
+    })
+  })
 })

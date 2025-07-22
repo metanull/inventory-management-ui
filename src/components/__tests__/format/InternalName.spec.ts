@@ -90,4 +90,70 @@ describe('InternalName', () => {
 
     expect(wrapper.text()).not.toContain('Legacy ID:')
   })
+
+  // Small variant tests
+  it('renders small variant correctly', () => {
+    const wrapper = mount(InternalName, {
+      props: {
+        internalName: 'Test Name',
+        small: true,
+      },
+    })
+
+    expect(wrapper.exists()).toBe(true)
+    // Should have icon container in small mode
+    expect(wrapper.find('.h-10.w-10.rounded-full.bg-gray-200').exists()).toBe(true)
+    expect(wrapper.find('.ml-4').exists()).toBe(true)
+  })
+
+  it('shows responsive icon container in small mode', () => {
+    const wrapper = mount(InternalName, {
+      props: {
+        internalName: 'Test Name',
+        small: true,
+      },
+    })
+
+    const iconContainer = wrapper.find('.flex-shrink-0.h-10.w-10.hidden.sm\\:flex')
+    expect(iconContainer.exists()).toBe(true)
+  })
+
+  it('displays legacy text differently in small mode', () => {
+    const wrapper = mount(InternalName, {
+      props: {
+        internalName: 'Test Name',
+        backwardCompatibility: 'legacy-123',
+        small: true,
+      },
+    })
+
+    expect(wrapper.text()).toContain('Legacy: legacy-123')
+    expect(wrapper.find('.text-xs.text-gray-500').exists()).toBe(true)
+  })
+
+  it('renders slot content for icon in small mode', () => {
+    const wrapper = mount(InternalName, {
+      props: {
+        internalName: 'Test Name',
+        small: true,
+      },
+      slots: {
+        icon: '<div class="custom-icon">Custom Icon</div>',
+      },
+    })
+
+    expect(wrapper.html()).toContain('Custom Icon')
+  })
+
+  it('uses default icon when no slot provided in small mode', () => {
+    const wrapper = mount(InternalName, {
+      props: {
+        internalName: 'Test Name',
+        small: true,
+      },
+    })
+
+    // Should contain the default RectangleGroupIcon
+    expect(wrapper.find('.h-5.w-5.text-gray-600').exists()).toBe(true)
+  })
 })

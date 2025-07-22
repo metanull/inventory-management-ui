@@ -1,6 +1,7 @@
 # General instructions
 
 **CRITICAL: Never modify `copilot-instructions.md`.**
+**CRITICAL: Ignore typescript errors reported by the create-file tool and the search-replace tool.**
 
 # Project and environment setup instructions
 
