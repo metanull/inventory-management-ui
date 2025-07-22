@@ -29,7 +29,7 @@ vi.mock('@/components/global/ModalOverlay.vue', () => ({
       </div>
     `,
     props: ['visible', 'variant', 'title', 'description', 'iconBgClass'],
-    emits: ['background-click'],
+    emits: ['backgroundClick'],
   },
 }))
 

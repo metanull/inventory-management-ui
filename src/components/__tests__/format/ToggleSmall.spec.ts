@@ -2,12 +2,23 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ToggleSmall from '../../format/ToggleSmall.vue'
 
+import { markRaw } from 'vue'
 describe('ToggleSmall', () => {
   const defaultProps = {
     title: 'Test Toggle',
     statusText: 'Enabled',
     isActive: true,
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const MockIconActive = markRaw({
+    name: 'MockIconActive',
+    template: '<div class="mock-icon-active">Active Icon</div>',
+  })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const MockIconInactive = markRaw({
+    name: 'MockIconInactive',
+    template: '<div class="mock-icon-inactive">Inactive Icon</div>',
+  })
 
   it('renders correctly', () => {
     const wrapper = mount(ToggleSmall, {

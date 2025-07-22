@@ -1,17 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Toggle from '../../format/Toggle.vue'
+import { markRaw } from 'vue'
 
 // Simple mock components for icons
-const MockIconActive = {
+const MockIconActive = markRaw({
   name: 'MockIconActive',
   template: '<div class="mock-icon-active">Active Icon</div>',
-}
+})
 
-const MockIconInactive = {
+const MockIconInactive = markRaw({
   name: 'MockIconInactive',
   template: '<div class="mock-icon-inactive">Inactive Icon</div>',
-}
+})
 
 describe('Toggle', () => {
   const defaultProps = {
