@@ -264,8 +264,8 @@ describe('DetailView', () => {
     it('displays edit mode indicator in header', () => {
       const wrapper = createWrapper({ mode: 'edit' })
 
-      expect(wrapper.html()).toContain('(Editing)')
-      expect(wrapper.find('.text-sm.font-normal.text-blue-600.ml-2').exists()).toBe(true)
+      expect(wrapper.html()).toContain('Editing')
+      expect(wrapper.find('.bg-blue-100.text-blue-800').exists()).toBe(true)
     })
 
     it('shows save and cancel buttons in edit mode', () => {
@@ -314,15 +314,15 @@ describe('DetailView', () => {
       expect(wrapper.emitted('cancel')).toHaveLength(1)
     })
 
-    it('makes status cards non-interactive in edit mode', () => {
+    it('hides status cards in edit mode', () => {
       const wrapper = createWrapper({
         mode: 'edit',
         statusCards: [mockStatusCard],
       })
 
+      // Status cards should be hidden in edit mode
       const statusCardsContainer = wrapper.find('.grid.grid-cols-1.gap-4.sm\\:grid-cols-2')
-      expect(statusCardsContainer.classes()).toContain('opacity-50')
-      expect(statusCardsContainer.classes()).toContain('pointer-events-none')
+      expect(statusCardsContainer.exists()).toBe(false)
     })
   })
 
@@ -342,8 +342,10 @@ describe('DetailView', () => {
         resource: null,
       })
 
-      const title = wrapper.findComponent({ name: 'Title' })
-      expect(title.text()).toBe('New Record (Creating)')
+      // Title should just contain "New Record", not include (Creating)
+      expect(wrapper.text()).toContain('New Record')
+      // Creating indicator should be in a separate pill
+      expect(wrapper.html()).toContain('Creating')
     })
 
     it('uses custom create title when provided', () => {
@@ -353,8 +355,10 @@ describe('DetailView', () => {
         createTitle: 'New Test Item',
       })
 
-      const title = wrapper.findComponent({ name: 'Title' })
-      expect(title.text()).toBe('New Test Item (Creating)')
+      // Title should just contain the custom title, not include (Creating)
+      expect(wrapper.text()).toContain('New Test Item')
+      // Creating indicator should be in a separate pill
+      expect(wrapper.html()).toContain('Creating')
     })
 
     it('displays create mode indicator in header', () => {
@@ -363,7 +367,8 @@ describe('DetailView', () => {
         resource: null,
       })
 
-      expect(wrapper.html()).toContain('(Creating)')
+      expect(wrapper.html()).toContain('Creating')
+      expect(wrapper.find('.bg-green-100.text-green-800').exists()).toBe(true)
     })
 
     it('hides status cards in create mode', () => {

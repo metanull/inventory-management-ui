@@ -1,28 +1,37 @@
 <template>
   <div class="flex items-center">
-    <div v-if="small" class="flex-shrink-0 h-10 w-10 hidden sm:flex">
-      <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-        <slot name="icon">
-          <RectangleGroupIcon class="h-5 w-5 text-gray-600" />
-        </slot>
-      </div>
+    <!-- Icon for both small and regular modes -->
+    <div class="flex-shrink-0" :class="small ? 'mr-2' : 'mr-3'">
+      <slot name="icon">
+        <RectangleGroupIcon :class="small ? 'h-5 w-5' : 'h-6 w-6'" class="text-gray-600" />
+      </slot>
     </div>
-    <div :class="small ? 'ml-4' : ''">
-      <div class="text-sm font-medium text-gray-900">
-        {{ internalName }}
-      </div>
-      <div
-        v-if="backwardCompatibility"
-        :class="small ? 'text-xs text-gray-500' : 'text-sm text-gray-500'"
-      >
-        {{ small ? 'Legacy:' : 'Legacy ID:' }} {{ backwardCompatibility }}
-      </div>
+    <div>
+      <!-- Use Title component when small is not set -->
+      <template v-if="!small">
+        <Title
+          variant="page"
+          :description="backwardCompatibility ? `Legacy ID: ${backwardCompatibility}` : undefined"
+        >
+          {{ internalName }}
+        </Title>
+      </template>
+      <!-- Use simple text when small is set -->
+      <template v-else>
+        <div class="text-sm font-medium text-gray-900">
+          {{ internalName }}
+        </div>
+        <div v-if="backwardCompatibility" class="text-xs text-gray-500">
+          Legacy: {{ backwardCompatibility }}
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
   import { RectangleGroupIcon } from '@heroicons/vue/24/outline'
+  import Title from '@/components/format/title/Title.vue'
 
   interface Props {
     internalName: string

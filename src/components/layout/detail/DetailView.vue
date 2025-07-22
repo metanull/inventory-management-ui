@@ -22,22 +22,37 @@
                 </router-link>
               </div>
 
-              <Title
-                variant="page"
-                :description="
-                  resource?.backward_compatibility
-                    ? `Legacy ID: ${resource.backward_compatibility}`
-                    : undefined
-                "
-              >
-                {{ headerTitle }}
-                <span v-if="mode === 'create'" class="text-sm font-normal text-blue-600 ml-2"
-                  >(Creating)</span
+              <!-- Title Section -->
+              <div class="flex items-center gap-3">
+                <InternalName
+                  :internal-name="
+                    mode === 'create' ? createTitle || 'New Record' : resource?.internal_name || ''
+                  "
+                  :backward-compatibility="
+                    mode !== 'create' ? resource?.backward_compatibility : undefined
+                  "
                 >
-                <span v-else-if="mode === 'edit'" class="text-sm font-normal text-blue-600 ml-2"
-                  >(Editing)</span
+                  <template #icon>
+                    <slot name="resource-icon" />
+                  </template>
+                </InternalName>
+
+                <!-- Mode Indicator Pills -->
+                <div
+                  v-if="mode === 'edit'"
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium"
                 >
-              </Title>
+                  <PencilIcon class="h-4 w-4" />
+                  Editing
+                </div>
+                <div
+                  v-else-if="mode === 'create'"
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium"
+                >
+                  <PlusIcon class="h-4 w-4" />
+                  Creating
+                </div>
+              </div>
             </div>
             <div class="flex space-x-3">
               <template v-if="mode === 'view'">
@@ -53,11 +68,10 @@
         </div>
       </div>
 
-      <!-- Status Cards (hidden during creation) -->
+      <!-- Status Cards (hidden during creation and editing) -->
       <div
-        v-if="statusCards && statusCards.length > 0 && mode !== 'create'"
+        v-if="statusCards && statusCards.length > 0 && mode === 'view'"
         class="grid grid-cols-1 gap-4 sm:grid-cols-2"
-        :class="{ 'opacity-50 pointer-events-none': mode === 'edit' }"
       >
         <StatusCard
           v-for="(card, index) in statusCards"
@@ -70,6 +84,7 @@
           :is-active="card.isActive"
           :loading="card.loading"
           :disabled="card.disabled"
+          :compact="true"
           :active-icon-background-class="card.activeIconBackgroundClass"
           :inactive-icon-background-class="card.inactiveIconBackgroundClass"
           :active-icon-class="card.activeIconClass"
@@ -113,6 +128,8 @@
   import StatusCard from '@/components/format/card/StatusCard.vue'
   import SystemProperties from '@/components/layout/detail/SystemProperties.vue'
   import Title from '@/components/format/title/Title.vue'
+  import InternalName from '@/components/format/InternalName.vue'
+  import { PencilIcon, PlusIcon } from '@heroicons/vue/24/solid'
 
   // Types
   type Mode = 'view' | 'edit' | 'create'
@@ -186,14 +203,6 @@
 
   // Disable save button if no unsaved changes
   const isSaveDisabled = computed(() => !props.hasUnsavedChanges)
-
-  // Header title - use custom title for creation mode or resource name
-  const headerTitle = computed(() => {
-    if (props.mode === 'create') {
-      return props.createTitle || 'New Record'
-    }
-    return props.resource?.internal_name || ''
-  })
 
   // Back link classes for dynamic coloring
   const backLinkClasses = computed(() => {

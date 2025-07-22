@@ -2,6 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import InternalName from '../../format/InternalName.vue'
 
+// Create a mock Title component for testing
+const MockTitle = {
+  name: 'Title',
+  template:
+    '<h2 class="mock-title" :data-description="description">{{ $slots.default()[0].children }}</h2>',
+  props: ['variant', 'description'],
+}
+
 describe('InternalName', () => {
   it('renders correctly', () => {
     const wrapper = mount(InternalName, {
@@ -28,11 +36,17 @@ describe('InternalName', () => {
       props: {
         internalName: 'Test Name',
       },
+      global: {
+        stubs: {
+          Title: MockTitle,
+        },
+      },
     })
 
-    const nameElement = wrapper.find('.text-sm.font-medium.text-gray-900')
-    expect(nameElement.exists()).toBe(true)
-    expect(nameElement.text()).toBe('Test Name')
+    // Should use Title component by default (when small is false)
+    const titleElement = wrapper.findComponent({ name: 'Title' })
+    expect(titleElement.exists()).toBe(true)
+    expect(wrapper.text()).toContain('Test Name')
   })
 
   it('shows backward compatibility when provided', () => {
@@ -52,11 +66,17 @@ describe('InternalName', () => {
         internalName: 'Test Name',
         backwardCompatibility: 'legacy-123',
       },
+      global: {
+        stubs: {
+          Title: MockTitle,
+        },
+      },
     })
 
-    const legacyElement = wrapper.find('.text-sm.text-gray-500')
-    expect(legacyElement.exists()).toBe(true)
-    expect(legacyElement.text()).toBe('Legacy ID: legacy-123')
+    // Should pass legacy info as description to Title component
+    const titleElement = wrapper.findComponent({ name: 'Title' })
+    expect(titleElement.exists()).toBe(true)
+    expect(titleElement.props('description')).toBe('Legacy ID: legacy-123')
   })
 
   it('hides backward compatibility when null', () => {
@@ -101,9 +121,9 @@ describe('InternalName', () => {
     })
 
     expect(wrapper.exists()).toBe(true)
-    // Should have icon container in small mode
-    expect(wrapper.find('.h-10.w-10.rounded-full.bg-gray-200').exists()).toBe(true)
-    expect(wrapper.find('.ml-4').exists()).toBe(true)
+    // Should use direct text elements in small mode, not Title component
+    expect(wrapper.findComponent({ name: 'Title' }).exists()).toBe(false)
+    expect(wrapper.find('.text-sm.font-medium.text-gray-900').exists()).toBe(true)
   })
 
   it('shows responsive icon container in small mode', () => {
@@ -114,8 +134,10 @@ describe('InternalName', () => {
       },
     })
 
-    const iconContainer = wrapper.find('.flex-shrink-0.h-10.w-10.hidden.sm\\:flex')
+    const iconContainer = wrapper.find('.flex-shrink-0')
     expect(iconContainer.exists()).toBe(true)
+    // In small mode, margin should be mr-2
+    expect(iconContainer.classes()).toContain('mr-2')
   })
 
   it('displays legacy text differently in small mode', () => {

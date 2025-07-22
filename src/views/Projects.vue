@@ -122,7 +122,7 @@
             :backward-compatibility="project.backward_compatibility"
           >
             <template #icon>
-              <ProjectIcon class="h-5 w-5 text-gray-600" />
+              <ProjectIcon class="h-5 w-5 text-orange-600" />
             </template>
           </InternalName>
         </TableCell>

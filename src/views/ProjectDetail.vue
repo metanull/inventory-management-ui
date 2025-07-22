@@ -19,6 +19,9 @@
     @delete="deleteProject"
     @status-toggle="handleStatusToggle"
   >
+    <template #resource-icon>
+      <ProjectIcon class="h-6 w-6 text-orange-600" />
+    </template>
     <template #information>
       <DescriptionList>
         <DescriptionRow variant="gray">
@@ -138,6 +141,7 @@
     RocketLaunchIcon as RocketIcon,
     ArchiveBoxIcon as PackageIcon,
     FolderIcon as ProjectIcon,
+    ArrowLeftIcon,
   } from '@heroicons/vue/24/solid'
 
   // Types
@@ -190,7 +194,7 @@
   const backLink = computed(() => ({
     title: 'Back to Projects',
     route: '/projects',
-    icon: ProjectIcon,
+    icon: ArrowLeftIcon,
     color: 'orange',
   }))
 
@@ -482,6 +486,9 @@
 
     try {
       if (isCreateRoute) {
+        // Clear current project to avoid showing stale data from previously viewed projects
+        projectStore.clearCurrentProject()
+
         // For create mode, only fetch dropdown options
         await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])
         enterCreateMode()
