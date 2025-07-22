@@ -12,13 +12,21 @@ A modern, production-ready Vue.js 3 application built with TypeScript that provi
 
 This application serves as the frontend interface for cultural heritage institutions to:
 
-- **Manage Inventory Items**: Catalog and organize cultural objects and monuments
-- **Partner Management**: Handle relationships with museums, institutions, and individuals  
-- **Project Coordination**: Organize collections with launch dates and status tracking
-- **Media Management**: Upload and manage pictures and digital assets
+- **Manage Inventory Items**: Catalog and organize cultural objects and monuments with detailed metadata
+- **Partner Management**: Handle relationships with museums, institutions, and individual collectors  
+- **Project Coordination**: Organize collections with launch dates, status tracking, and publication management
+- **Media Management**: Upload and manage pictures and digital assets for cultural objects
 - **Multilingual Support**: Handle content in multiple languages with proper localization
 - **Geographic Organization**: Organize content by countries and regions
 - **Tagging System**: Categorize and filter items with a flexible tagging system
+
+### Current Implementation Status
+
+Currently, the **Projects** resource is fully implemented with:
+- **Project Management**: Create, view, edit, and delete projects with comprehensive status tracking
+- **Project Status Control**: Enable/disable projects and launch/unlaunch projects with state management
+- **Responsive Data Display**: List view with filtering, sorting, and search capabilities
+- **Inline Editing**: Full inline editing capabilities for project details in detail view
 
 ## 🔗 Related Repositories
 

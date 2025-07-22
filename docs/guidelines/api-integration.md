@@ -7,29 +7,174 @@ parent: Guidelines
 
 # API Integration
 
-The Inventory Management UI is designed to work seamlessly with the [Inventory Management API](https://github.com/metanull/inventory-app). This page documents how the frontend application integrates with the backend services.
+The Inventory Management UI is designed to work seamlessly with the [Inventory Management API](https://github.com/metanull/inventory-app). This page documents how the frontend application integrates with the backend services using the TypeScript client library.
 
 ## 🔗 API Overview
 
-The application communicates with a RESTful API that provides the following resources:
+The application communicates with a RESTful API using the `@metanull/inventory-app-api-client` TypeScript library. This provides:
 
-### Core Resources
+- **Fully typed interfaces** automatically generated from the API specification
+- **Built-in error handling** for common HTTP status codes  
+- **Authentication management** with bearer token support
+- **Request/response serialization** with proper TypeScript types
 
-| Resource | Description | Endpoints |
-|----------|-------------|-----------|
-| **Items** | Inventory objects and monuments | `GET /item`, `POST /item`, `PUT /item/{id}`, `DELETE /item/{id}` |
-| **Partners** | Museums, institutions, and individuals | `GET /partner`, `POST /partner`, `PUT /partner/{id}`, `DELETE /partner/{id}` |
-| **Projects** | Collections with launch dates and status | `GET /project`, `POST /project`, `PUT /project/{id}`, `DELETE /project/{id}` |
-| **Tags** | Categorization system for items | `GET /tag`, `POST /tag`, `PUT /tag/{id}`, `DELETE /tag/{id}` |
-| **Pictures** | Image management with upload capabilities | `GET /picture`, `POST /picture`, `PUT /picture/{id}`, `DELETE /picture/{id}` |
+### Cultural Heritage Resources
+
+| Resource | Description | Implementation Status |
+|----------|-------------|---------------------|
+| **Items** | Cultural objects and monuments with detailed metadata | 🔄 Planned |
+| **Partners** | Museums, institutions, and individual collectors | 🔄 Planned |
+| **Projects** | Collections with launch dates, status tracking, and partner associations | ✅ **Fully implemented** |
+| **Tags** | Flexible categorization system for organizing content | 🔄 Planned |
+| **Pictures** | Image management with upload and organization capabilities | 🔄 Planned |
 
 ### Reference Data
 
-| Resource | Description | Usage |
-|----------|-------------|-------|
-| **Countries** | Country reference data | Used in partner and item forms |
-| **Languages** | Language reference data | Used in project configuration |
-| **Contexts** | Content organization contexts | Used in project and item organization |
+| Resource | Description | Usage Status |
+|----------|-------------|--------------|
+| **Countries** | Geographic reference data with standardized names and codes | 🔄 Available but not actively used |
+| **Languages** | Language reference data for internationalization | 🔄 Available but not actively used |
+| **Contexts** | Content organization and categorization framework | 🔄 Available but not actively used |
+
+### Implementation Architecture
+
+The Projects resource serves as the **reference implementation** demonstrating the complete architecture pattern that will be used for all future resources:
+
+- **List View Pattern**: Responsive tables with filtering, sorting, and search
+- **Detail View Pattern**: Inline editing with status management  
+- **API Integration Pattern**: TypeScript client with error handling
+- **Component Architecture**: Reusable layout and UI components
+- **State Management Pattern**: Pinia stores with reactive updates
+
+## 📦 TypeScript Client Library
+
+The application uses `@metanull/inventory-app-api-client` for all API interactions:
+
+### Installation & Authentication
+
+```bash
+# The client is installed as a dependency
+npm install @metanull/inventory-app-api-client
+
+# Authentication is required for GitHub packages
+npm config set //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
+
+### Client Configuration Pattern
+
+The application uses a centralized API client configuration:
+
+```typescript
+// src/composables/useApiClient.ts
+import { Configuration } from '@metanull/inventory-app-api-client'
+import { useAuthStore } from '@/stores/auth'
+
+export const useApiClient = () => {
+  const authStore = useAuthStore()
+  
+  const getApiClient = () => {
+    return new Configuration({
+      basePath: import.meta.env.VITE_API_BASE_URL,
+      accessToken: authStore.token
+    })
+  }
+  
+  return { getApiClient }
+}
+```
+
+### Store Integration Pattern
+
+Each resource follows this pattern in Pinia stores:
+
+```typescript
+// src/stores/project.ts (reference implementation)
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { ProjectsApi, type Project, type ProjectRequest } from '@metanull/inventory-app-api-client'
+import { useApiClient } from '@/composables/useApiClient'
+
+export const useProjectStore = defineStore('project', () => {
+  // State
+  const projects = ref<Project[]>([])
+  const currentProject = ref<Project | null>(null)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+
+  // API client
+  const { getApiClient } = useApiClient()
+  
+  // Actions with proper error handling
+  const fetchProjects = async () => {
+    loading.value = true
+    error.value = null
+    try {
+      const api = new ProjectsApi(getApiClient())
+      const response = await api.getProjects()
+      projects.value = response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch projects'
+      console.error('Fetch projects error:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const createProject = async (projectData: ProjectRequest): Promise<Project | null> => {
+    loading.value = true
+    error.value = null
+    try {
+      const api = new ProjectsApi(getApiClient())
+      const response = await api.storeProject(projectData)
+      const newProject = response.data
+      projects.value.push(newProject)
+      return newProject
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to create project'
+      console.error('Create project error:', err)
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    projects,
+    currentProject,
+    loading,
+    error,
+    fetchProjects,
+    createProject,
+    // ... other actions
+  }
+})
+```
+
+### Error Handling Patterns
+
+The client library provides structured error responses:
+
+```typescript
+// Standard error handling in stores
+try {
+  const response = await api.getProjects()
+  projects.value = response.data
+} catch (err: any) {
+  if (err.response?.status === 401) {
+    // Unauthorized - redirect to login
+    authStore.logout()
+    router.push('/login')
+  } else if (err.response?.status === 404) {
+    error.value = 'Resource not found'
+  } else if (err.response?.status === 422) {
+    // Validation errors
+    error.value = err.response.data.message || 'Validation failed'
+  } else {
+    error.value = 'An unexpected error occurred'
+  }
+  console.error('API Error:', err)
+}
+```
 
 ## 🔐 Authentication
 
