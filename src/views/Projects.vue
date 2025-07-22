@@ -109,7 +109,12 @@
     </template>
 
     <template #rows>
-      <TableRow v-for="project in filteredProjects" :key="project.id">
+      <TableRow
+        v-for="project in filteredProjects"
+        :key="project.id"
+        class="cursor-pointer hover:bg-orange-50 transition"
+        @click="openProjectDetail(project.id)"
+      >
         <TableCell>
           <InternalNameSmall
             :internal-name="project.internal_name"
@@ -121,20 +126,24 @@
           </InternalNameSmall>
         </TableCell>
         <TableCell class="hidden md:table-cell">
-          <ToggleSmall
-            title="Enabled"
-            :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
-            :is-active="project.is_enabled"
-            @toggle="updateProjectStatus(project, 'is_enabled', !project.is_enabled)"
-          />
+          <div @click.stop>
+            <ToggleSmall
+              title="Enabled"
+              :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
+              :is-active="project.is_enabled"
+              @toggle="updateProjectStatus(project, 'is_enabled', !project.is_enabled)"
+            />
+          </div>
         </TableCell>
         <TableCell class="hidden md:table-cell">
-          <ToggleSmall
-            title="Launched"
-            :status-text="project.is_launched ? 'Launched' : 'Not launched'"
-            :is-active="project.is_launched"
-            @toggle="updateProjectStatus(project, 'is_launched', !project.is_launched)"
-          />
+          <div @click.stop>
+            <ToggleSmall
+              title="Launched"
+              :status-text="project.is_launched ? 'Launched' : 'Not launched'"
+              :is-active="project.is_launched"
+              @toggle="updateProjectStatus(project, 'is_launched', !project.is_launched)"
+            />
+          </div>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
           <DateDisplay
@@ -149,7 +158,7 @@
           <DateDisplay :date="project.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div class="flex space-x-2">
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/projects/${project.id}`)" />
             <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
             <DeleteButton @click="handleDeleteProject(project)" />
@@ -286,6 +295,11 @@
       }
     }
   })
+
+  // Open ProjectDetail for clicked project
+  function openProjectDetail(projectId: string | number) {
+    router.push(`/projects/${projectId}`)
+  }
 
   // Update project status
   const updateProjectStatus = async (project: ProjectResource, field: string, value: boolean) => {
