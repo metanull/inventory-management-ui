@@ -289,8 +289,7 @@
       if (usedCache) {
         errorStore.addMessage('info', 'List refreshed')
       }
-    } catch (error) {
-      console.error('Failed to fetch projects:', error)
+    } catch {
       errorStore.addMessage('error', 'Failed to fetch projects. Please try again.')
     } finally {
       if (!usedCache) {
@@ -315,8 +314,7 @@
         await projectStore.setProjectLaunched(project.id, value)
         errorStore.addMessage('info', `Project ${value ? 'launched' : 'unlaunched'} successfully.`)
       }
-    } catch (error) {
-      console.error(`Failed to update project ${field}:`, error)
+    } catch {
       errorStore.addMessage('error', `Failed to update project status. Please try again.`)
     } finally {
       loadingStore.hide()
@@ -333,8 +331,7 @@
         await projectStore.fetchProjects()
       }
       errorStore.addMessage('info', 'Projects refreshed successfully.')
-    } catch (error) {
-      console.error('Failed to fetch projects:', error)
+    } catch {
       errorStore.addMessage('error', 'Failed to refresh projects. Please try again.')
     } finally {
       loadingStore.hide()
@@ -353,12 +350,29 @@
         loadingStore.show('Deleting...')
         await projectStore.deleteProject(projectToDelete.id)
         errorStore.addMessage('info', 'Project deleted successfully.')
-      } catch (error) {
-        console.error('Failed to delete project:', error)
+      } catch {
         errorStore.addMessage('error', 'Failed to delete project. Please try again.')
       } finally {
         loadingStore.hide()
       }
     }
   }
+
+  // Expose properties for testing
+  defineExpose({
+    projects,
+    filteredProjects,
+    visibleProjects,
+    enabledProjects,
+    launchedProjects,
+    filterMode,
+    searchQuery,
+    sortKey,
+    sortDirection,
+    openProjectDetail,
+    updateProjectStatus,
+    handleDeleteProject,
+    handleSort,
+    fetchProjects,
+  })
 </script>

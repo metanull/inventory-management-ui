@@ -1,19 +1,20 @@
-# General instructions
-
 **CRITICAL: Never modify `copilot-instructions.md`.**
 **CRITICAL: Ignore typescript errors reported by the create-file tool and the apply_patch tool.**
 **CRITICAL: Use Vue SFC compatible syntax.**
-
+**CRITICAL: Always declare variables with proper TypeScript type.**
+**CRITICAL: Never use the `Any` type. Not even in Tests.**
+**CRITICAL: Never leave unused variables. Not even in Tests.**
+**CRITICAL: Always use PowerShell syntax when using `run_in_terminal`**
+**CRITICAL: Always use `windows` or `powershell` syntax in the terminal. e.g. `Find-String`, `Get-ChildItem`, `Set-Location`, etc.**
+**CRITICAL: Never use `linux` or `bash` syntax in the terminal.**
+**CRITICAL: Never use `linux` commands such as `grep`, `sed`, `awk`, etc.**
 # Project and environment setup instructions
+
+# General
 
 - This is a Vue.js 3 application with Typescript
 - This is a windows system
   - The console is powershell.
-    - **CRITICAL: Awlays use PowerShell syntax when using `run_in_terminal`**
-      - **CRITICAL: Always use `windows` or `powershell` syntax in the terminal.**
-      - E.g. `Find-String`, `Get-ChildItem`, `Set-Location`, etc.
-    - **CRITICAL: Never use `linux` or `bash` syntax in the terminal.**
-      - **CRITICAL: Never use `linux` commands such as `grep`, `sed`, `awk`, etc.**
   - The `docs/` directory contains a **distinct** `Ruby` application based on `Jekyll`.
     - **CRITICAL: Always use `wsl` when interacting with Ruby or Jekyll.**
 
@@ -46,9 +47,7 @@
   - Use Vue Router 4 for client-side routing
   - Use Pinia for state management
   - Use Tailwind CSS for utility-first styling
-  - **CRITICAL: Always declare variables with proper TypeScript type.**
-  - **CRITICAL: Never use the `Any` type.**
-  - **CRITICAL: Never leave unused variables.**
+  
   - Use reusable components to avoid duplicating code, html and styles.
     - **CRITICAL: Keep components focused and single-purpose.**
 

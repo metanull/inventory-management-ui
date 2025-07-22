@@ -7,7 +7,7 @@ import type {
   PictureResource,
   CountryResource,
   ApiResponse,
-} from '../api/client'
+} from '@metanull/inventory-app-api-client'
 import type { RouteRecordRaw } from 'vue-router'
 
 // Mock data factories

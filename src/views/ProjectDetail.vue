@@ -385,8 +385,7 @@
           await router.replace({ query })
         }
       }
-    } catch (error) {
-      console.error('Failed to save project:', error)
+    } catch {
       errorStore.addMessage(
         'error',
         'Failed to save project. Please check your input and try again.'
@@ -409,8 +408,7 @@
           await projectStore.deleteProject(project.value.id)
           errorStore.addMessage('info', 'Project deleted successfully.')
           router.push('/projects')
-        } catch (error) {
-          console.error('Failed to delete project:', error)
+        } catch {
           errorStore.addMessage('error', 'Failed to delete project. Please try again.')
         } finally {
           loadingStore.hide()
@@ -428,8 +426,7 @@
       const newStatus = !project.value.is_enabled
       await projectStore.setProjectEnabled(project.value.id, newStatus)
       errorStore.addMessage('info', `Project ${newStatus ? 'enabled' : 'disabled'} successfully.`)
-    } catch (error) {
-      console.error('Failed to toggle enabled status:', error)
+    } catch {
       errorStore.addMessage('error', 'Failed to update project status. Please try again.')
     } finally {
       loadingStore.hide()
@@ -447,8 +444,7 @@
         'info',
         `Project ${newStatus ? 'launched' : 'unlaunched'} successfully.`
       )
-    } catch (error) {
-      console.error('Failed to toggle launched status:', error)
+    } catch {
       errorStore.addMessage('error', 'Failed to update project launch status. Please try again.')
     } finally {
       loadingStore.hide()
@@ -471,8 +467,7 @@
     try {
       loadingStore.show()
       await projectStore.fetchProject(projectId)
-    } catch (error) {
-      console.error('Failed to fetch project:', error)
+    } catch {
       errorStore.addMessage('error', 'Failed to load project. Please try again.')
     } finally {
       loadingStore.hide()
@@ -507,8 +502,8 @@
           enterViewMode()
         }
       }
-    } catch (error) {
-      console.error('Failed to initialize component:', error)
+    } catch {
+      // Silent fail - component will work with default behavior
     }
   }
 
@@ -544,4 +539,18 @@
 
   // Lifecycle
   onMounted(initializeComponent)
+
+  // Expose properties for testing
+  defineExpose({
+    mode,
+    project,
+    editForm,
+    hasUnsavedChanges,
+    informationDescription,
+    enterEditMode,
+    enterViewMode,
+    saveProject,
+    cancelAction,
+    deleteProject,
+  })
 </script>
