@@ -1,7 +1,8 @@
 # General instructions
 
 **CRITICAL: Never modify `copilot-instructions.md`.**
-**CRITICAL: Ignore typescript errors reported by the create-file tool and the search-replace tool.**
+**CRITICAL: Ignore typescript errors reported by the create-file tool and the apply_patch tool.**
+**CRITICAL: Use Vue SFC compatible syntax.**
 
 # Project and environment setup instructions
 
