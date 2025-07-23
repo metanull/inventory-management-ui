@@ -56,6 +56,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/contexts/new',
+      name: 'context-new',
+      component: ContextDetail,
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/contexts/:id',
       name: 'context-detail',
       component: ContextDetail,

@@ -7,6 +7,7 @@ import type {
   PictureResource,
   CountryResource,
   LanguageResource,
+  ContextResource,
   ApiResponse,
 } from '@metanull/inventory-app-api-client'
 import type { RouteRecordRaw } from 'vue-router'
@@ -84,6 +85,16 @@ export const createMockLanguage = (
 ): LanguageResource => ({
   id: '1',
   internal_name: 'Test Language',
+  backward_compatibility: null,
+  is_default: false,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  ...overrides,
+})
+
+export const createMockContext = (overrides: Partial<ContextResource> = {}): ContextResource => ({
+  id: '1',
+  internal_name: 'Test Context',
   backward_compatibility: null,
   is_default: false,
   created_at: '2023-01-01T00:00:00Z',

@@ -1,229 +1,297 @@
 <template>
-  <div>
-    <!-- Header -->
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900">Contexts</h1>
-        <p class="mt-2 text-sm text-gray-700">Manage contexts available in the inventory system</p>
-      </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-        <button
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-          @click="openCreateModal"
-        >
-          Add Context
-        </button>
-      </div>
-    </div>
-
+  <ListView
+    title="Contexts"
+    description="Manage contexts in your inventory system. Contexts can be set as default for the entire database."
+    add-button-route="/contexts/new"
+    add-button-label="Add Context"
+    color="green"
+    :is-empty="filteredContexts.length === 0"
+    empty-title="No contexts found"
+    :empty-message="
+      filterMode === 'all'
+        ? 'Get started by creating a new context.'
+        : filterMode === 'default'
+          ? 'No default context found. Please set a context as default.'
+          : `No ${filterMode} contexts found.`
+    "
+    :show-empty-add-button="filterMode === 'all'"
+    empty-add-button-label="New Context"
+    @retry="fetchContexts"
+  >
+    <!-- Icon -->
+    <template #icon>
+      <ContextIcon />
+    </template>
     <!-- Filter Buttons -->
-    <div class="mt-6 flex space-x-1">
-      <button
-        :class="[
-          filterMode === 'all'
-            ? 'bg-indigo-100 text-indigo-700'
-            : 'text-gray-500 hover:text-gray-700',
-          'px-3 py-2 font-medium text-sm rounded-md',
-        ]"
+    <template #filters>
+      <FilterButton
+        label="All Contexts"
+        :is-active="filterMode === 'all'"
+        :count="contexts.length"
+        variant="primary"
         @click="filterMode = 'all'"
-      >
-        All Contexts ({{ contextStore.contexts.length }})
-      </button>
-      <button
-        :class="[
-          filterMode === 'default'
-            ? 'bg-green-100 text-green-700'
-            : 'text-gray-500 hover:text-gray-700',
-          'px-3 py-2 font-medium text-sm rounded-md',
-        ]"
+      />
+      <FilterButton
+        label="Default"
+        :is-active="filterMode === 'default'"
+        :count="defaultContexts.length"
+        variant="success"
         @click="filterMode = 'default'"
-      >
-        Default ({{ contextStore.defaultContexts.length }})
-      </button>
-    </div>
+      />
+    </template>
 
-    <!-- Loading State -->
-    <div v-if="contextStore.loading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="filteredContexts.length === 0" class="text-center py-12">
-      <ServerIcon class="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900">No contexts found</h3>
-      <p class="mt-1 text-sm text-gray-500">
-        {{
-          filterMode === 'all'
-            ? 'Get started by creating a new context.'
-            : `No ${filterMode} contexts found.`
-        }}
-      </p>
-      <div v-if="filterMode === 'all'" class="mt-6">
-        <button
-          class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          @click="openCreateModal"
-        >
-          <PlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-          New Context
-        </button>
-      </div>
-    </div>
+    <!-- Search Slot -->
+    <template #search>
+      <SearchControl v-model="searchQuery" placeholder="Search contexts..." />
+    </template>
 
     <!-- Contexts Table -->
-    <div v-else class="mt-8 flow-root">
-      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Context
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Created
-                  </th>
-                  <th scope="col" class="relative px-6 py-3">
-                    <span class="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-for="context in filteredContexts" :key="context.id" class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <ResourceNameDisplay
-                      :internal-name="context.internal_name"
-                      :backward-compatibility="context.backward_compatibility"
-                    />
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      :class="[
-                        'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
-                        context.is_default
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800',
-                      ]"
-                    >
-                      {{ context.is_default ? 'Default' : 'Not Default' }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <DateDisplay :date="context.created_at" />
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
-                      <ViewButton @click="router.push(`/contexts/${context.id}`)" />
-                      <EditButton @click="openEditModal(context)" />
-                      <SetDefaultButton
-                        v-if="!context.is_default"
-                        :disabled="contextStore.loading"
-                        @click="setAsDefault(context)"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    <template #headers>
+      <TableRow>
+        <TableHeader
+          sortable
+          :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
+          @sort="handleSort('internal_name')"
+        >
+          Context
+        </TableHeader>
+        <TableHeader
+          class="hidden md:table-cell"
+          sortable
+          :sort-direction="sortKey === 'is_default' ? sortDirection : null"
+          @sort="handleSort('is_default')"
+        >
+          Default
+        </TableHeader>
+        <TableHeader
+          class="hidden lg:table-cell"
+          sortable
+          :sort-direction="sortKey === 'created_at' ? sortDirection : null"
+          @sort="handleSort('created_at')"
+        >
+          Created
+        </TableHeader>
+        <TableHeader class="hidden sm:table-cell" variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
+    </template>
 
-    <!-- Context Form Modal -->
-    <ContextForm
-      :is-visible="showModal"
-      :context="currentEditContext"
-      @close="closeModal"
-      @success="handleFormSuccess"
-    />
-  </div>
+    <template #rows>
+      <TableRow
+        v-for="context in filteredContexts"
+        :key="context.id"
+        class="cursor-pointer hover:bg-green-50 transition"
+        @click="openContextDetail(context.id)"
+      >
+        <TableCell>
+          <InternalName
+            small
+            :internal-name="context.internal_name"
+            :backward-compatibility="context.backward_compatibility"
+          >
+            <template #icon>
+              <ContextIcon class="h-5 w-5 text-green-600" />
+            </template>
+          </InternalName>
+        </TableCell>
+        <TableCell class="hidden md:table-cell">
+          <div @click.stop>
+            <Toggle
+              small
+              title="Default"
+              :status-text="context.is_default ? 'Default' : 'Not default'"
+              :is-active="context.is_default"
+              @toggle="updateContextStatus(context, 'is_default', !context.is_default)"
+            />
+          </div>
+        </TableCell>
+        <TableCell class="hidden lg:table-cell">
+          <DateDisplay :date="context.created_at" />
+        </TableCell>
+        <TableCell class="hidden sm:table-cell">
+          <div class="flex space-x-2" @click.stop>
+            <ViewButton @click="router.push(`/contexts/${context.id}`)" />
+            <EditButton @click="router.push(`/contexts/${context.id}?mode=edit`)" />
+            <DeleteButton @click="handleDelete(context.id)" />
+          </div>
+        </TableCell>
+      </TableRow>
+    </template>
+  </ListView>
 </template>
 
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { useContextStore } from '@/stores/context'
-  import ContextForm from '@/components/_obsolete/ContextForm.vue'
-  import type { ContextResource } from '@metanull/inventory-app-api-client'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
-  import SetDefaultButton from '@/components/_obsolete/SetDefaultButton.vue'
+  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
   import DateDisplay from '@/components/format/Date.vue'
-  import ResourceNameDisplay from '@/components/format/InternalName.vue'
-  import { ServerIcon, PlusIcon } from '@heroicons/vue/24/outline'
+  import FilterButton from '@/components/layout/list/FilterButton.vue'
+  import ListView from '@/components/layout/list/ListView.vue'
+  import TableHeader from '@/components/format/table/TableHeader.vue'
+  import TableRow from '@/components/format/table/TableRow.vue'
+  import TableCell from '@/components/format/table/TableCell.vue'
+  import Toggle from '@/components/format/Toggle.vue'
+  import InternalName from '@/components/format/InternalName.vue'
+  import { CogIcon as ContextIcon } from '@heroicons/vue/24/solid'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
 
   const router = useRouter()
+
   const contextStore = useContextStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
 
-  const showModal = ref(false)
-  const currentEditContext = ref<ContextResource | null>(null)
-
-  // Filter state
+  // Reactive state
   const filterMode = ref<'all' | 'default'>('all')
+  const searchQuery = ref('')
+  const sortKey = ref<string>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
 
-  // Computed filtered contexts
+  // Computed properties for sorting and filtering
+  const contexts = computed(() => contextStore.contexts || [])
+
+  const defaultContexts = computed(() => contexts.value.filter(context => context.is_default))
+
   const filteredContexts = computed(() => {
-    switch (filterMode.value) {
-      case 'default':
-        return contextStore.defaultContexts
-      default:
-        return contextStore.contexts
+    let filtered = contexts.value
+
+    // Apply filter mode
+    if (filterMode.value === 'default') {
+      filtered = filtered.filter(context => context.is_default)
     }
+
+    // Apply search
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase()
+      filtered = filtered.filter(
+        context =>
+          context.internal_name.toLowerCase().includes(query) ||
+          (context.backward_compatibility &&
+            context.backward_compatibility.toLowerCase().includes(query))
+      )
+    }
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      let aValue: unknown = a[sortKey.value as keyof typeof a]
+      let bValue: unknown = b[sortKey.value as keyof typeof b]
+
+      // Handle different data types
+      if (sortKey.value === 'created_at') {
+        aValue = new Date(aValue as string).getTime()
+        bValue = new Date(bValue as string).getTime()
+      } else if (typeof aValue === 'boolean') {
+        aValue = aValue ? 1 : 0
+        bValue = bValue ? 1 : 0
+      } else if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase()
+        bValue = (bValue as string).toLowerCase()
+      }
+
+      if ((aValue as number) < (bValue as number)) return sortDirection.value === 'asc' ? -1 : 1
+      if ((aValue as number) > (bValue as number)) return sortDirection.value === 'asc' ? 1 : -1
+      return 0
+    })
   })
 
-  const openCreateModal = () => {
-    currentEditContext.value = null
-    showModal.value = true
-  }
-
-  const openEditModal = (context: ContextResource) => {
-    currentEditContext.value = context
-    showModal.value = true
-  }
-
-  const closeModal = () => {
-    showModal.value = false
-    currentEditContext.value = null
-    contextStore.clearError()
-  }
-
-  const handleFormSuccess = () => {
-    // Refresh the contexts list after successful create/update
-    refreshContexts()
-  }
-
-  const setAsDefault = async (context: ContextResource) => {
-    try {
-      await contextStore.setDefaultContext(context.id, true)
-    } catch (error) {
-      // Error is handled by the store
-      console.error('Set default error:', error)
+  // Sort handler
+  const handleSort = (key: string) => {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
     }
   }
 
-  const refreshContexts = async () => {
+  // Navigation handler
+  const openContextDetail = (contextId: string) => {
+    router.push(`/contexts/${contextId}`)
+  }
+
+  // Toggle default status
+  const updateContextStatus = async (context: any, field: string, value: boolean) => {
+    if (field === 'is_default') {
+      try {
+        loadingStore.show('Updating...')
+        await contextStore.setDefaultContext(context.id, value)
+        errorStore.addMessage(
+          'info',
+          `Context ${value ? 'set as' : 'removed as'} default successfully.`
+        )
+      } catch {
+        errorStore.addMessage('error', 'Failed to update context default status. Please try again.')
+      } finally {
+        loadingStore.hide()
+      }
+    }
+  }
+
+  // Delete handler
+  const handleDelete = async (contextId: string) => {
+    const context = contexts.value.find(c => c.id === contextId)
+    if (!context) return
+
+    const result = await deleteStore.trigger(
+      'Delete Context',
+      `Are you sure you want to delete "${context.internal_name}"? This action cannot be undone.`
+    )
+
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await contextStore.deleteContext(contextId)
+        errorStore.addMessage('info', 'Context deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Failed to delete context. Please try again.')
+      } finally {
+        loadingStore.hide()
+      }
+    }
+  }
+
+  // Fetch contexts function for retry
+  const fetchContexts = async () => {
     try {
+      loadingStore.show()
       await contextStore.fetchContexts()
-    } catch (error) {
-      // Error is handled by the store
-      console.error('Refresh error:', error)
+      errorStore.addMessage('info', 'Contexts refreshed successfully.')
+    } catch {
+      errorStore.addMessage('error', 'Failed to refresh contexts. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
   }
 
-  onMounted(() => {
-    refreshContexts()
+  // Fetch contexts on mount
+  onMounted(async () => {
+    let usedCache = false
+    // If cache exists, display immediately and refresh in background
+    if (contexts.value && contexts.value.length > 0) {
+      usedCache = true
+    } else {
+      loadingStore.show()
+    }
+    try {
+      // Always refresh in background
+      await contextStore.fetchContexts()
+      if (usedCache) {
+        errorStore.addMessage('info', 'List refreshed')
+      }
+    } catch {
+      errorStore.addMessage('error', 'Failed to fetch contexts. Please try again.')
+    } finally {
+      if (!usedCache) {
+        loadingStore.hide()
+      }
+    }
   })
 </script>
