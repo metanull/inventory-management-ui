@@ -6,6 +6,7 @@ import type {
   TagResource,
   PictureResource,
   CountryResource,
+  LanguageResource,
   ApiResponse,
 } from '@metanull/inventory-app-api-client'
 import type { RouteRecordRaw } from 'vue-router'
@@ -73,6 +74,18 @@ export const createMockCountry = (overrides: Partial<CountryResource> = {}): Cou
   id: '1',
   internal_name: 'Test Country',
   backward_compatibility: null,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  ...overrides,
+})
+
+export const createMockLanguage = (
+  overrides: Partial<LanguageResource> = {}
+): LanguageResource => ({
+  id: '1',
+  internal_name: 'Test Language',
+  backward_compatibility: null,
+  is_default: false,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
   ...overrides,
