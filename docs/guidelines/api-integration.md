@@ -18,7 +18,7 @@ The application communicates with a RESTful API using the `@metanull/inventory-a
 - **Authentication management** with bearer token support
 - **Request/response serialization** with proper TypeScript types
 
-### Cultural Heritage Resources
+### Museum Resources
 
 | Resource | Description | Implementation Status |
 |----------|-------------|---------------------|

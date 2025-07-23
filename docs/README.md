@@ -1,45 +1,59 @@
----
-layout: default
-title: Documentation Site
-nav_order: 6
----
-
 # Documentation Site
 
-This directory contains the source files for the GitHub Pages documentation site for the Inventory Management UI.
+This directory contains the source files for the GitHub Pages documentation site for the Museum Inventory Management UI.
 
-## Structure
+## Current Structure
 
 ```
 docs/
 ├── _config.yml                    # Jekyll configuration
-├── index.md                       # Homepage
-├── contributing.md                # Contributing guidelines
-├── development-archive.md         # Development history/blog
-├── guidelines/                    # Development guidelines section
+├── index.md                       # Homepage (nav_order: 1)
+├── application-architecture.md    # Technical architecture (nav_order: 2)
+├── guidelines/                    # Development guidelines section (nav_order: 3)
 │   ├── index.md                  # Guidelines overview
 │   ├── api-integration.md        # API integration guidelines
 │   ├── coding-guidelines.md      # Code style and best practices
 │   ├── testing.md               # Testing overview
-│   └── integration-testing.md    # Integration testing guide
-└── assets/                       # Static assets
-    └── css/
-        └── custom.scss           # Custom styles
+│   ├── integration-testing.md    # Integration testing guide
+│   └── generate-commit-docs.md   # Commit documentation guidelines
+├── components/                    # Component documentation (nav_order: 4)
+│   ├── index.md                  # Component overview
+│   ├── Global.md                 # Global components (overlays, modals)
+│   ├── Format.md                 # Data formatting components
+│   ├── Layout.md                 # Layout and structural components
+│   ├── Actions.md                # Action components
+│   └── Icons.md                  # Icon components
+├── contributing.md                # Contributing guidelines (nav_order: 5)
+├── development-archive.md         # Development history/blog (nav_order: 6)
+├── assets/                       # Static assets
+│   └── css/
+│       └── custom.scss           # Custom styles
+├── _layouts/                     # Jekyll layout templates
+│   └── default.html
+├── _docs/                        # Additional documentation
+├── generate-commit-docs.ps1      # PowerShell script for commit docs
+├── generate-commit-docs.py       # Python script for commit docs
+├── Gemfile                       # Ruby dependencies
+├── Gemfile.lock                  # Ruby dependency lock file
+└── README.md                     # This file
 ```
-├── _posts/              # Blog posts (auto-generated)
-├── Gemfile              # Ruby dependencies
-├── index.md             # Home page
-├── contributing.md      # Contributing guidelines
-├── blog.md             # Blog index page
-├── api-integration.md  # API integration documentation
-└── README.md           # This file
-```
+
+## Site Navigation Structure
+
+The documentation site uses Jekyll's nav_order to create logical navigation:
+
+1. **Home** (`index.md`) - Project overview and quick start
+2. **Application Architecture** (`application-architecture.md`) - Comprehensive system overview and API mapping
+3. **Guidelines** (`guidelines/`) - API integration, coding standards, and testing practices
+4. **Components** (`components/`) - Complete documentation of Vue.js components with usage examples
+5. **Contributing** (`contributing.md`) - Development workflow and project contribution instructions
+6. **Development Archive** (`development-archive.md`) - Historical updates
 
 ## Local Development
 
 To run the documentation site locally:
 
-1. Install Ruby and Bundler:
+1. **Install Ruby and Bundler**:
    ```bash
    # On macOS with Homebrew
    brew install ruby
@@ -48,130 +62,154 @@ To run the documentation site locally:
    # On Ubuntu/Debian
    sudo apt-get install ruby-full build-essential zlib1g-dev
    gem install bundler
+   
+   # On Windows (use WSL)
+   wsl --install
+   # Then follow Ubuntu/Debian instructions in WSL
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
    ```bash
    cd docs
    bundle install
    ```
 
-3. Start the Jekyll server:
+3. **Start the Jekyll server**:
    ```bash
    bundle exec jekyll serve
    ```
 
-4. Open http://localhost:4000 in your browser
+4. **Open browser**: Navigate to http://localhost:4000
 
 ## Automated Features
 
-### Blog Post Generation
-
-The site automatically generates daily blog posts from Git commit history via GitHub Actions:
-
-- **Trigger**: Runs daily at 6 AM UTC, on pushes to main, or manual dispatch
-- **Source**: Git commits from the main branch, processed by date
-- **Format**: Organized daily summaries with commit details, statistics, and contributor information
-- **Content**: Includes PR merges, direct commits, GitHub references, and file change statistics
-- **Output**: Jekyll-compatible markdown posts in the `_posts/` directory
-
 ### GitHub Pages Deployment
 
-The site is automatically deployed to GitHub Pages via the `.github/workflows/deploy-pages.yml` workflow:
+The site is automatically deployed to GitHub Pages and updated when:
+- **Main branch changes**: Automatic deployment on push to main
+- **Content updates**: Any changes to markdown files trigger rebuild
+- **Jekyll processing**: Static site generation with Just the Docs theme
 
-- **Trigger**: On push to main branch, daily at 6 AM UTC, or manual dispatch
-- **Blog Generation**: Extracts commit history from the main branch and generates daily summary posts
-- **Jekyll Build**: Uses Ruby 3.1 and Jekyll to build the static site
-- **Deploy**: Automatically deploys to GitHub Pages using the official actions
+### Theme and Configuration
 
-The workflow performs two main jobs:
-1. **generate-daily-posts**: Creates daily blog posts from Git commits with statistics and GitHub references
-2. **build-and-deploy**: Builds the Jekyll site and deploys it to GitHub Pages
+**Theme**: [Just the Docs](https://just-the-docs.github.io/just-the-docs/)
+- Clean, responsive design optimized for technical documentation
+- Built-in search functionality across all content
+- Hierarchical navigation with nav_order support
+- Syntax highlighting for code blocks
+- Mobile-friendly responsive layout
 
-## Customization
+**Key Configuration** (`_config.yml`):
+- Site title: "Museum Inventory Management UI"
+- Navigation structure with proper ordering
+- GitHub repository integration
+- Search functionality enabled
+- Footer with project information
 
-### Theme
+## Content Management
 
-The site uses the [Just the Docs](https://just-the-docs.github.io/just-the-docs/) theme, which provides:
+### Adding New Documentation
 
-- Clean, responsive design
-- Built-in search functionality
-- Navigation structure
-- Syntax highlighting
-- Mobile-friendly layout
+1. **Create new markdown file** in appropriate directory:
+   ```bash
+   # For guidelines
+   docs/guidelines/new-guideline.md
+   
+   # For component docs  
+   docs/components/NewComponent.md
+   ```
 
-### Configuration
-
-Key settings in `_config.yml`:
-
-- **Site title and description**
-- **Navigation links**
-- **GitHub repository links**
-- **Search configuration**
-- **Footer content**
-
-### Adding Pages
-
-To add new documentation pages:
-
-1. Create a new `.md` file in the `docs/` directory
-2. Add front matter with title and navigation order:
+2. **Add Jekyll front matter**:
    ```yaml
    ---
    layout: default
    title: Your Page Title
-   nav_order: 7
+   nav_order: 7                    # Choose appropriate order
+   parent: Guidelines              # If it's a child page
    ---
    ```
-3. Write your content in Markdown
-4. Commit and push - the page will appear automatically
 
-## Maintenance
+3. **Write content** in Markdown format
+4. **Commit and push** - automatic deployment handles the rest
 
-### Modifying Blog Generation
+### Updating Existing Content
 
-The blog post generation logic is embedded in the `.github/workflows/deploy-pages.yml` workflow file. To modify the blog generation behavior:
+- Edit any `.md` file and commit changes
+- Navigation and search automatically update
+- No manual regeneration required
 
-1. **Edit the workflow file**: `.github/workflows/deploy-pages.yml`
-2. **Modify the generation script**: Look for the "Setup gh-pages branch and generate daily posts" step
-3. **Customize the following aspects**:
-   - Commit history processing logic
-   - Daily post format and structure
-   - GitHub reference extraction
-   - Date range for processing commits
-   - Post metadata and categorization
+### Documentation Standards
 
-The workflow automatically:
-- Processes commits from the main branch
-- Groups commits by date
-- Extracts GitHub issue/PR references
-- Calculates file statistics and contributor information
-- Generates Jekyll-compatible markdown posts
+- Use clear, descriptive titles
+- Include code examples where relevant
+- Follow consistent markdown formatting
+- Link between related sections
+- Update nav_order when adding new top-level pages
 
-### Theme Customization
+## Site Maintenance
 
-To customize the theme:
+### Navigation Order Management
 
-1. Override theme defaults in `_config.yml`
-2. Add custom CSS in `assets/css/custom.css`
-3. Modify layouts in `_layouts/` directory (if needed)
+When adding new top-level pages, update `nav_order` values:
+- Reserve orders 1-6 for main sections
+- Use incremental values (7, 8, 9...) for additional pages
+- Child pages use parent structure, don't need top-level nav_order
+
+### Content Updates
+
+**Regular Maintenance**:
+- Keep implementation status current in index.md
+- Update version numbers and dependencies when they change
+- Review and update API integration docs when client library updates
+- Ensure component documentation matches actual component props/events
+
+**When Adding New Features**:
+- Document new components in `components/` directory
+- Update implementation status tables
+- Add integration guidelines if new APIs are involved
+- Update contributing guidelines if workflow changes
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Ruby version conflicts**: Use a Ruby version manager like rbenv or RVM
-2. **Bundle install fails**: Make sure you have build tools installed
-3. **Jekyll build errors**: Check the GitHub Actions logs for details
-4. **Pages not updating**: Verify the GitHub Actions workflow is running
+1. **Ruby version conflicts**: 
+   - Use rbenv or RVM for version management
+   - Ensure compatible Ruby version (check Gemfile)
 
-### Support
+2. **Bundle install fails**: 
+   - Install build tools: `sudo apt-get install build-essential`
+   - Update bundler: `gem update bundler`
 
-For help with:
-- Jekyll: https://jekyllrb.com/docs/
-- Just the Docs theme: https://just-the-docs.github.io/just-the-docs/
-- GitHub Pages: https://pages.github.com/
+3. **Jekyll build errors**: 
+   - Check GitHub Actions logs for specific errors
+   - Validate YAML front matter syntax
+   - Ensure all referenced files exist
+
+4. **Pages not updating**: 
+   - Verify GitHub Actions workflow completed successfully
+   - Check for merge conflicts in main branch
+   - Clear browser cache for GitHub Pages
+
+5. **Navigation not showing**: 
+   - Verify `nav_order` is set correctly
+   - Check parent/child relationships
+   - Ensure proper YAML syntax in front matter
+
+### Development Tips
+
+- Use `bundle exec jekyll serve --livereload` for automatic page refresh
+- Test locally before pushing changes
+- Use Jekyll's built-in syntax checking
+- Validate links work correctly both locally and on GitHub Pages
+
+## Resources
+
+- **Jekyll Documentation**: https://jekyllrb.com/docs/
+- **Just the Docs Theme**: https://just-the-docs.github.io/just-the-docs/
+- **GitHub Pages**: https://pages.github.com/
+- **Markdown Guide**: https://www.markdownguide.org/
 
 ---
 
-*This documentation site is automatically maintained and updated.*
+*This documentation site is automatically maintained and reflects the current state of the Museum Inventory Management UI project.*
