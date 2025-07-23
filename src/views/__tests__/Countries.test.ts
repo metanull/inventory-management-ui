@@ -1,137 +1,204 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { createRouter, createWebHistory, type Router } from 'vue-router'
+import { beforeEach, describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { createRouter, createWebHistory } from 'vue-router'
 import Countries from '../Countries.vue'
-import { createTestingPinia } from '@pinia/testing'
+import { useCountryStore } from '@/stores/country'
+import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+import { useErrorDisplayStore } from '@/stores/errorDisplay'
+import { createMockCountry } from '@/__tests__/test-utils'
+import type { CountryResource } from '@metanull/inventory-app-api-client'
+import type { Router } from 'vue-router'
 
-// Mock the API client
-vi.mock('@/api/client', () => ({
-  apiClient: {
-    getCountries: vi.fn(() =>
-      Promise.resolve({
-        data: [
-          {
-            id: '1',
-            name: 'United States',
-            code: 'US',
-          },
-          {
-            id: '2',
-            name: 'Canada',
-            code: 'CA',
-          },
-        ],
-      })
-    ),
-    deleteCountry: vi.fn(() => Promise.resolve()),
-    createCountry: vi.fn(() => Promise.resolve({ data: { id: '3', name: 'Mexico', code: 'MX' } })),
-    updateCountry: vi.fn(() =>
-      Promise.resolve({ data: { id: '1', name: 'United States of America', code: 'US' } })
-    ),
-  },
+// Mock console.error to avoid noise in test output
+vi.mock('console', () => ({
+  error: vi.fn(),
+  warn: vi.fn(),
+  log: vi.fn(),
 }))
 
+// Store original console methods for cleanup
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let originalConsole: any
+
+beforeAll(() => {
+  originalConsole = { ...console }
+  console.error = vi.fn()
+  console.warn = vi.fn()
+  console.log = vi.fn()
+})
+
+afterAll(() => {
+  Object.assign(console, originalConsole)
+})
+
+// Component interface for proper typing
+interface CountriesComponentInstance {
+  countries: CountryResource[]
+  filteredCountries: CountryResource[]
+  searchQuery: string
+  sortDirection: string
+  sortKey: string
+  openCountryDetail: (id: string) => void
+  handleSort: (field: string) => void
+  fetchCountries: () => Promise<void>
+}
+
+// Mock the stores
+vi.mock('@/stores/country')
+vi.mock('@/stores/loadingOverlay')
+vi.mock('@/stores/errorDisplay')
+
+const mockCountries: CountryResource[] = [
+  createMockCountry({
+    id: 'GBR',
+    internal_name: 'United Kingdom',
+    backward_compatibility: 'GB',
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
+  }),
+  createMockCountry({
+    id: 'USA',
+    internal_name: 'United States',
+    backward_compatibility: 'US',
+    created_at: '2023-01-02T00:00:00Z',
+    updated_at: '2023-01-02T00:00:00Z',
+  }),
+  createMockCountry({
+    id: 'FRA',
+    internal_name: 'France',
+    backward_compatibility: null,
+    created_at: '2023-01-03T00:00:00Z',
+    updated_at: '2023-01-03T00:00:00Z',
+  }),
+]
+
 describe('Countries.vue', () => {
-  let wrapper: VueWrapper<InstanceType<typeof Countries>>
+  let mockCountryStore: ReturnType<typeof useCountryStore>
+  let mockLoadingStore: ReturnType<typeof useLoadingOverlayStore>
+  let mockErrorStore: ReturnType<typeof useErrorDisplayStore>
   let router: Router
 
-  beforeEach(async () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+
+    // Setup router
     router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div>Home</div>' } },
         { path: '/countries', component: Countries },
+        { path: '/countries/new', component: { template: '<div>New Country</div>' } },
+        { path: '/countries/:id', component: { template: '<div>Country Detail</div>' } },
       ],
     })
 
-    await router.push('/countries')
+    // Setup store mocks
+    mockCountryStore = {
+      countries: mockCountries,
+      currentCountry: null,
+      loading: false,
+      error: null,
+      fetchCountries: vi.fn().mockResolvedValue(mockCountries),
+      getCountryById: vi.fn(),
+      createCountry: vi.fn(),
+      updateCountry: vi.fn(),
+      deleteCountry: vi.fn(),
+    } as ReturnType<typeof useCountryStore>
 
-    wrapper = mount(Countries, {
-      global: {
-        plugins: [createTestingPinia(), router],
-      },
-    })
+    mockLoadingStore = {
+      show: vi.fn(),
+      hide: vi.fn(),
+    } as ReturnType<typeof useLoadingOverlayStore>
 
-    // Wait for component to load
-    await wrapper.vm.$nextTick()
+    mockErrorStore = {
+      addMessage: vi.fn(),
+    } as ReturnType<typeof useErrorDisplayStore>
+
+    // Mock store implementations
+    vi.mocked(useCountryStore).mockReturnValue(mockCountryStore)
+    vi.mocked(useLoadingOverlayStore).mockReturnValue(mockLoadingStore)
+    vi.mocked(useErrorDisplayStore).mockReturnValue(mockErrorStore)
+
+    vi.clearAllMocks()
   })
 
-  it('renders the countries page', () => {
-    expect(wrapper.find('h1').text()).toBe('Countries')
-  })
+  describe('Component Logic', () => {
+    it('should initialize with default values', async () => {
+      const wrapper = mount(Countries, {
+        global: {
+          plugins: [createPinia(), router],
+        },
+      })
 
-  it('loads countries on mount', async () => {
-    const { apiClient } = await import('@/api/client')
-
-    // Wait for countries to load
-    await new Promise(resolve => setTimeout(resolve, 100))
-    await wrapper.vm.$nextTick()
-
-    expect(apiClient.getCountries).toHaveBeenCalled()
-  })
-
-  it('should call deleteCountry when delete button is clicked and confirmed', async () => {
-    const { apiClient } = await import('@/api/client')
-
-    // Wait for countries to load
-    await new Promise(resolve => setTimeout(resolve, 100))
-    await wrapper.vm.$nextTick()
-
-    // Find and click the delete button
-    const deleteButton = wrapper.find('button[data-testid="delete-country"]')
-    expect(deleteButton.exists()).toBe(true)
-
-    await deleteButton.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    // Check if delete modal is visible
-    expect(wrapper.vm.showDeleteModal).toBe(true)
-
-    // Simulate clicking the confirm delete by directly calling the deleteCountry function
-    await wrapper.vm.deleteCountry()
-
-    expect(apiClient.deleteCountry).toHaveBeenCalledWith('1')
-  })
-
-  it('should not call deleteCountry when confirm is cancelled', async () => {
-    const { apiClient } = await import('@/api/client')
-
-    // Reset the mock call count
-    vi.mocked(apiClient.deleteCountry).mockClear()
-
-    // Wait for countries to load
-    await new Promise(resolve => setTimeout(resolve, 100))
-    await wrapper.vm.$nextTick()
-
-    // Find and click the delete button
-    const deleteButton = wrapper.find('button[data-testid="delete-country"]')
-    expect(deleteButton.exists()).toBe(true)
-
-    await deleteButton.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    // Check if delete modal is visible
-    expect(wrapper.vm.showDeleteModal).toBe(true)
-
-    // Find and click the cancel button in the modal
-    const cancelButton = wrapper.findAll('button').find(btn => btn.text().includes('Cancel'))
-
-    if (cancelButton) {
-      await cancelButton.trigger('click')
-      expect(apiClient.deleteCountry).not.toHaveBeenCalled()
-    }
-  })
-
-  it('should open create modal when add button is clicked', async () => {
-    const addButton = wrapper.find('button[data-testid="add-country"]')
-
-    if (addButton.exists()) {
-      await addButton.trigger('click')
       await wrapper.vm.$nextTick()
 
-      // Check if modal is visible
-      const modal = wrapper.find('[data-testid="create-country-modal"]')
-      expect(modal.exists()).toBe(true)
-    }
+      expect((wrapper.vm as unknown as CountriesComponentInstance).sortKey).toBe('internal_name')
+      expect((wrapper.vm as unknown as CountriesComponentInstance).sortDirection).toBe('asc')
+      expect((wrapper.vm as unknown as CountriesComponentInstance).searchQuery).toBe('')
+    })
+
+    it('should have access to store data', async () => {
+      const wrapper = mount(Countries, {
+        global: {
+          plugins: [createPinia(), router],
+        },
+      })
+
+      await wrapper.vm.$nextTick()
+
+      expect((wrapper.vm as unknown as CountriesComponentInstance).countries.length).toBe(3)
+    })
+  })
+
+  describe('Search Functionality', () => {
+    it('should search countries by internal name', async () => {
+      const wrapper = mount(Countries, {
+        global: {
+          plugins: [createPinia(), router],
+        },
+      })
+
+      await wrapper.vm.$nextTick()
+      ;(wrapper.vm as unknown as CountriesComponentInstance).searchQuery = 'United'
+      await wrapper.vm.$nextTick()
+
+      const filteredCountries = (wrapper.vm as unknown as CountriesComponentInstance)
+        .filteredCountries
+      expect(filteredCountries.length).toBe(2)
+      expect(filteredCountries[0].internal_name).toContain('United')
+      expect(filteredCountries[1].internal_name).toContain('United')
+    })
+
+    it('should filter countries by backward_compatibility', async () => {
+      const wrapper = mount(Countries, {
+        global: {
+          plugins: [createPinia(), router],
+        },
+      })
+
+      await wrapper.vm.$nextTick()
+      ;(wrapper.vm as unknown as CountriesComponentInstance).searchQuery = 'GB'
+      await wrapper.vm.$nextTick()
+
+      const filteredCountries = (wrapper.vm as unknown as CountriesComponentInstance)
+        .filteredCountries
+      expect(filteredCountries.length).toBe(1)
+      expect(filteredCountries[0].backward_compatibility).toBe('GB')
+    })
+  })
+
+  describe('Store Integration', () => {
+    it('should call fetchCountries on mount', async () => {
+      mount(Countries, {
+        global: {
+          plugins: [createPinia(), router],
+        },
+      })
+
+      await flushPromises()
+
+      expect(mockCountryStore.fetchCountries).toHaveBeenCalledOnce()
+    })
   })
 })

@@ -1,220 +1,556 @@
 <template>
-  <div>
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
-        <div>
-          <RouterLink
-            to="/projects"
-            class="text-primary-600 hover:text-primary-900 text-sm font-medium mb-2 inline-flex items-center"
-          >
-            ← Back to Projects
-          </RouterLink>
-          <h1 class="text-3xl font-bold text-gray-900">Project Details</h1>
-        </div>
-        <div class="flex space-x-3">
-          <button class="btn-outline" @click="editProject">Edit Project</button>
-          <button
-            class="text-red-600 hover:text-red-900 px-3 py-2 text-sm font-medium"
-            @click="deleteProject"
-          >
-            Delete Project
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="loading" class="text-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-    </div>
-
-    <div v-else-if="error" class="text-red-600 text-center py-8">
-      {{ error }}
-    </div>
-
-    <div v-else-if="project" class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
-          {{ project.internal_name }}
-        </h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Project information and details</p>
-      </div>
-      <div class="border-t border-gray-200">
-        <dl>
-          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {{ project.internal_name }}
-            </dd>
-          </div>
-          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Status</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <span
-                :class="project.is_enabled ? 'text-green-600' : 'text-red-600'"
-                class="font-medium"
-              >
-                {{ project.is_enabled ? 'Active' : 'Inactive' }}
-              </span>
-            </dd>
-          </div>
-          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Launch Date</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {{
-                project.launch_date ? new Date(project.launch_date).toLocaleDateString() : 'Not set'
-              }}
-            </dd>
-          </div>
-          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">ID</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 font-mono">
-              {{ project.id }}
-            </dd>
-          </div>
-        </dl>
-      </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div
-      v-if="showEditModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-      @click="closeModal"
-    >
-      <div
-        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
-        @click.stop
-      >
-        <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Project</h3>
-          <form class="space-y-4" @submit.prevent="handleSubmit">
-            <div>
-              <label class="label">Internal Name</label>
-              <input
-                v-model="form.internal_name"
-                type="text"
-                required
-                class="input"
-                placeholder="Enter project name"
+  <!-- Unified Project Detail View -->
+  <DetailView
+    :store-loading="projectStore.loading"
+    :resource="mode === 'create' ? null : project"
+    :mode="mode"
+    :save-disabled="!hasUnsavedChanges"
+    :has-unsaved-changes="hasUnsavedChanges"
+    :back-link="backLink"
+    :status-cards="statusCardsConfig"
+    :create-title="'New Project'"
+    :create-subtitle="'(Creating)'"
+    information-title="Project Information"
+    :information-description="informationDescription"
+    :fetch-data="fetchProject"
+    @edit="enterEditMode"
+    @save="saveProject"
+    @cancel="cancelAction"
+    @delete="deleteProject"
+    @status-toggle="handleStatusToggle"
+  >
+    <template #resource-icon>
+      <ProjectIcon class="h-6 w-6 text-orange-600" />
+    </template>
+    <template #information>
+      <DescriptionList>
+        <DescriptionRow variant="gray">
+          <DescriptionTerm>Internal Name</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.internal_name"
+              type="text"
+            />
+            <DisplayText v-else>{{ project?.internal_name }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow
+          v-if="project?.backward_compatibility || mode === 'edit' || mode === 'create'"
+          variant="white"
+        >
+          <DescriptionTerm>Legacy ID</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.backward_compatibility"
+              type="text"
+              placeholder="Optional legacy identifier"
+            />
+            <DisplayText v-else>{{ project?.backward_compatibility }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow variant="gray">
+          <DescriptionTerm>Launch Date</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.launch_date"
+              type="date"
+            />
+            <template v-else>
+              <DateDisplay
+                v-if="project?.launch_date"
+                :date="project.launch_date"
+                format="medium"
+                variant="small-dark"
               />
-            </div>
-
-            <div>
-              <label class="label">Launch Date</label>
-              <input v-model="form.launch_date" type="date" class="input" />
-            </div>
-
-            <div class="flex items-center">
-              <input
-                v-model="form.is_enabled"
-                type="checkbox"
-                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              />
-              <label class="ml-2 block text-sm text-gray-900"> Project is active </label>
-            </div>
-
-            <div class="flex justify-end space-x-3 pt-4">
-              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
-              <button type="submit" class="btn-primary" :disabled="submitting">
-                {{ submitting ? 'Saving...' : 'Update' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+              <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+            </template>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow variant="white">
+          <DescriptionTerm>Default Context</DescriptionTerm>
+          <DescriptionDetail>
+            <GenericDropdown
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.context_id"
+              :options="contexts"
+              :show-no-default-option="true"
+              no-default-label="No default context"
+              no-default-value=""
+            />
+            <template v-else>
+              <DisplayText v-if="project?.context">{{ project.context.internal_name }}</DisplayText>
+              <DisplayText v-else variant="gray">No default context set</DisplayText>
+            </template>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow variant="gray">
+          <DescriptionTerm>Default Language</DescriptionTerm>
+          <DescriptionDetail>
+            <GenericDropdown
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.language_id"
+              :options="languages"
+              :show-no-default-option="true"
+              no-default-label="No default language"
+              no-default-value=""
+            />
+            <template v-else>
+              <DisplayText v-if="project?.language">{{
+                project.language.internal_name
+              }}</DisplayText>
+              <DisplayText v-else variant="gray">No default language set</DisplayText>
+            </template>
+          </DescriptionDetail>
+        </DescriptionRow>
+      </DescriptionList>
+    </template>
+  </DetailView>
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, onMounted } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
-  import { apiClient, type ProjectResource } from '@/api/client'
+  import { ref, computed, onMounted, watch } from 'vue'
+  import {
+    useRoute,
+    useRouter,
+    onBeforeRouteLeave,
+    type RouteLocationNormalized,
+    type NavigationGuardNext,
+  } from 'vue-router'
+  import { useProjectStore } from '@/stores/project'
+  import { useContextStore } from '@/stores/context'
+  import { useLanguageStore } from '@/stores/language'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
+  import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
+  import DateDisplay from '@/components/format/Date.vue'
+  import DisplayText from '@/components/format/DisplayText.vue'
+  import DetailView from '@/components/layout/detail/DetailView.vue'
+  import GenericDropdown from '@/components/format/GenericDropdown.vue'
+  import FormInput from '@/components/format/FormInput.vue'
+  import DescriptionList from '@/components/format/description/DescriptionList.vue'
+  import DescriptionRow from '@/components/format/description/DescriptionRow.vue'
+  import DescriptionTerm from '@/components/format/description/DescriptionTerm.vue'
+  import DescriptionDetail from '@/components/format/description/DescriptionDetail.vue'
+  import {
+    CheckCircleIcon,
+    XCircleIcon,
+    RocketLaunchIcon as RocketIcon,
+    ArchiveBoxIcon as PackageIcon,
+    FolderIcon as ProjectIcon,
+    ArrowLeftIcon,
+  } from '@heroicons/vue/24/solid'
 
+  // Types
+  type Mode = 'view' | 'edit' | 'create'
+
+  interface ProjectFormData {
+    internal_name: string
+    backward_compatibility: string
+    launch_date: string
+    context_id: string
+    language_id: string
+  }
+
+  // Composables
   const route = useRoute()
   const router = useRouter()
+  const projectStore = useProjectStore()
+  const contextStore = useContextStore()
+  const languageStore = useLanguageStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
+  const cancelChangesStore = useCancelChangesConfirmationStore()
 
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const submitting = ref(false)
-  const project = ref<ProjectResource | null>(null)
-  const showEditModal = ref(false)
+  // Reactive state - Single source of truth for mode
+  const mode = ref<Mode>('view')
 
-  const form = reactive({
-    internal_name: '',
-    launch_date: '',
-    is_enabled: true,
+  // Computed properties
+  const project = computed(() => projectStore.currentProject)
+
+  // Dropdown options
+  const contexts = computed(() => contextStore.contexts)
+  const languages = computed(() => languageStore.languages)
+  const defaultContext = computed(() => contextStore.defaultContext)
+  const defaultLanguage = computed(() => languageStore.defaultLanguage)
+
+  // Information description based on mode
+  const informationDescription = computed(() => {
+    switch (mode.value) {
+      case 'create':
+        return 'Create a new project in your inventory system.'
+      case 'edit':
+        return 'Edit detailed information about this project.'
+      default:
+        return 'Detailed information about this project.'
+    }
   })
 
-  const fetchProject = async () => {
-    loading.value = true
-    error.value = null
+  // Back link configuration
+  const backLink = computed(() => ({
+    title: 'Back to Projects',
+    route: '/projects',
+    icon: ArrowLeftIcon,
+    color: 'orange',
+  }))
 
-    try {
-      const response = await apiClient.getProject(route.params.id as string)
-      project.value = response.data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to load project'
-    } finally {
-      loading.value = false
+  // Edit form data
+  const editForm = ref<ProjectFormData>({
+    internal_name: '',
+    backward_compatibility: '',
+    launch_date: '',
+    context_id: '',
+    language_id: '',
+  })
+
+  // Get default form values
+  const getDefaultFormValues = (): ProjectFormData => ({
+    internal_name: '',
+    backward_compatibility: '',
+    launch_date: '',
+    context_id: defaultContext.value?.id || '',
+    language_id: defaultLanguage.value?.id || '',
+  })
+
+  // Get form values from project
+  const getFormValuesFromProject = (): ProjectFormData => {
+    if (!project.value) return getDefaultFormValues()
+
+    // Format launch_date for HTML date input (YYYY-MM-DD)
+    let formattedLaunchDate = ''
+    if (project.value.launch_date) {
+      formattedLaunchDate = project.value.launch_date.split('T')[0]
+    }
+
+    return {
+      internal_name: project.value.internal_name,
+      backward_compatibility: project.value.backward_compatibility || '',
+      launch_date: formattedLaunchDate,
+      context_id: project.value.context?.id || '',
+      language_id: project.value.language?.id || '',
     }
   }
 
-  const editProject = () => {
-    if (project.value) {
-      form.internal_name = project.value.internal_name
-      form.launch_date = project.value.launch_date || ''
-      form.is_enabled = project.value.is_enabled
-      showEditModal.value = true
+  // Track unsaved changes
+  const hasUnsavedChanges = computed(() => {
+    if (mode.value === 'view') return false
+
+    // For create mode, compare with default values
+    if (mode.value === 'create') {
+      const defaultValues = getDefaultFormValues()
+      return (
+        editForm.value.internal_name !== defaultValues.internal_name ||
+        editForm.value.backward_compatibility !== defaultValues.backward_compatibility ||
+        editForm.value.launch_date !== defaultValues.launch_date ||
+        editForm.value.context_id !== defaultValues.context_id ||
+        editForm.value.language_id !== defaultValues.language_id
+      )
     }
+
+    // For edit mode, compare with original values
+    if (!project.value) return false
+
+    const originalValues = getFormValuesFromProject()
+    return (
+      editForm.value.internal_name !== originalValues.internal_name ||
+      editForm.value.backward_compatibility !== originalValues.backward_compatibility ||
+      editForm.value.launch_date !== originalValues.launch_date ||
+      editForm.value.context_id !== originalValues.context_id ||
+      editForm.value.language_id !== originalValues.language_id
+    )
+  })
+
+  // Status cards configuration
+  const statusCardsConfig = computed(() => {
+    if (!project.value) return []
+
+    return [
+      {
+        title: 'Status',
+        description: 'Project status and availability',
+        mainColor: 'green',
+        statusText: project.value.is_enabled ? 'Enabled' : 'Disabled',
+        toggleTitle: 'Project Status',
+        isActive: project.value.is_enabled,
+        loading: false,
+        disabled: false,
+        activeIconBackgroundClass: 'bg-green-100',
+        inactiveIconBackgroundClass: 'bg-red-100',
+        activeIconClass: 'text-green-600',
+        inactiveIconClass: 'text-red-600',
+        activeIconComponent: CheckCircleIcon,
+        inactiveIconComponent: XCircleIcon,
+      },
+      {
+        title: 'Launch Status',
+        description: 'Project launch status',
+        mainColor: 'blue',
+        statusText: project.value.is_launched ? 'Launched' : 'Not Launched',
+        toggleTitle: 'Launch Status',
+        isActive: project.value.is_launched,
+        loading: false,
+        disabled: !project.value.is_enabled,
+        activeIconBackgroundClass: 'bg-blue-100',
+        inactiveIconBackgroundClass: 'bg-gray-100',
+        activeIconClass: 'text-blue-600',
+        inactiveIconClass: 'text-gray-600',
+        activeIconComponent: RocketIcon,
+        inactiveIconComponent: PackageIcon,
+      },
+    ]
+  })
+
+  // Watch for unsaved changes and sync with cancel changes store
+  watch(hasUnsavedChanges, (hasChanges: boolean) => {
+    if (hasChanges) {
+      cancelChangesStore.addChange()
+    } else {
+      cancelChangesStore.resetChanges()
+    }
+  })
+
+  // Mode management functions
+  const enterCreateMode = () => {
+    mode.value = 'create'
+    editForm.value = getDefaultFormValues()
   }
 
-  const handleSubmit = async () => {
+  const enterEditMode = () => {
     if (!project.value) return
+    mode.value = 'edit'
+    editForm.value = getFormValuesFromProject()
+  }
 
-    submitting.value = true
+  const enterViewMode = () => {
+    mode.value = 'view'
+    // Clear form data when returning to view mode
+    editForm.value = getDefaultFormValues()
+  }
 
+  // Action handlers
+  const cancelAction = async () => {
+    if (mode.value === 'create') {
+      // Navigate back to projects list
+      router.push('/projects')
+      return
+    }
+
+    if (mode.value === 'edit') {
+      // "Navigate" back to project detail in view mode
+      enterViewMode()
+
+      // Remove edit query parameter if present
+      if (route.query.edit) {
+        const query = { ...route.query }
+        delete query.edit
+        router.replace({ query })
+      }
+    }
+  }
+
+  const saveProject = async () => {
     try {
+      loadingStore.show('Saving...')
       const projectData = {
-        internal_name: form.internal_name,
-        launch_date: form.launch_date || null,
-        is_enabled: form.is_enabled,
+        internal_name: editForm.value.internal_name,
+        backward_compatibility: editForm.value.backward_compatibility || null,
+        launch_date: editForm.value.launch_date || null,
+        context_id: editForm.value.context_id || null,
+        language_id: editForm.value.language_id || null,
       }
 
-      await apiClient.updateProject(project.value.id, projectData)
+      if (mode.value === 'create') {
+        // Create new project
+        const newProject = await projectStore.createProject(projectData)
+        errorStore.addMessage('info', 'Project created successfully.')
 
-      await fetchProject()
-      closeModal()
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to update project'
+        // Load the new project and enter view mode
+        await projectStore.fetchProject(newProject.id)
+        enterViewMode()
+      } else if (mode.value === 'edit' && project.value) {
+        // Update existing project
+        await projectStore.updateProject(project.value.id, projectData)
+        errorStore.addMessage('info', 'Project updated successfully.')
+
+        enterViewMode()
+
+        // Remove edit query parameter if present
+        if (route.query.edit) {
+          const query = { ...route.query }
+          delete query.edit
+          await router.replace({ query })
+        }
+      }
+    } catch {
+      errorStore.addMessage(
+        'error',
+        'Failed to save project. Please check your input and try again.'
+      )
     } finally {
-      submitting.value = false
+      loadingStore.hide()
     }
   }
 
   const deleteProject = async () => {
+    if (project.value?.id) {
+      const result = await deleteStore.trigger(
+        'Delete Project',
+        `Are you sure you want to delete "${project.value.internal_name}"? This action cannot be undone.`
+      )
+
+      if (result === 'delete') {
+        try {
+          loadingStore.show('Deleting...')
+          await projectStore.deleteProject(project.value.id)
+          errorStore.addMessage('info', 'Project deleted successfully.')
+          router.push('/projects')
+        } catch {
+          errorStore.addMessage('error', 'Failed to delete project. Please try again.')
+        } finally {
+          loadingStore.hide()
+        }
+      }
+    }
+  }
+
+  // Status toggle handlers
+  const toggleEnabled = async () => {
     if (!project.value) return
 
-    if (!confirm('Are you sure you want to delete this project?')) {
-      return
+    try {
+      loadingStore.show('Updating...')
+      const newStatus = !project.value.is_enabled
+      await projectStore.setProjectEnabled(project.value.id, newStatus)
+      errorStore.addMessage('info', `Project ${newStatus ? 'enabled' : 'disabled'} successfully.`)
+    } catch {
+      errorStore.addMessage('error', 'Failed to update project status. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
+  }
+
+  const toggleLaunched = async () => {
+    if (!project.value) return
 
     try {
-      await apiClient.deleteProject(project.value.id)
-      router.push('/projects')
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to delete project'
+      loadingStore.show('Updating...')
+      const newStatus = !project.value.is_launched
+      await projectStore.setProjectLaunched(project.value.id, newStatus)
+      errorStore.addMessage(
+        'info',
+        `Project ${newStatus ? 'launched' : 'unlaunched'} successfully.`
+      )
+    } catch {
+      errorStore.addMessage('error', 'Failed to update project launch status. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
   }
 
-  const closeModal = () => {
-    showEditModal.value = false
-    form.internal_name = ''
-    form.launch_date = ''
-    form.is_enabled = true
+  const handleStatusToggle = async (index: number) => {
+    if (index === 0) {
+      await toggleEnabled()
+    } else if (index === 1) {
+      await toggleLaunched()
+    }
   }
 
-  onMounted(() => {
-    fetchProject()
+  // Fetch project function
+  const fetchProject = async () => {
+    const projectId = route.params.id as string
+    if (!projectId || mode.value === 'create') return
+
+    try {
+      loadingStore.show()
+      await projectStore.fetchProject(projectId)
+    } catch {
+      errorStore.addMessage('error', 'Failed to load project. Please try again.')
+    } finally {
+      loadingStore.hide()
+    }
+  }
+
+  // Initialize component
+  const initializeComponent = async () => {
+    const projectId = route.params.id as string
+    const isCreateRoute = route.name === 'project-new' || route.path === '/projects/new'
+
+    try {
+      if (isCreateRoute) {
+        // Clear current project to avoid showing stale data from previously viewed projects
+        projectStore.clearCurrentProject()
+
+        // For create mode, only fetch dropdown options
+        await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])
+        enterCreateMode()
+      } else if (projectId) {
+        // For view/edit mode, fetch project data and dropdown options
+        await Promise.all([
+          fetchProject(),
+          contextStore.fetchContexts(),
+          languageStore.fetchLanguages(),
+        ])
+
+        // Check if we should start in edit mode from query parameter
+        if (route.query.edit === 'true' && project.value) {
+          enterEditMode()
+        } else {
+          enterViewMode()
+        }
+      }
+    } catch {
+      // Silent fail - component will work with default behavior
+    }
+  }
+
+  // Navigation guard to prevent accidental navigation away from unsaved changes
+  onBeforeRouteLeave(
+    async (
+      _to: RouteLocationNormalized,
+      _from: RouteLocationNormalized,
+      next: NavigationGuardNext
+    ) => {
+      // Only check for unsaved changes if we're in edit or create mode
+      if ((mode.value === 'edit' || mode.value === 'create') && hasUnsavedChanges.value) {
+        const result = await cancelChangesStore.trigger(
+          mode.value === 'create'
+            ? 'New Project has unsaved changes'
+            : 'Project has unsaved changes',
+          mode.value === 'create'
+            ? 'There are unsaved changes to this new project. If you navigate away, the changes will be lost. Are you sure you want to navigate away? This action cannot be undone.'
+            : `There are unsaved changes to "${project.value?.internal_name}". If you navigate away, the changes will be lost. Are you sure you want to navigate away? This action cannot be undone.`
+        )
+
+        if (result === 'stay') {
+          next(false) // Cancel navigation
+        } else {
+          cancelChangesStore.resetChanges() // Reset changes before leaving
+          next() // Allow navigation
+        }
+      } else {
+        next() // No unsaved changes, allow navigation
+      }
+    }
+  )
+
+  // Lifecycle
+  onMounted(initializeComponent)
+
+  // Expose properties for testing
+  defineExpose({
+    mode,
+    project,
+    editForm,
+    hasUnsavedChanges,
+    informationDescription,
+    enterEditMode,
+    enterViewMode,
+    saveProject,
+    cancelAction,
+    deleteProject,
   })
 </script>

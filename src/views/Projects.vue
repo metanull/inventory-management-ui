@@ -1,218 +1,378 @@
 <template>
-  <div>
-    <div class="mb-8 flex justify-between items-center">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Projects</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage active projects</p>
-      </div>
-      <button class="btn-primary" @click="showCreateModal = true">Add Project</button>
-    </div>
+  <ListView
+    title="Projects"
+    description="Manage projects in your inventory system. Projects can be enabled/disabled and launched/not launched."
+    add-button-route="/projects/new"
+    add-button-label="Add Project"
+    color="orange"
+    :is-empty="filteredProjects.length === 0"
+    empty-title="No projects found"
+    :empty-message="
+      filterMode === 'all'
+        ? 'Get started by creating a new project.'
+        : filterMode === 'visible'
+          ? 'No visible projects found. Projects are visible when they are enabled, launched, and the launch date has passed.'
+          : `No ${filterMode} projects found.`
+    "
+    :show-empty-add-button="filterMode === 'all'"
+    empty-add-button-label="New Project"
+    @retry="fetchProjects"
+  >
+    <!-- Icon -->
+    <template #icon>
+      <ProjectIcon />
+    </template>
+    <!-- Filter Buttons -->
+    <template #filters>
+      <FilterButton
+        label="All Projects"
+        :is-active="filterMode === 'all'"
+        :count="projects.length"
+        variant="primary"
+        @click="filterMode = 'all'"
+      />
+      <FilterButton
+        label="Enabled"
+        :is-active="filterMode === 'enabled'"
+        :count="enabledProjects.length"
+        variant="info"
+        @click="filterMode = 'enabled'"
+      />
+      <FilterButton
+        label="Launched"
+        :is-active="filterMode === 'launched'"
+        :count="launchedProjects.length"
+        variant="info"
+        @click="filterMode = 'launched'"
+      />
+      <FilterButton
+        label="Visible"
+        :is-active="filterMode === 'visible'"
+        :count="visibleProjects.length"
+        variant="success"
+        @click="filterMode = 'visible'"
+      />
+    </template>
 
-    <div v-if="loading" class="text-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-    </div>
+    <!-- Search Slot -->
+    <template #search>
+      <SearchControl v-model="searchQuery" placeholder="Search projects..." />
+    </template>
 
-    <div v-else-if="error" class="text-red-600 text-center py-8">
-      {{ error }}
-    </div>
+    <!-- Projects Table -->
+    <!-- Projects Table -->
+    <template #headers>
+      <TableRow>
+        <TableHeader
+          sortable
+          :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
+          @sort="handleSort('internal_name')"
+        >
+          Project
+        </TableHeader>
+        <TableHeader
+          class="hidden md:table-cell"
+          sortable
+          :sort-direction="sortKey === 'is_enabled' ? sortDirection : null"
+          @sort="handleSort('is_enabled')"
+        >
+          Enabled
+        </TableHeader>
+        <TableHeader
+          class="hidden md:table-cell"
+          sortable
+          :sort-direction="sortKey === 'is_launched' ? sortDirection : null"
+          @sort="handleSort('is_launched')"
+        >
+          Launched
+        </TableHeader>
+        <TableHeader
+          class="hidden lg:table-cell"
+          sortable
+          :sort-direction="sortKey === 'launch_date' ? sortDirection : null"
+          @sort="handleSort('launch_date')"
+        >
+          Launch Date
+        </TableHeader>
+        <TableHeader
+          class="hidden lg:table-cell"
+          sortable
+          :sort-direction="sortKey === 'created_at' ? sortDirection : null"
+          @sort="handleSort('created_at')"
+        >
+          Created
+        </TableHeader>
+        <TableHeader class="hidden sm:table-cell" variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
+    </template>
 
-    <div v-else-if="projects.length === 0" class="text-gray-500 text-center py-8">
-      No projects found. Create your first project to get started.
-    </div>
-
-    <div v-else class="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul class="divide-y divide-gray-200">
-        <li v-for="project in projects" :key="project.id">
-          <div class="px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span class="text-purple-600 font-medium text-sm">P</span>
-                </div>
-              </div>
-              <div class="ml-4">
-                <div class="text-sm font-medium text-gray-900">
-                  {{ project.internal_name }}
-                </div>
-                <div class="text-sm text-gray-500">
-                  Status:
-                  <span :class="project.is_enabled ? 'text-green-600' : 'text-red-600'">
-                    {{ project.is_enabled ? 'Active' : 'Inactive' }}
-                  </span>
-                  {{
-                    project.launch_date
-                      ? ` | Launched: ${new Date(project.launch_date).toLocaleDateString()}`
-                      : ''
-                  }}
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center space-x-2">
-              <RouterLink
-                :to="`/projects/${project.id}`"
-                class="text-primary-600 hover:text-primary-900 text-sm font-medium"
-              >
-                View
-              </RouterLink>
-              <button
-                class="text-gray-600 hover:text-gray-900 text-sm font-medium"
-                @click="editProject(project)"
-              >
-                Edit
-              </button>
-              <button
-                class="text-red-600 hover:text-red-900 text-sm font-medium"
-                @click.stop="deleteProject(project.id)"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Create/Edit Modal -->
-    <div
-      v-if="showCreateModal || showEditModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-      @click="closeModal"
-    >
-      <div
-        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
-        @click.stop
+    <template #rows>
+      <TableRow
+        v-for="project in filteredProjects"
+        :key="project.id"
+        class="cursor-pointer hover:bg-orange-50 transition"
+        @click="openProjectDetail(project.id)"
       >
-        <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            {{ showCreateModal ? 'Create Project' : 'Edit Project' }}
-          </h3>
-          <form class="space-y-4" @submit.prevent="handleSubmit">
-            <div>
-              <label class="label">Internal Name</label>
-              <input
-                v-model="form.internal_name"
-                type="text"
-                required
-                class="input"
-                placeholder="Enter project name"
-              />
-            </div>
-
-            <div>
-              <label class="label">Launch Date</label>
-              <input v-model="form.launch_date" type="date" class="input" />
-            </div>
-
-            <div class="flex items-center">
-              <input
-                v-model="form.is_enabled"
-                type="checkbox"
-                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              />
-              <label class="ml-2 block text-sm text-gray-900"> Project is active </label>
-            </div>
-
-            <div class="flex justify-end space-x-3 pt-4">
-              <button type="button" class="btn-outline" @click="closeModal">Cancel</button>
-              <button type="submit" class="btn-primary" :disabled="submitting">
-                {{ submitting ? 'Saving...' : showCreateModal ? 'Create' : 'Update' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+        <TableCell>
+          <InternalName
+            small
+            :internal-name="project.internal_name"
+            :backward-compatibility="project.backward_compatibility"
+          >
+            <template #icon>
+              <ProjectIcon class="h-5 w-5 text-orange-600" />
+            </template>
+          </InternalName>
+        </TableCell>
+        <TableCell class="hidden md:table-cell">
+          <div @click.stop>
+            <Toggle
+              small
+              title="Enabled"
+              :status-text="project.is_enabled ? 'Enabled' : 'Disabled'"
+              :is-active="project.is_enabled"
+              @toggle="updateProjectStatus(project, 'is_enabled', !project.is_enabled)"
+            />
+          </div>
+        </TableCell>
+        <TableCell class="hidden md:table-cell">
+          <div @click.stop>
+            <Toggle
+              small
+              title="Launched"
+              :status-text="project.is_launched ? 'Launched' : 'Not launched'"
+              :is-active="project.is_launched"
+              @toggle="updateProjectStatus(project, 'is_launched', !project.is_launched)"
+            />
+          </div>
+        </TableCell>
+        <TableCell class="hidden lg:table-cell">
+          <DateDisplay
+            v-if="project.launch_date"
+            :date="project.launch_date"
+            format="short"
+            variant="small-dark"
+          />
+          <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+        </TableCell>
+        <TableCell class="hidden lg:table-cell">
+          <DateDisplay :date="project.created_at" format="short" variant="small-dark" />
+        </TableCell>
+        <TableCell class="hidden sm:table-cell">
+          <div class="flex space-x-2" @click.stop>
+            <ViewButton @click="router.push(`/projects/${project.id}`)" />
+            <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
+            <DeleteButton @click="handleDeleteProject(project)" />
+          </div>
+        </TableCell>
+      </TableRow>
+    </template>
+  </ListView>
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, onMounted } from 'vue'
-  import { apiClient, type ProjectResource } from '@/api/client'
+  import { ref, computed, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useProjectStore } from '@/stores/project'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
+  import type { ProjectResource } from '@metanull/inventory-app-api-client'
+  import ViewButton from '@/components/layout/list/ViewButton.vue'
+  import EditButton from '@/components/layout/list/EditButton.vue'
+  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import DisplayText from '@/components/format/DisplayText.vue'
+  import FilterButton from '@/components/layout/list/FilterButton.vue'
+  import ListView from '@/components/layout/list/ListView.vue'
+  import TableHeader from '@/components/format/table/TableHeader.vue'
+  import TableRow from '@/components/format/table/TableRow.vue'
+  import TableCell from '@/components/format/table/TableCell.vue'
+  import Toggle from '@/components/format/Toggle.vue'
+  import InternalName from '@/components/format/InternalName.vue'
+  import { FolderIcon as ProjectIcon } from '@heroicons/vue/24/solid'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
 
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const submitting = ref(false)
-  const projects = ref<ProjectResource[]>([])
-  const showCreateModal = ref(false)
-  const showEditModal = ref(false)
-  const editingProject = ref<ProjectResource | null>(null)
+  const router = useRouter()
 
-  const form = reactive({
-    internal_name: '',
-    launch_date: '',
-    is_enabled: true,
+  const projectStore = useProjectStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
+
+  const projects = computed(() => projectStore.projects)
+  const visibleProjects = computed(() => projectStore.visibleProjects)
+  const enabledProjects = computed(() => projectStore.enabledProjects)
+  const launchedProjects = computed(() => projectStore.launchedProjects)
+
+  // Filter state - default to 'visible'
+  const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('all')
+
+  // Sorting state
+  const sortKey = ref<string>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
+
+  // Search state
+  const searchQuery = ref<string>('')
+
+  // Handle sort event from TableHeader
+  function handleSort(key: string) {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
+    }
+  }
+
+  // Computed filtered and sorted projects
+  const filteredProjects = computed(() => {
+    let list: ProjectResource[]
+    switch (filterMode.value) {
+      case 'visible':
+        list = visibleProjects.value
+        break
+      case 'enabled':
+        list = enabledProjects.value
+        break
+      case 'launched':
+        list = launchedProjects.value
+        break
+      default:
+        list = projects.value
+    }
+    // Search filter
+    const query = searchQuery.value.trim().toLowerCase()
+    if (query.length > 0) {
+      list = list.filter(project => {
+        const name = project.internal_name?.toLowerCase() ?? ''
+        const compat = project.backward_compatibility?.toLowerCase() ?? ''
+        return name.includes(query) || compat.includes(query)
+      })
+    }
+    // Simple sorting logic
+    return [...list].sort((a, b) => {
+      const key = sortKey.value
+      let valA: unknown
+      let valB: unknown
+      if (key === 'internal_name') {
+        valA = a.internal_name ?? ''
+        valB = b.internal_name ?? ''
+      } else {
+        valA = (a as any)[key]
+        valB = (b as any)[key]
+      }
+      if (valA == null && valB == null) return 0
+      if (valA == null) return 1
+      if (valB == null) return -1
+      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
+      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
+      return 0
+    })
   })
 
+  // Fetch projects on mount
+  onMounted(async () => {
+    let usedCache = false
+    // If cache exists, display immediately and refresh in background
+    if (projects.value && projects.value.length > 0) {
+      usedCache = true
+    } else {
+      loadingStore.show()
+    }
+    try {
+      // Always refresh in background
+      await projectStore.fetchProjects()
+      await projectStore.fetchEnabledProjects()
+      if (usedCache) {
+        errorStore.addMessage('info', 'List refreshed')
+      }
+    } catch {
+      errorStore.addMessage('error', 'Failed to fetch projects. Please try again.')
+    } finally {
+      if (!usedCache) {
+        loadingStore.hide()
+      }
+    }
+  })
+
+  // Open ProjectDetail for clicked project
+  function openProjectDetail(projectId: string | number) {
+    router.push(`/projects/${projectId}`)
+  }
+
+  // Update project status
+  const updateProjectStatus = async (project: ProjectResource, field: string, value: boolean) => {
+    try {
+      loadingStore.show('Updating...')
+      if (field === 'is_enabled') {
+        await projectStore.setProjectEnabled(project.id, value)
+        errorStore.addMessage('info', `Project ${value ? 'enabled' : 'disabled'} successfully.`)
+      } else if (field === 'is_launched') {
+        await projectStore.setProjectLaunched(project.id, value)
+        errorStore.addMessage('info', `Project ${value ? 'launched' : 'unlaunched'} successfully.`)
+      }
+    } catch {
+      errorStore.addMessage('error', `Failed to update project status. Please try again.`)
+    } finally {
+      loadingStore.hide()
+    }
+  }
+
+  // Fetch projects function for retry
   const fetchProjects = async () => {
-    loading.value = true
-    error.value = null
-
     try {
-      const response = await apiClient.getProjects()
-      projects.value = response.data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to load projects'
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const handleSubmit = async () => {
-    submitting.value = true
-
-    try {
-      const projectData = {
-        internal_name: form.internal_name,
-        launch_date: form.launch_date || null,
-        is_enabled: form.is_enabled,
+      loadingStore.show()
+      if (filterMode.value === 'visible') {
+        await projectStore.fetchEnabledProjects()
+      } else {
+        await projectStore.fetchProjects()
       }
-
-      if (showCreateModal.value) {
-        await apiClient.createProject(projectData)
-      } else if (editingProject.value) {
-        await apiClient.updateProject(editingProject.value.id, projectData)
-      }
-
-      await fetchProjects()
-      closeModal()
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to save project'
+      errorStore.addMessage('info', 'Projects refreshed successfully.')
+    } catch {
+      errorStore.addMessage('error', 'Failed to refresh projects. Please try again.')
     } finally {
-      submitting.value = false
+      loadingStore.hide()
     }
   }
 
-  const editProject = (project: ProjectResource) => {
-    editingProject.value = project
-    form.internal_name = project.internal_name
-    form.launch_date = project.launch_date || ''
-    form.is_enabled = project.is_enabled
-    showEditModal.value = true
-  }
+  // Delete project with confirmation
+  const handleDeleteProject = async (projectToDelete: ProjectResource) => {
+    const result = await deleteStore.trigger(
+      'Delete Project',
+      `Are you sure you want to delete "${projectToDelete.internal_name}"? This action cannot be undone.`
+    )
 
-  const deleteProject = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) {
-      return
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await projectStore.deleteProject(projectToDelete.id)
+        errorStore.addMessage('info', 'Project deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Failed to delete project. Please try again.')
+      } finally {
+        loadingStore.hide()
+      }
     }
-
-    try {
-      await apiClient.deleteProject(id)
-      await fetchProjects()
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to delete project'
-    }
   }
 
-  const closeModal = () => {
-    showCreateModal.value = false
-    showEditModal.value = false
-    editingProject.value = null
-    form.internal_name = ''
-    form.launch_date = ''
-    form.is_enabled = true
-  }
-
-  onMounted(() => {
-    fetchProjects()
+  // Expose properties for testing
+  defineExpose({
+    projects,
+    filteredProjects,
+    visibleProjects,
+    enabledProjects,
+    launchedProjects,
+    filterMode,
+    searchQuery,
+    sortKey,
+    sortDirection,
+    openProjectDetail,
+    updateProjectStatus,
+    handleDeleteProject,
+    handleSort,
+    fetchProjects,
   })
 </script>

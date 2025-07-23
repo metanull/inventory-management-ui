@@ -7,12 +7,12 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run --exclude='**/*.integration.test.ts'",
-    "test:unit": "vitest run --exclude='**/*.integration.test.ts'",
+    "test": "vitest run --exclude='**/*.integration.test.ts' --reporter=dot",
+    "test:unit": "vitest run --exclude='**/*.integration.test.ts' --reporter=dot",
     "test:unit:watch": "vitest --exclude='**/*.integration.test.ts'",
     "test:unit:coverage": "vitest run --coverage --exclude='**/*.integration.test.ts'",
     "test:watch": "vitest --exclude='**/*.integration.test.ts'",
-    "test:coverage": "vitest run --coverage --exclude='**/*.integration.test.ts'",
+    "test:coverage": "vitest run --coverage --exclude='**/*.integration.test.ts' --reporter=dot",
     "test:ui": "vitest --ui --exclude='**/*.integration.test.ts'",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:integration:watch": "vitest --config vitest.integration.config.ts",
@@ -20,19 +20,28 @@
     "test:integration:guided": "node scripts/run-integration-tests.mjs",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "format": "prettier --write src/",
+    "format": "prettier --write src/ --log-level warn",
     "format:check": "prettier --check src/",
     "type-check": "vue-tsc --noEmit",
     "prepare": "husky",
     "inventory-app:fetch": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app.json'\"",
-    "inventory-app:diff": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app-temp.json'; Compare-Object (Get-Content './src/api/inventory-app.json') (Get-Content './src/api/inventory-app-temp.json') | Format-Table; Remove-Item './src/api/inventory-app-temp.json'\""
+    "inventory-app:diff": "powershell -Command \"Invoke-WebRequest -Uri 'https://metanull.github.io/inventory-app/api.json' -OutFile './src/api/inventory-app-temp.json'; Compare-Object (Get-Content './src/api/inventory-app.json') (Get-Content './src/api/inventory-app-temp.json') | Format-Table; Remove-Item './src/api/inventory-app-temp.json'\"",
+    "inventory-app:start": "powershell -ExecutionPolicy Bypass -File ./scripts/Start-Api.ps1",
+    "inventory-app:watch-logs": "powershell -ExecutionPolicy Bypass -File ./scripts/Watch-ApiLogs.ps1",
+    "inventory-app:clear-logs": "powershell -ExecutionPolicy Bypass -File ./scripts/Clear-ApiLogs.ps1",
+    "quality-check": "npm run type-check && npm run lint:check && npm run format:check && npm run test",
+    "quality-check:fix": "npm run lint && npm run format",
+    "quality-check:report": "powershell -ExecutionPolicy Bypass -File ./scripts/Check-Issues.ps1"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
+    "@metanull/inventory-app-api-client": "^1.1.19-dev.715.1753",
+    "@types/uuid": "^10.0.0",
     "@vueuse/core": "^13.4.0",
     "axios": "^1.7.9",
     "pinia": "^3.0.3",
+    "uuid": "^11.1.0",
     "vue": "^3.5.14",
     "vue-router": "^4.5.0"
   },
@@ -60,9 +69,9 @@
     "prettier": "^3.4.2",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.8.3",
-    "vite": "^7.0.0",
+    "vite": "^7.0.4",
     "vitest": "^3.2.4",
-    "vue-tsc": "^3.0.0"
+    "vue-tsc": "^3.0.1"
   },
   "lint-staged": {
     "*.{vue,js,ts}": [

@@ -1,183 +1,138 @@
 <template>
   <div>
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p class="mt-2 text-sm text-gray-600">Welcome to the Inventory Management System</p>
+      <Title variant="page" description="Welcome to the Inventory Management System">
+        Dashboard
+      </Title>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-              <span class="text-white text-sm font-medium">I</span>
-            </div>
-          </div>
-          <div class="ml-4">
-            <div class="text-sm font-medium text-gray-500">Total Items</div>
-            <div class="text-2xl font-bold text-gray-900">{{ stats.items || 0 }}</div>
-          </div>
-        </div>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Languages Management Card -->
+      <NavigationCard
+        title="Languages"
+        description="Manage system languages and localization settings"
+        main-color="purple"
+        button-text="Manage Languages"
+        button-route="/languages"
+      >
+        <template #icon>
+          <LanguageIcon />
+        </template>
+      </NavigationCard>
 
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span class="text-white text-sm font-medium">P</span>
-            </div>
-          </div>
-          <div class="ml-4">
-            <div class="text-sm font-medium text-gray-500">Total Partners</div>
-            <div class="text-2xl font-bold text-gray-900">{{ stats.partners || 0 }}</div>
-          </div>
-        </div>
-      </div>
+      <!-- Countries Management Card -->
+      <NavigationCard
+        title="Countries"
+        description="Manage countries and geographic regions"
+        main-color="blue"
+        button-text="Manage Countries"
+        button-route="/countries"
+      >
+        <template #icon>
+          <CountryIcon />
+        </template>
+      </NavigationCard>
 
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-              <span class="text-white text-sm font-medium">R</span>
-            </div>
-          </div>
-          <div class="ml-4">
-            <div class="text-sm font-medium text-gray-500">Active Projects</div>
-            <div class="text-2xl font-bold text-gray-900">{{ stats.projects || 0 }}</div>
-          </div>
-        </div>
-      </div>
+      <!-- Contexts Management Card -->
+      <NavigationCard
+        title="Contexts"
+        description="Manage system contexts and operational environments"
+        main-color="green"
+        button-text="Manage Contexts"
+        button-route="/contexts"
+      >
+        <template #icon>
+          <ContextIcon />
+        </template>
+      </NavigationCard>
 
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-              <span class="text-white text-sm font-medium">T</span>
-            </div>
-          </div>
-          <div class="ml-4">
-            <div class="text-sm font-medium text-gray-500">Total Tags</div>
-            <div class="text-2xl font-bold text-gray-900">{{ stats.tags || 0 }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+      <!-- Projects Management Card -->
+      <NavigationCard
+        title="Projects"
+        description="Manage projects, collections with launch dates and status"
+        main-color="orange"
+        button-text="Manage Projects"
+        button-route="/projects"
+      >
+        <template #icon>
+          <ProjectIcon />
+        </template>
+      </NavigationCard>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div class="card">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Items</h2>
-        <div v-if="loading" class="text-center py-4">
-          <div
-            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"
-          ></div>
-        </div>
-        <div v-else-if="error" class="text-red-600 text-center py-4">
-          {{ error }}
-        </div>
-        <div v-else-if="recentItems.length === 0" class="text-gray-500 text-center py-4">
-          No items found
-        </div>
-        <div v-else class="space-y-3">
-          <div
-            v-for="item in recentItems"
-            :key="item.id"
-            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-          >
-            <div>
-              <div class="font-medium text-gray-900">{{ item.internal_name }}</div>
-              <div class="text-sm text-gray-500">Type: {{ item.type }}</div>
-            </div>
-            <RouterLink
-              :to="`/items/${item.id}`"
-              class="text-primary-600 hover:text-primary-800 text-sm font-medium"
-            >
-              View
-            </RouterLink>
-          </div>
-        </div>
-      </div>
+      <!-- System Status Card -->
+      <StatusCard
+        title="System Status"
+        :description="apiStatusDescription"
+        :main-color="apiStatusColor"
+        :status-text="apiStatusText"
+        toggle-title="API Server"
+        :is-active="isApiUp"
+        :loading="apiLoading"
+        :disabled="true"
+        active-icon-background-class="bg-green-100"
+        inactive-icon-background-class="bg-red-100"
+        active-icon-class="text-green-600"
+        inactive-icon-class="text-red-600"
+        :active-icon-component="CheckCircleIcon"
+        :inactive-icon-component="XCircleIcon"
+        @toggle="checkApiStatus"
+      >
+        <template #icon>
+          <SystemIcon />
+        </template>
+      </StatusCard>
 
-      <div class="card">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-        <div class="space-y-3">
-          <RouterLink
-            to="/items"
-            class="block w-full text-left p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
-          >
-            <div class="font-medium text-primary-900">Manage Items</div>
-            <div class="text-sm text-primary-600">View and edit inventory items</div>
-          </RouterLink>
-          <RouterLink
-            to="/partners"
-            class="block w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
-          >
-            <div class="font-medium text-green-900">Manage Partners</div>
-            <div class="text-sm text-green-600">View and edit partner organizations</div>
-          </RouterLink>
-          <RouterLink
-            to="/projects"
-            class="block w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
-          >
-            <div class="font-medium text-purple-900">Manage Projects</div>
-            <div class="text-sm text-purple-600">View and edit active projects</div>
-          </RouterLink>
-          <RouterLink
-            to="/tags"
-            class="block w-full text-left p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
-          >
-            <div class="font-medium text-orange-900">Manage Tags</div>
-            <div class="text-sm text-orange-600">View and edit item tags</div>
-          </RouterLink>
-        </div>
-      </div>
+      <!-- More Features Coming Soon Card -->
+      <InformationCard
+        title="Additional Features"
+        description="More inventory management features like items, addresses, and details will be implemented in future iterations."
+        main-color="gray"
+        pill-text="Coming Soon"
+      >
+        <template #icon>
+          <FeaturesIcon />
+        </template>
+      </InformationCard>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
-  import { RouterLink } from 'vue-router'
-  import { apiClient, type ItemResource } from '@/api/client'
+  import { computed } from 'vue'
+  import NavigationCard from '@/components/format/card/NavigationCard.vue'
+  import StatusCard from '@/components/format/card/StatusCard.vue'
+  import InformationCard from '@/components/format/card/InformationCard.vue'
+  import Title from '@/components/format/title/Title.vue'
+  import {
+    CheckCircleIcon,
+    XCircleIcon,
+    LanguageIcon,
+    GlobeAltIcon as CountryIcon,
+    CogIcon as ContextIcon,
+    FolderIcon as ProjectIcon,
+    CpuChipIcon as SystemIcon,
+    AdjustmentsHorizontalIcon as FeaturesIcon,
+  } from '@heroicons/vue/24/solid'
+  import { useApiStatus } from '@/composables/useApiStatus'
 
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const recentItems = ref<ItemResource[]>([])
-  const stats = ref({
-    items: 0,
-    partners: 0,
-    projects: 0,
-    tags: 0,
+  const { isApiUp, loading: apiLoading, checkApiStatus } = useApiStatus()
+
+  const apiStatusText = computed(() => {
+    if (apiLoading.value) return 'Checking...'
+    return isApiUp.value ? 'API Online' : 'API Offline'
   })
 
-  const fetchDashboardData = async () => {
-    loading.value = true
-    error.value = null
+  const apiStatusDescription = computed(() => {
+    if (apiLoading.value) return 'Checking API server connection...'
 
-    try {
-      const [itemsResponse, partnersResponse, projectsResponse, tagsResponse] = await Promise.all([
-        apiClient.getItems(),
-        apiClient.getPartners(),
-        apiClient.getEnabledProjects(),
-        apiClient.getTags(),
-      ])
-
-      stats.value = {
-        items: itemsResponse.data.length,
-        partners: partnersResponse.data.length,
-        projects: projectsResponse.data.length,
-        tags: tagsResponse.data.length,
-      }
-
-      // Show most recent 5 items
-      recentItems.value = itemsResponse.data.slice(0, 5)
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to load dashboard data'
-    } finally {
-      loading.value = false
+    if (isApiUp.value) {
+      return 'Connected to the API server'
     }
-  }
 
-  onMounted(() => {
-    fetchDashboardData()
+    return 'Unable to connect to the API server. Please check your connection.'
+  })
+
+  const apiStatusColor = computed(() => {
+    return isApiUp.value ? 'green' : 'red'
   })
 </script>

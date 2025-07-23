@@ -2,11 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
 // Mock the API client before importing the store
-vi.mock('@/api/client', () => ({
-  apiClient: {
-    login: vi.fn(),
-    logout: vi.fn(),
-  },
+vi.mock('@metanull/inventory-app-api-client', () => ({
+  MobileAppAuthenticationApi: vi.fn().mockImplementation(() => ({
+    tokenAcquire: vi.fn(),
+    tokenWipe: vi.fn(),
+  })),
+  Configuration: vi.fn(),
 }))
 
 import { useAuthStore } from '../auth'
@@ -59,18 +60,29 @@ describe('Auth Store', () => {
   describe('Login', () => {
     it('should login successfully', async () => {
       const mockToken = 'new-auth-token'
-      const { apiClient } = (await vi.importMock('@/api/client')) as {
-        apiClient: { login: ReturnType<typeof vi.fn> }
+      const mockResponse = { data: `1;${mockToken}` }
+
+      const { MobileAppAuthenticationApi } = (await vi.importMock(
+        '@metanull/inventory-app-api-client'
+      )) as {
+        MobileAppAuthenticationApi: ReturnType<typeof vi.fn>
       }
-      apiClient.login.mockResolvedValueOnce(mockToken)
+
+      const mockApiInstance = {
+        tokenAcquire: vi.fn().mockResolvedValueOnce(mockResponse),
+        tokenWipe: vi.fn(),
+      }
+
+      MobileAppAuthenticationApi.mockReturnValue(mockApiInstance)
 
       await authStore.login('test@example.com', 'password')
 
-      expect(apiClient.login).toHaveBeenCalledWith(
-        'test@example.com',
-        'password',
-        'Inventory Management UI'
-      )
+      expect(mockApiInstance.tokenAcquire).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password',
+        device_name: 'Inventory Management UI',
+        wipe_tokens: true,
+      })
       expect(authStore.token).toBe(mockToken)
       expect(authStore.loading).toBe(false)
       expect(authStore.error).toBeNull()
@@ -85,10 +97,19 @@ describe('Auth Store', () => {
           },
         },
       }
-      const { apiClient } = (await vi.importMock('@/api/client')) as {
-        apiClient: { login: ReturnType<typeof vi.fn> }
+
+      const { MobileAppAuthenticationApi } = (await vi.importMock(
+        '@metanull/inventory-app-api-client'
+      )) as {
+        MobileAppAuthenticationApi: ReturnType<typeof vi.fn>
       }
-      apiClient.login.mockRejectedValueOnce(mockError)
+
+      const mockApiInstance = {
+        tokenAcquire: vi.fn().mockRejectedValueOnce(mockError),
+        tokenWipe: vi.fn(),
+      }
+
+      MobileAppAuthenticationApi.mockReturnValue(mockApiInstance)
 
       await expect(authStore.login('test@example.com', 'wrong-password')).rejects.toThrow()
 
@@ -105,14 +126,22 @@ describe('Auth Store', () => {
     })
 
     it('should logout successfully', async () => {
-      const { apiClient } = (await vi.importMock('@/api/client')) as {
-        apiClient: { logout: ReturnType<typeof vi.fn> }
+      const { MobileAppAuthenticationApi } = (await vi.importMock(
+        '@metanull/inventory-app-api-client'
+      )) as {
+        MobileAppAuthenticationApi: ReturnType<typeof vi.fn>
       }
-      apiClient.logout.mockResolvedValueOnce(undefined)
+
+      const mockApiInstance = {
+        tokenAcquire: vi.fn(),
+        tokenWipe: vi.fn().mockResolvedValueOnce(undefined),
+      }
+
+      MobileAppAuthenticationApi.mockReturnValue(mockApiInstance)
 
       await authStore.logout()
 
-      expect(apiClient.logout).toHaveBeenCalled()
+      expect(mockApiInstance.tokenWipe).toHaveBeenCalled()
       expect(authStore.token).toBeNull()
       expect(authStore.error).toBeNull()
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('auth_token')

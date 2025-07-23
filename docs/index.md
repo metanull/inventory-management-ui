@@ -4,12 +4,12 @@ title: Home
 nav_order: 1
 ---
 
-# Inventory Management UI
+# Museum Inventory Management UI
 
-A modern Vue.js 3 application built with TypeScript for managing inventory items, partners, projects, and more. This application provides a user-friendly interface for the inventory management API.
+A modern Vue.js 3 + TypeScript application for managing museum inventory systems. Built with responsive design, comprehensive testing, and production-ready architecture for museums, institutions, and collectors to catalog, organize, and preserve cultural objects and monuments.
 
 {: .highlight }
-> This is a Vue.js 3 client application that interfaces with the [Inventory Management API](https://github.com/metanull/inventory-app) to provide a modern, responsive web interface for inventory management.
+> This is a Vue.js 3 client application that interfaces with the [Inventory Management API](https://github.com/metanull/inventory-app) to provide a modern, responsive web interface for comprehensive inventory management of museum items.
 
 ## ✨ Features
 
@@ -22,32 +22,41 @@ A modern Vue.js 3 application built with TypeScript for managing inventory items
 - 🔧 **Modern Tooling** with Vite, ESLint, and Prettier
 - 📊 **State Management** with Pinia
 - 🌐 **Routing** with Vue Router 4
+- 📦 **API Client Integration** using `@metanull/inventory-app-api-client`
 
-### Entity Management
+## 📖 Documentation
 
-The application provides full CRUD (Create, Read, Update, Delete) operations for:
+- **[Application Architecture](application-architecture)** - Comprehensive technical architecture, component patterns, and implementation details
+- **[API Integration Guidelines](guidelines/api-integration)** - API client usage and integration patterns
+- **[Component Documentation](components/)** - Detailed component library reference
+- **[Contributing Guidelines](contributing)** - Development workflow and contribution guide
 
-#### Primary Entities
-- **Items** - Inventory objects and monuments with detailed metadata
-- **Partners** - Museums, institutions, and individuals involved in projects
-- **Projects** - Collections with launch dates, status tracking, and partner associations
-- **Tags** - Flexible categorization system for organizing content
-- **Pictures** - Image management with upload and organization capabilities
+### Resource Management
 
-#### Reference Data & Context
-- **Countries** - Geographic reference data with standardized names and codes
-- **Languages** - Language reference data for internationalization
-- **Contexts** - Content organization and categorization framework
-- **ImageUploads** - Advanced file upload management for images
-- **Contextualizations** - Flexible linking system between contexts and content
-- **Details** - Extended information records for enhanced documentation
+The application is designed to provide full CRUD (Create, Read, Update, Delete) operations for:
 
-Each entity includes:
-- List views with search, filtering, and pagination
-- Detailed views with comprehensive information display
-- Create/Edit modals with form validation
-- Delete confirmation with safeguards
-- Responsive design for all screen sizes
+#### Primary Resources (Planned)
+- **Items** - Cultural objects and monuments with detailed metadata *(Planned)*
+- **Partners** - Museums, institutions, and individual collectors involved in projects *(Planned)*
+- **Projects** - Collections with launch dates, status tracking, and partner associations ✅ **Currently Implemented**
+- **Tags** - Flexible categorization system for organizing content *(Planned)*
+- **Pictures** - Image management with upload and organization capabilities *(Planned)*
+
+#### Reference Data
+- **Countries** - Geographic reference data with standardized names and codes 🔄 *Basic Implementation*
+- **Languages** - Language reference data for internationalization 🔄 *Basic Implementation*
+- **Contexts** - Content organization and categorization framework 🔄 *Basic Implementation*
+
+### Current Implementation: Projects (Reference Implementation)
+
+The **Projects** resource is fully implemented and demonstrates the complete application architecture:
+- **Advanced Filtering**: All/Enabled/Launched/Visible with counts and dynamic labels
+- **Real-time Search**: Across all project fields with debouncing
+- **Column Sorting**: Sortable by internal name, creation date
+- **Responsive Design**: Desktop tables → mobile cards
+- **Inline Editing**: Three-mode system (view/edit/create) with unsaved changes protection
+- **Status Management**: Toggle enabled/launched states with visual indicators
+- **API Integration**: TypeScript client library with automatic error handling
 
 ## 🏗️ Architecture
 
@@ -63,14 +72,15 @@ The application follows modern Vue.js best practices:
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 22.17.0 or higher (latest LTS)
-- npm 10.9.2 or higher
+- Node.js 18+ 
+- Access to [Inventory Management API](https://github.com/metanull/inventory-app)
+- GitHub token for `@metanull/inventory-app-api-client` package access
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/metanull/inventory-management-ui.git
 cd inventory-management-ui
 
 # Install dependencies
@@ -88,12 +98,16 @@ The application will be available at `http://localhost:3000`.
 
 ## 🔗 Related Projects
 
-- [Inventory API](https://github.com/metanull/inventory-app) - Backend API for this application
+- **[Backend API](https://github.com/metanull/inventory-app)** - Laravel REST API with SQLite/MySQL support
+- **[API Documentation](https://metanull.github.io/inventory-app)** - OpenAPI specifications and integration guides
 
 ## 📚 Documentation Sections
 
 ### [Guidelines](guidelines/)
 Comprehensive development guidelines covering API integration, coding standards, and testing practices.
+
+### [Components](components/)
+A catalog of reusable Vue components used throughout the application, including usage examples and API documentation.
 
 ### [Contributing](contributing)
 Guidelines for contributing to the project, including development setup and workflow.
@@ -114,23 +128,3 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 ---
 
 *Last updated: {{ site.time | date: "%B %d, %Y" }}*
-
-### API Specification Management
-
-#### Fetching the API Specification
-To fetch the latest API specification from the Inventory API, run:
-
-```bash
-npm run inventory-app:fetch
-```
-
-This will download the specification and store it in `src/api/inventory-app.json`.
-
-#### Comparing API Specification Changes
-To compare the local API specification with the latest version online, run:
-
-```bash
-npm run inventory-app:diff
-```
-
-This will display the differences between the local and remote versions.

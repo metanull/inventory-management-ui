@@ -1,325 +1,236 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900">Countries</h1>
-        <p class="mt-2 text-sm text-gray-700">A list of all countries in the system.</p>
-      </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-testid="add-country"
-          @click="showAddModal = true"
+  <ListView
+    title="Countries"
+    description="Manage countries available in the inventory system."
+    add-button-route="/countries/new"
+    add-button-label="Add Country"
+    color="blue"
+    :is-empty="filteredCountries.length === 0"
+    empty-title="No countries found"
+    :empty-message="
+      searchQuery.length > 0
+        ? `No countries match your search: '${searchQuery}'`
+        : 'Get started by creating a new country.'
+    "
+    :show-empty-add-button="searchQuery.length === 0"
+    empty-add-button-label="New Country"
+    @retry="fetchCountries"
+  >
+    <!-- Icon -->
+    <template #icon>
+      <CountryIcon />
+    </template>
+
+    <!-- Search Slot -->
+    <template #search>
+      <SearchControl v-model="searchQuery" placeholder="Search countries..." />
+    </template>
+
+    <!-- Countries Table Headers -->
+    <template #headers>
+      <TableRow>
+        <TableHeader
+          sortable
+          :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
+          @sort="handleSort('internal_name')"
         >
-          Add Country
-        </button>
-      </div>
-    </div>
+          Country
+        </TableHeader>
+        <TableHeader
+          class="hidden lg:table-cell"
+          sortable
+          :sort-direction="sortKey === 'created_at' ? sortDirection : null"
+          @sort="handleSort('created_at')"
+        >
+          Created
+        </TableHeader>
+        <TableHeader class="hidden sm:table-cell" variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
+    </template>
 
-    <div class="mt-8 flow-root">
-      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    ID
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Internal Name
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Legacy ID
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Created
-                  </th>
-                  <th scope="col" class="relative px-6 py-3">
-                    <span class="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-for="country in countries" :key="country.id">
-                  <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    {{ country.id }}
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                    {{ country.internal_name }}
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                    {{ country.backward_compatibility || 'N/A' }}
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                    {{ formatDate(country.created_at) }}
-                  </td>
-                  <td
-                    class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
-                  >
-                    <button
-                      class="text-indigo-600 hover:text-indigo-900 mr-4"
-                      @click="viewCountry(country.id)"
-                    >
-                      View
-                    </button>
-                    <button
-                      class="text-indigo-600 hover:text-indigo-900 mr-4"
-                      @click="editCountry(country)"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      class="text-red-600 hover:text-red-900"
-                      data-testid="delete-country"
-                      @click="deleteCountryConfirm(country)"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+    <!-- Countries Table Rows -->
+    <template #rows>
+      <TableRow
+        v-for="country in filteredCountries"
+        :key="country.id"
+        class="cursor-pointer hover:bg-blue-50 transition"
+        @click="openCountryDetail(country.id)"
+      >
+        <TableCell>
+          <InternalName
+            small
+            :internal-name="country.internal_name"
+            :backward-compatibility="country.backward_compatibility"
+          >
+            <template #icon>
+              <CountryIcon class="h-5 w-5 text-blue-600" />
+            </template>
+          </InternalName>
+        </TableCell>
+        <TableCell class="hidden lg:table-cell">
+          <DateDisplay :date="country.created_at" />
+        </TableCell>
+        <TableCell class="hidden sm:table-cell">
+          <div class="flex space-x-2" @click.stop>
+            <ViewButton @click="router.push(`/countries/${country.id}`)" />
+            <EditButton @click="router.push(`/countries/${country.id}?edit=true`)" />
+            <DeleteButton @click="handleDeleteCountry(country)" />
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add/Edit Modal -->
-    <div
-      v-if="showAddModal || showEditModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-      data-testid="create-country-modal"
-    >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            {{ showAddModal ? 'Add Country' : 'Edit Country' }}
-          </h3>
-          <form @submit.prevent="saveCountry">
-            <div class="mb-4">
-              <label for="id" class="label">Country ID (ISO 3166-1 alpha-3)</label>
-              <input
-                id="id"
-                v-model="formData.id"
-                type="text"
-                maxlength="3"
-                minlength="3"
-                :disabled="showEditModal"
-                class="input"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label for="internal_name" class="label">Internal Name</label>
-              <input
-                id="internal_name"
-                v-model="formData.internal_name"
-                type="text"
-                :class="[
-                  'input',
-                  hasFieldError('internal_name')
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                    : '',
-                ]"
-                required
-              />
-              <p v-if="hasFieldError('internal_name')" class="mt-1 text-sm text-red-600">
-                {{ getFieldError('internal_name') }}
-              </p>
-            </div>
-            <div class="mb-4">
-              <label for="backward_compatibility" class="label">Legacy ID (Optional)</label>
-              <input
-                id="backward_compatibility"
-                v-model="formData.backward_compatibility"
-                type="text"
-                maxlength="2"
-                minlength="2"
-                :class="[
-                  'input',
-                  hasFieldError('backward_compatibility')
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                    : '',
-                ]"
-              />
-              <p v-if="hasFieldError('backward_compatibility')" class="mt-1 text-sm text-red-600">
-                {{ getFieldError('backward_compatibility') }}
-              </p>
-            </div>
-            <div class="flex justify-end space-x-3">
-              <button type="button" class="btn btn-outline" @click="closeModals">Cancel</button>
-              <button type="submit" :disabled="loading" class="btn btn-primary">
-                {{ loading ? 'Saving...' : 'Save' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    >
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
-          <p class="text-sm text-gray-500 mb-4">
-            Are you sure you want to delete "{{ countryToDelete?.internal_name }}"? This action
-            cannot be undone.
-          </p>
-          <div class="flex justify-center space-x-3">
-            <button class="btn btn-outline" @click="showDeleteModal = false">Cancel</button>
-            <button
-              :disabled="loading"
-              class="btn bg-red-600 hover:bg-red-700 text-white"
-              @click="deleteCountry()"
-            >
-              {{ loading ? 'Deleting...' : 'Delete' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+        </TableCell>
+      </TableRow>
+    </template>
+  </ListView>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
-  import { apiClient, type CountryResource } from '@/api/client'
-  import { useErrorHandler } from '@/utils/errorHandler'
+  import type { CountryResource } from '@metanull/inventory-app-api-client'
+  import { useCountryStore } from '@/stores/country'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
+  import ListView from '@/components/layout/list/ListView.vue'
+  import TableRow from '@/components/format/table/TableRow.vue'
+  import TableHeader from '@/components/format/table/TableHeader.vue'
+  import TableCell from '@/components/format/table/TableCell.vue'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
+  import InternalName from '@/components/format/InternalName.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import ViewButton from '@/components/layout/list/ViewButton.vue'
+  import EditButton from '@/components/layout/list/EditButton.vue'
+  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+  import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
 
   const router = useRouter()
-  const {
-    handleError,
-    handleValidationError,
-    clearValidationErrors,
-    hasFieldError,
-    getFieldError,
-  } = useErrorHandler()
+  const countryStore = useCountryStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
 
-  const countries = ref<CountryResource[]>([])
-  const loading = ref(false)
-  const showAddModal = ref(false)
-  const showEditModal = ref(false)
-  const showDeleteModal = ref(false)
-  const countryToDelete = ref<CountryResource | null>(null)
+  // State
+  const searchQuery = ref('')
+  const sortKey = ref<keyof CountryResource>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
 
-  const formData = ref({
-    id: '',
-    internal_name: '',
-    backward_compatibility: null as string | null,
+  // Computed
+  const countries = computed(() => countryStore.countries)
+
+  const filteredCountries = computed(() => {
+    let filtered = [...countries.value]
+
+    // Apply search filter
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase().trim()
+      filtered = filtered.filter(
+        country =>
+          country.internal_name.toLowerCase().includes(query) ||
+          (country.backward_compatibility &&
+            country.backward_compatibility.toLowerCase().includes(query))
+      )
+    }
+
+    // Apply sorting - inline logic like Projects.vue
+    return [...filtered].sort((a, b) => {
+      const key = sortKey.value
+      let valA: unknown
+      let valB: unknown
+      if (key === 'internal_name') {
+        valA = a.internal_name ?? ''
+        valB = b.internal_name ?? ''
+      } else {
+        valA = (a as any)[key]
+        valB = (b as any)[key]
+      }
+      if (valA == null && valB == null) return 0
+      if (valA == null) return 1
+      if (valB == null) return -1
+      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
+      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
+      return 0
+    })
   })
 
-  const resetForm = () => {
-    formData.value = {
-      id: '',
-      internal_name: '',
-      backward_compatibility: null,
+  // Methods
+  const handleSort = (key: keyof CountryResource): void => {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
     }
   }
 
-  const closeModals = () => {
-    showAddModal.value = false
-    showEditModal.value = false
-    showDeleteModal.value = false
-    resetForm()
-  }
-
-  const fetchCountries = async () => {
-    try {
-      loading.value = true
-      const response = await apiClient.getCountries()
-      countries.value = response.data
-    } catch (error) {
-      console.error('Error fetching countries:', error)
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const viewCountry = (id: string) => {
+  const openCountryDetail = (id: string): void => {
     router.push(`/countries/${id}`)
   }
 
-  const editCountry = (country: CountryResource) => {
-    formData.value = {
-      id: country.id,
-      internal_name: country.internal_name,
-      backward_compatibility: country.backward_compatibility,
+  const fetchCountries = async (): Promise<void> => {
+    let usedCache = false
+    // If cache exists, display immediately and refresh in background
+    if (countries.value && countries.value.length > 0) {
+      usedCache = true
+    } else {
+      loadingStore.show()
     }
-    showEditModal.value = true
-  }
-
-  const saveCountry = async () => {
     try {
-      loading.value = true
-      clearValidationErrors() // Clear any previous validation errors
-
-      if (showAddModal.value) {
-        await apiClient.createCountry(formData.value)
-      } else {
-        // Only send allowed fields for update (exclude id and other forbidden fields)
-        const updateData = {
-          internal_name: formData.value.internal_name,
-          backward_compatibility: formData.value.backward_compatibility,
-        }
-        await apiClient.updateCountry(formData.value.id, updateData)
+      // Always refresh in background
+      await countryStore.fetchCountries()
+      if (usedCache) {
+        errorStore.addMessage('info', 'List refreshed')
       }
-      await fetchCountries()
-      closeModals()
-    } catch (error) {
-      // Handle validation errors specifically
-      handleValidationError(error, 'Country save operation')
-      console.error('Error saving country:', error)
+    } catch {
+      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
     } finally {
-      loading.value = false
+      if (!usedCache) {
+        loadingStore.hide()
+      }
     }
   }
 
-  const deleteCountryConfirm = (country: CountryResource) => {
-    countryToDelete.value = country
-    showDeleteModal.value = true
+  // Delete country with confirmation
+  const handleDeleteCountry = async (countryToDelete: CountryResource) => {
+    const result = await deleteStore.trigger(
+      'Delete Country',
+      `Are you sure you want to delete "${countryToDelete.internal_name}"? This action cannot be undone.`
+    )
+
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await countryStore.deleteCountry(countryToDelete.id)
+        errorStore.addMessage('info', 'Country deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Failed to delete country. Please try again.')
+      } finally {
+        loadingStore.hide()
+      }
+    }
   }
 
-  const deleteCountry = async () => {
-    if (!countryToDelete.value) return
-
+  // Lifecycle
+  onMounted(async () => {
+    let usedCache = false
+    // If cache exists, display immediately and refresh in background
+    if (countries.value && countries.value.length > 0) {
+      usedCache = true
+    } else {
+      loadingStore.show()
+    }
     try {
-      loading.value = true
-      await apiClient.deleteCountry(countryToDelete.value.id)
-      await fetchCountries()
-      closeModals()
-    } catch (error) {
-      handleError(error, 'Country delete operation')
-      console.error('Error deleting country:', error)
+      // Always refresh in background
+      await countryStore.fetchCountries()
+      if (usedCache) {
+        errorStore.addMessage('info', 'List refreshed')
+      }
+    } catch {
+      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
     } finally {
-      loading.value = false
+      if (!usedCache) {
+        loadingStore.hide()
+      }
     }
-  }
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString()
-  }
-
-  onMounted(() => {
-    fetchCountries()
   })
 </script>

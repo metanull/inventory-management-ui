@@ -1,147 +1,299 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { createRouter, createWebHistory, type Router } from 'vue-router'
+import { beforeEach, describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { createRouter, createWebHistory } from 'vue-router'
 import Contexts from '../Contexts.vue'
-import { createTestingPinia } from '@pinia/testing'
+import { useContextStore } from '@/stores/context'
+import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+import { useErrorDisplayStore } from '@/stores/errorDisplay'
+import { createMockContext } from '@/__tests__/test-utils'
+import type { ContextResource } from '@metanull/inventory-app-api-client'
+import type { Router } from 'vue-router'
 
-// Mock the API client
-vi.mock('@/api/client', () => ({
-  apiClient: {
-    getContexts: vi.fn(() =>
-      Promise.resolve({
-        data: [
-          {
-            id: '1',
-            name: 'Archaeological Context',
-            description: 'Archaeological findings and documentation',
-          },
-          {
-            id: '2',
-            name: 'Historical Context',
-            description: 'Historical background and significance',
-          },
-        ],
-      })
-    ),
-    deleteContext: vi.fn(() => Promise.resolve()),
-    createContext: vi.fn(() =>
-      Promise.resolve({
-        data: { id: '3', name: 'Cultural Context', description: 'Cultural significance' },
-      })
-    ),
-    updateContext: vi.fn(() =>
-      Promise.resolve({
-        data: {
-          id: '1',
-          name: 'Archaeological Research Context',
-          description: 'Updated description',
-        },
-      })
-    ),
-  },
+// Mock console.error to avoid noise in test output
+vi.mock('console', () => ({
+  error: vi.fn(),
+  warn: vi.fn(),
+  log: vi.fn(),
 }))
 
-describe('Contexts.vue', () => {
-  let wrapper: VueWrapper<InstanceType<typeof Contexts>>
-  let router: Router
+// Store original console methods for cleanup
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let originalConsole: any
 
-  beforeEach(async () => {
+beforeAll(() => {
+  originalConsole = { ...console }
+  console.error = vi.fn()
+  console.warn = vi.fn()
+  console.log = vi.fn()
+})
+
+afterAll(() => {
+  Object.assign(console, originalConsole)
+})
+
+// Component interface for proper typing
+interface ContextsComponentInstance {
+  contexts: ContextResource[]
+  filteredContexts: ContextResource[]
+  searchQuery: string
+  sortDirection: string
+  sortKey: string
+  filterMode: string
+  openContextDetail: (id: string) => void
+  handleSort: (field: string) => void
+  fetchContexts: () => Promise<void>
+}
+
+// Mock store interfaces
+interface MockContextStore {
+  contexts: ContextResource[]
+  currentContext: ContextResource | null
+  loading: boolean
+  error: string | null
+  defaultContext: ContextResource | undefined
+  defaultContexts: ContextResource[]
+  fetchContexts: () => Promise<void>
+  fetchContext: (id: string) => Promise<void>
+  createContext: (data: unknown) => Promise<ContextResource>
+  updateContext: (id: string, data: unknown) => Promise<ContextResource>
+  deleteContext: (id: string) => Promise<void>
+  setDefaultContext: (id: string) => Promise<void>
+  getDefaultContext: () => ContextResource | null
+  clearError: () => void
+  clearCurrentContext: () => void
+}
+
+interface MockLoadingOverlayStore {
+  show: (message?: string) => void
+  hide: () => void
+}
+
+interface MockErrorDisplayStore {
+  addMessage: (type: string, message: string) => void
+}
+
+// Mock the stores
+vi.mock('@/stores/context')
+vi.mock('@/stores/loadingOverlay')
+vi.mock('@/stores/errorDisplay')
+vi.mock('@/stores/deleteConfirmation')
+
+describe('Contexts.vue Unit Tests', () => {
+  let router: Router
+  let mockContexts: ContextResource[]
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+
+    // Create mock data
+    mockContexts = [
+      createMockContext({ id: '1', internal_name: 'Main Context', is_default: true }),
+      createMockContext({ id: '2', internal_name: 'Test Context', is_default: false }),
+    ]
+
+    // Mock router
     router = createRouter({
       history: createWebHistory(),
       routes: [
-        { path: '/', component: { template: '<div>Home</div>' } },
-        { path: '/contexts', component: Contexts },
+        { path: '/contexts', component: { template: '<div>Contexts</div>' } },
+        { path: '/contexts/:id', component: { template: '<div>Context Detail</div>' } },
       ],
     })
 
-    await router.push('/contexts')
+    // Reset all mocks
+    vi.clearAllMocks()
+  })
 
-    wrapper = mount(Contexts, {
+  it('renders correctly with context data', async () => {
+    // Mock store values
+    vi.mocked(useContextStore).mockReturnValue({
+      contexts: mockContexts,
+      currentContext: null,
+      loading: false,
+      error: null,
+      defaultContext: mockContexts[0],
+      defaultContexts: [mockContexts[0]],
+      fetchContexts: vi.fn().mockResolvedValue(undefined),
+      fetchContext: vi.fn().mockResolvedValue(undefined),
+      createContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      updateContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      deleteContext: vi.fn().mockResolvedValue(undefined),
+      setDefaultContext: vi.fn().mockResolvedValue(undefined),
+      getDefaultContext: vi.fn().mockReturnValue(mockContexts[0]),
+      clearError: vi.fn(),
+      clearCurrentContext: vi.fn(),
+    } as MockContextStore)
+
+    vi.mocked(useLoadingOverlayStore).mockReturnValue({
+      show: vi.fn(),
+      hide: vi.fn(),
+    } as MockLoadingOverlayStore)
+
+    vi.mocked(useErrorDisplayStore).mockReturnValue({
+      addMessage: vi.fn(),
+    } as MockErrorDisplayStore)
+
+    const wrapper = mount(Contexts, {
       global: {
-        plugins: [createTestingPinia(), router],
+        plugins: [router],
       },
     })
 
-    // Wait for component to load
-    await wrapper.vm.$nextTick()
-  })
+    await flushPromises()
 
-  it('renders the contexts page', () => {
     expect(wrapper.find('h1').text()).toBe('Contexts')
+    expect(wrapper.text()).toContain('Main Context')
+    expect(wrapper.text()).toContain('Test Context')
   })
 
-  it('loads contexts on mount', async () => {
-    const { apiClient } = await import('@/api/client')
+  it('filters contexts by search query', async () => {
+    vi.mocked(useContextStore).mockReturnValue({
+      contexts: mockContexts,
+      currentContext: null,
+      loading: false,
+      error: null,
+      defaultContext: mockContexts[0],
+      defaultContexts: [mockContexts[0]],
+      fetchContexts: vi.fn().mockResolvedValue(undefined),
+      fetchContext: vi.fn().mockResolvedValue(undefined),
+      createContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      updateContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      deleteContext: vi.fn().mockResolvedValue(undefined),
+      setDefaultContext: vi.fn().mockResolvedValue(undefined),
+      getDefaultContext: vi.fn().mockReturnValue(mockContexts[0]),
+      clearError: vi.fn(),
+      clearCurrentContext: vi.fn(),
+    } as MockContextStore)
 
-    // Wait for contexts to load
-    await new Promise(resolve => setTimeout(resolve, 100))
+    vi.mocked(useLoadingOverlayStore).mockReturnValue({
+      show: vi.fn(),
+      hide: vi.fn(),
+    } as MockLoadingOverlayStore)
+
+    vi.mocked(useErrorDisplayStore).mockReturnValue({
+      addMessage: vi.fn(),
+    } as MockErrorDisplayStore)
+
+    const wrapper = mount(Contexts, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    const vm = wrapper.vm as unknown as ContextsComponentInstance
+
+    // Set search query
+    vm.searchQuery = 'Main'
     await wrapper.vm.$nextTick()
 
-    expect(apiClient.getContexts).toHaveBeenCalled()
+    // Should filter to show only Main Context
+    expect(vm.filteredContexts).toHaveLength(1)
+    expect(vm.filteredContexts[0].internal_name).toBe('Main Context')
   })
 
-  it('should call deleteContext when delete button is clicked and confirmed', async () => {
-    const { apiClient } = await import('@/api/client')
+  it('sorts contexts correctly', async () => {
+    vi.mocked(useContextStore).mockReturnValue({
+      contexts: mockContexts,
+      currentContext: null,
+      loading: false,
+      error: null,
+      defaultContext: mockContexts[0],
+      defaultContexts: [mockContexts[0]],
+      fetchContexts: vi.fn().mockResolvedValue(undefined),
+      fetchContext: vi.fn().mockResolvedValue(undefined),
+      createContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      updateContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      deleteContext: vi.fn().mockResolvedValue(undefined),
+      setDefaultContext: vi.fn().mockResolvedValue(undefined),
+      getDefaultContext: vi.fn().mockReturnValue(mockContexts[0]),
+      clearError: vi.fn(),
+      clearCurrentContext: vi.fn(),
+    } as MockContextStore)
 
-    // Wait for contexts to load
-    await new Promise(resolve => setTimeout(resolve, 100))
+    const wrapper = mount(Contexts, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    const vm = wrapper.vm as unknown as ContextsComponentInstance
+
+    // Sort by name descending
+    vm.handleSort('internal_name') // First call toggles from default 'asc' to 'desc'
     await wrapper.vm.$nextTick()
 
-    // Find and click the delete button
-    const deleteButton = wrapper.find('button[data-testid="delete-context"]')
-    expect(deleteButton.exists()).toBe(true)
-
-    await deleteButton.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    // Check if delete modal is visible
-    expect(wrapper.vm.showDeleteModal).toBe(true)
-
-    // Simulate clicking the confirm delete by directly calling the deleteContext function
-    await wrapper.vm.deleteContext()
-
-    expect(apiClient.deleteContext).toHaveBeenCalledWith('1')
+    expect(vm.sortDirection).toBe('desc')
+    expect(vm.filteredContexts[0].internal_name).toBe('Test Context')
   })
 
-  it('should not call deleteContext when confirm is cancelled', async () => {
-    const { apiClient } = await import('@/api/client')
+  it('filters contexts by default status', async () => {
+    vi.mocked(useContextStore).mockReturnValue({
+      contexts: mockContexts,
+      currentContext: null,
+      loading: false,
+      error: null,
+      defaultContext: mockContexts[0],
+      defaultContexts: [mockContexts[0]],
+      fetchContexts: vi.fn().mockResolvedValue(undefined),
+      fetchContext: vi.fn().mockResolvedValue(undefined),
+      createContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      updateContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      deleteContext: vi.fn().mockResolvedValue(undefined),
+      setDefaultContext: vi.fn().mockResolvedValue(undefined),
+      getDefaultContext: vi.fn().mockReturnValue(mockContexts[0]),
+      clearError: vi.fn(),
+      clearCurrentContext: vi.fn(),
+    } as MockContextStore)
 
-    // Reset the mock call count
-    vi.mocked(apiClient.deleteContext).mockClear()
+    const wrapper = mount(Contexts, {
+      global: {
+        plugins: [router],
+      },
+    })
 
-    // Wait for contexts to load
-    await new Promise(resolve => setTimeout(resolve, 100))
+    const vm = wrapper.vm as unknown as ContextsComponentInstance
+
+    // Set filter mode to default
+    vm.filterMode = 'default'
     await wrapper.vm.$nextTick()
 
-    // Find and click the delete button
-    const deleteButton = wrapper.find('button[data-testid="delete-context"]')
-    expect(deleteButton.exists()).toBe(true)
-
-    await deleteButton.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    // Check if delete modal is visible
-    expect(wrapper.vm.showDeleteModal).toBe(true)
-
-    // Find and click the cancel button in the modal
-    const cancelButton = wrapper.findAll('button').find(btn => btn.text().includes('Cancel'))
-
-    if (cancelButton) {
-      await cancelButton.trigger('click')
-      expect(apiClient.deleteContext).not.toHaveBeenCalled()
-    }
+    // Should filter to show only default contexts
+    expect(vm.filteredContexts).toHaveLength(1)
+    expect(vm.filteredContexts[0].is_default).toBe(true)
   })
 
-  it('should open create modal when add button is clicked', async () => {
-    const addButton = wrapper.find('button[data-testid="add-context"]')
+  it('navigates to context detail when row is clicked', async () => {
+    vi.mocked(useContextStore).mockReturnValue({
+      contexts: mockContexts,
+      currentContext: null,
+      loading: false,
+      error: null,
+      defaultContext: mockContexts[0],
+      defaultContexts: [mockContexts[0]],
+      fetchContexts: vi.fn().mockResolvedValue(undefined),
+      fetchContext: vi.fn().mockResolvedValue(undefined),
+      createContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      updateContext: vi.fn().mockResolvedValue(mockContexts[0]),
+      deleteContext: vi.fn().mockResolvedValue(undefined),
+      setDefaultContext: vi.fn().mockResolvedValue(undefined),
+      getDefaultContext: vi.fn().mockReturnValue(mockContexts[0]),
+      clearError: vi.fn(),
+      clearCurrentContext: vi.fn(),
+    } as MockContextStore)
 
-    if (addButton.exists()) {
-      await addButton.trigger('click')
-      await wrapper.vm.$nextTick()
+    const wrapper = mount(Contexts, {
+      global: {
+        plugins: [router],
+      },
+    })
 
-      // Check if modal is visible
-      const modal = wrapper.find('[data-testid="create-context-modal"]')
-      expect(modal.exists()).toBe(true)
-    }
+    const vm = wrapper.vm as unknown as ContextsComponentInstance
+    const pushSpy = vi.spyOn(router, 'push')
+
+    // Simulate clicking on a context row
+    vm.openContextDetail('1')
+
+    expect(pushSpy).toHaveBeenCalledWith('/contexts/1')
   })
 })
