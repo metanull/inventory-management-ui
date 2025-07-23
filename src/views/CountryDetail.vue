@@ -1,239 +1,302 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <!-- Navigation -->
-    <div class="mb-6">
-      <button
-        data-testid="back-to-countries-button"
-        class="flex items-center gap-2 text-blue-600 hover:text-blue-800"
-        @click="router.push('/countries')"
-      >
-        <ArrowLeftIcon class="h-4 w-4" />
-        Back to Countries
-      </button>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="countryStore.loading" class="flex justify-center items-center py-8">
-      <div class="flex items-center gap-2">
-        <svg class="animate-spin h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24">
-          <circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle>
-          <path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
-        <span class="text-gray-600">Loading country details...</span>
-      </div>
-    </div>
-
-    <!-- Country Detail -->
-    <div v-else-if="countryStore.currentCountry" class="space-y-6">
-      <!-- Header with actions -->
-      <div class="flex justify-between items-start">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            {{ countryStore.currentCountry.internal_name }}
-            <span class="text-lg text-gray-500 font-normal">
-              ({{ countryStore.currentCountry.id }})
-            </span>
-          </h1>
-          <p class="text-gray-600 mt-2">Country details and information</p>
-        </div>
-
-        <div class="flex gap-3">
-          <button
-            data-testid="edit-country-button"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-            @click="openEditModal"
-          >
-            <PencilIcon class="h-4 w-4" />
-            Edit Country
-          </button>
-        </div>
-      </div>
-
-      <!-- Country Information -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Country Information</h2>
-
-        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Country ID</dt>
-            <dd class="mt-1 text-sm text-gray-900 font-mono">
-              {{ countryStore.currentCountry.id }}
-            </dd>
-          </div>
-
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Internal Name</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              {{ countryStore.currentCountry.internal_name }}
-            </dd>
-          </div>
-
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Backward Compatibility</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              <span v-if="countryStore.currentCountry.backward_compatibility" class="font-mono">
-                {{ countryStore.currentCountry.backward_compatibility }}
-              </span>
-              <span v-else class="text-gray-400 italic">Not set</span>
-            </dd>
-          </div>
-
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Created At</dt>
-            <dd class="mt-1">
-              <DateDisplay
-                :date="countryStore.currentCountry.created_at"
-                format="medium"
-                show-time
-                class="text-sm text-gray-900"
-              />
-            </dd>
-          </div>
-
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
-            <dd class="mt-1">
-              <DateDisplay
-                :date="countryStore.currentCountry.updated_at"
-                format="medium"
-                show-time
-                class="text-sm text-gray-900"
-              />
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      <!-- ISO Standards Information -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h2 class="text-lg font-medium text-blue-900 mb-4 flex items-center gap-2">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
-          ISO Standards
-        </h2>
-
-        <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-          <div>
-            <dt class="text-sm font-medium text-blue-700">ISO 3166-1 alpha-3</dt>
-            <dd class="mt-1 text-sm text-blue-900 font-mono">
-              {{ countryStore.currentCountry.id }}
-            </dd>
-            <dd class="text-xs text-blue-600">Current country code (3 letters)</dd>
-          </div>
-
-          <div v-if="countryStore.currentCountry.backward_compatibility">
-            <dt class="text-sm font-medium text-blue-700">ISO 3166-1 alpha-2</dt>
-            <dd class="mt-1 text-sm text-blue-900 font-mono">
-              {{ countryStore.currentCountry.backward_compatibility }}
-            </dd>
-            <dd class="text-xs text-blue-600">Legacy country code (2 letters)</dd>
-          </div>
-        </dl>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="countryStore.error" class="text-center py-12">
-      <svg
-        class="mx-auto h-12 w-12 text-red-400"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-        ></path>
-      </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">Country not found</h3>
-      <p class="mt-1 text-sm text-gray-500">The requested country could not be loaded.</p>
-      <div class="mt-6">
-        <button
-          data-testid="back-to-countries-button"
-          class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-          @click="router.push('/countries')"
+  <!-- Unified Country Detail View -->
+  <DetailView
+    :store-loading="countryStore.loading"
+    :resource="mode === 'create' ? null : country"
+    :mode="mode"
+    :save-disabled="!hasUnsavedChanges"
+    :has-unsaved-changes="hasUnsavedChanges"
+    :back-link="backLink"
+    :create-title="'New Country'"
+    :create-subtitle="'(Creating)'"
+    information-title="Country Information"
+    :information-description="informationDescription"
+    :fetch-data="fetchCountry"
+    @edit="enterEditMode"
+    @save="saveCountry"
+    @cancel="cancelAction"
+    @delete="deleteCountry"
+  >
+    <template #resource-icon>
+      <CountryIcon class="h-6 w-6 text-blue-600" />
+    </template>
+    <template #information>
+      <DescriptionList>
+        <DescriptionRow variant="gray">
+          <DescriptionTerm>Country ID</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.id"
+              type="text"
+              placeholder="ISO country code (e.g., GBR)"
+              :disabled="mode === 'edit'"
+            />
+            <DisplayText v-else>{{ country?.id }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow variant="white">
+          <DescriptionTerm>Internal Name</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.internal_name"
+              type="text"
+            />
+            <DisplayText v-else>{{ country?.internal_name }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow
+          v-if="country?.backward_compatibility || mode === 'edit' || mode === 'create'"
+          variant="gray"
         >
-          Back to Countries
-        </button>
-      </div>
-    </div>
-
-    <!-- Country Form Modal -->
-    <CountryForm
-      :is-visible="isEditModalVisible"
-      :country="countryStore.currentCountry"
-      @close="closeEditModal"
-      @success="handleCountryUpdate"
-    />
-  </div>
+          <DescriptionTerm>Legacy ID</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.backward_compatibility"
+              type="text"
+              placeholder="Optional legacy identifier"
+            />
+            <DisplayText v-else>{{ country?.backward_compatibility }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow v-if="country?.created_at" variant="white">
+          <DescriptionTerm>Created</DescriptionTerm>
+          <DescriptionDetail>
+            <DateDisplay :date="country.created_at" />
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow v-if="country?.updated_at" variant="gray">
+          <DescriptionTerm>Updated</DescriptionTerm>
+          <DescriptionDetail>
+            <DateDisplay :date="country.updated_at" />
+          </DescriptionDetail>
+        </DescriptionRow>
+      </DescriptionList>
+    </template>
+  </DetailView>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, watch } from 'vue'
-  import { useRouter, useRoute } from 'vue-router'
+  import { ref, computed, onMounted, watch } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import type {
+    CountryStoreRequest,
+    CountryUpdateRequest,
+  } from '@metanull/inventory-app-api-client'
   import { useCountryStore } from '@/stores/country'
-  import CountryForm from '@/components/_obsolete/CountryForm.vue'
+  import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import DetailView from '@/components/layout/detail/DetailView.vue'
+  import DescriptionList from '@/components/format/description/DescriptionList.vue'
+  import DescriptionRow from '@/components/format/description/DescriptionRow.vue'
+  import DescriptionTerm from '@/components/format/description/DescriptionTerm.vue'
+  import DescriptionDetail from '@/components/format/description/DescriptionDetail.vue'
+  import FormInput from '@/components/format/FormInput.vue'
+  import DisplayText from '@/components/format/DisplayText.vue'
   import DateDisplay from '@/components/format/Date.vue'
-  import { ArrowLeftIcon, PencilIcon } from '@heroicons/vue/24/outline'
+  import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
 
-  const router = useRouter()
+  // Types
+  type Mode = 'view' | 'edit' | 'create'
+
+  interface CountryFormData {
+    id: string
+    internal_name: string
+    backward_compatibility: string
+  }
+
   const route = useRoute()
+  const router = useRouter()
   const countryStore = useCountryStore()
+  const cancelChangesStore = useCancelChangesConfirmationStore()
+  const deleteConfirmationStore = useDeleteConfirmationStore()
+  const errorStore = useErrorDisplayStore()
 
-  // Modal state
-  const isEditModalVisible = ref(false)
+  // Route params
+  const countryId = computed(() => {
+    const id = route.params.id
+    return Array.isArray(id) ? id[0] : id
+  })
+
+  // Mode determination
+  const mode = ref<Mode>('view')
+
+  // Determine mode from route
+  if (countryId.value === 'new') {
+    mode.value = 'create'
+  }
+
+  // Resource data
+  const country = computed(() => countryStore.currentCountry)
+
+  // Edit form state
+  const editForm = ref<CountryFormData>({
+    id: '',
+    internal_name: '',
+    backward_compatibility: '',
+  })
+
+  // Navigation
+  const backLink = computed(() => ({
+    title: 'Back to Countries',
+    route: '/countries',
+    icon: 'ArrowLeft',
+    color: 'blue',
+  }))
+
+  // Information description
+  const informationDescription = computed(() => {
+    if (mode.value === 'create') {
+      return 'Enter the country details below.'
+    }
+    return 'Country details and metadata.'
+  })
+
+  // Unsaved changes tracking
+  const hasUnsavedChanges = computed(() => {
+    if (mode.value === 'view') return false
+    if (mode.value === 'create') {
+      return editForm.value.internal_name.trim() !== ''
+    }
+    if (!country.value) return false
+    return (
+      editForm.value.internal_name !== country.value.internal_name ||
+      editForm.value.backward_compatibility !== (country.value.backward_compatibility || '')
+    )
+  })
 
   // Methods
-  const openEditModal = (): void => {
-    isEditModalVisible.value = true
+  const fetchCountry = async (): Promise<void> => {
+    if (mode.value === 'create') return
+    if (!countryId.value || countryId.value === 'new') return
+    await countryStore.fetchCountry(countryId.value)
   }
 
-  const closeEditModal = (): void => {
-    isEditModalVisible.value = false
+  const enterEditMode = (): void => {
+    if (!country.value) return
+    editForm.value = {
+      id: country.value.id,
+      internal_name: country.value.internal_name,
+      backward_compatibility: country.value.backward_compatibility || '',
+    }
+    mode.value = 'edit'
   }
 
-  const handleCountryUpdate = async (): Promise<void> => {
-    // The country was updated, refresh the current country data
-    const countryId = route.params.id as string
-    await countryStore.fetchCountry(countryId)
-  }
-
-  const loadCountry = async (): Promise<void> => {
-    const countryId = route.params.id as string
-    if (countryId) {
-      await countryStore.fetchCountry(countryId)
+  const saveCountry = async (): Promise<void> => {
+    try {
+      if (mode.value === 'create') {
+        const createData: CountryStoreRequest = {
+          id: editForm.value.id,
+          internal_name: editForm.value.internal_name,
+          backward_compatibility: editForm.value.backward_compatibility || undefined,
+        }
+        const newCountry = await countryStore.createCountry(createData)
+        if (newCountry) {
+          errorStore.addMessage('info', 'Country created successfully.')
+          await router.push(`/countries/${newCountry.id}`)
+          mode.value = 'view'
+        }
+      } else if (mode.value === 'edit' && country.value) {
+        const updateData: CountryUpdateRequest = {
+          internal_name: editForm.value.internal_name,
+          backward_compatibility: editForm.value.backward_compatibility || undefined,
+        }
+        const updatedCountry = await countryStore.updateCountry(country.value.id, updateData)
+        if (updatedCountry) {
+          errorStore.addMessage('info', 'Country updated successfully.')
+          mode.value = 'view'
+        }
+      }
+    } catch (error) {
+      console.error('Error saving country:', error)
+      errorStore.addMessage('error', 'Failed to save country. Please try again.')
     }
   }
 
-  // Watchers
+  const cancelAction = async (): Promise<void> => {
+    if (hasUnsavedChanges.value) {
+      const result = await cancelChangesStore.trigger(
+        'Unsaved Changes',
+        'You have unsaved changes. Are you sure you want to leave?'
+      )
+      if (result === 'leave') {
+        if (mode.value === 'create') {
+          router.push('/countries')
+        } else {
+          mode.value = 'view'
+        }
+      }
+    } else if (mode.value === 'create') {
+      router.push('/countries')
+    } else {
+      mode.value = 'view'
+    }
+  }
+
+  const deleteCountry = async (): Promise<void> => {
+    if (!country.value) return
+    const result = await deleteConfirmationStore.trigger(
+      'Delete Country',
+      `Are you sure you want to delete "${country.value.internal_name}"?`
+    )
+    if (result === 'delete') {
+      try {
+        await countryStore.deleteCountry(country.value.id)
+        errorStore.addMessage('info', 'Country deleted successfully.')
+        await router.push('/countries')
+      } catch (error) {
+        console.error('Error deleting country:', error)
+        errorStore.addMessage('error', 'Failed to delete country. Please try again.')
+      }
+    }
+  }
+
+  // Initialize data on mount
+  onMounted(async () => {
+    if (mode.value === 'create') {
+      editForm.value = {
+        id: '',
+        internal_name: '',
+        backward_compatibility: '',
+      }
+    } else {
+      await fetchCountry()
+    }
+  })
+
+  // Watch for route changes
   watch(
     () => route.params.id,
-    () => {
-      loadCountry()
+    async newId => {
+      if (newId === 'new') {
+        mode.value = 'create'
+        editForm.value = {
+          id: '',
+          internal_name: '',
+          backward_compatibility: '',
+        }
+      } else if (typeof newId === 'string') {
+        mode.value = 'view'
+        await fetchCountry()
+      }
     }
   )
 
-  // Lifecycle
-  onMounted(() => {
-    loadCountry()
-  })
+  // Update edit form when country data changes
+  watch(
+    country,
+    newCountry => {
+      if (newCountry && mode.value === 'view') {
+        editForm.value = {
+          id: newCountry.id,
+          internal_name: newCountry.internal_name,
+          backward_compatibility: newCountry.backward_compatibility || '',
+        }
+      }
+    },
+    { immediate: true }
+  )
 </script>

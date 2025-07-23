@@ -1,155 +1,174 @@
 <template>
-  <div>
-    <!-- Header -->
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900">Countries</h1>
-        <p class="mt-2 text-sm text-gray-700">Manage countries available in the inventory system</p>
-      </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-        <button
-          data-testid="add-country-button"
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-          @click="openCreateModal"
-        >
-          Add Country
-        </button>
-      </div>
-    </div>
+  <ListView
+    title="Countries"
+    description="Manage countries available in the inventory system."
+    add-button-route="/countries/new"
+    add-button-label="Add Country"
+    color="blue"
+    :is-empty="filteredCountries.length === 0"
+    empty-title="No countries found"
+    :empty-message="
+      searchQuery.length > 0
+        ? `No countries match your search: '${searchQuery}'`
+        : 'Get started by creating a new country.'
+    "
+    :show-empty-add-button="searchQuery.length === 0"
+    empty-add-button-label="New Country"
+    @retry="fetchCountries"
+  >
+    <!-- Icon -->
+    <template #icon>
+      <CountryIcon />
+    </template>
 
-    <!-- Empty State -->
-    <div v-if="countryStore.countries.length === 0" class="text-center py-12">
-      <GlobeAltIcon class="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900">No countries found</h3>
-      <p class="mt-1 text-sm text-gray-500">Get started by creating a new country.</p>
-      <div class="mt-6">
-        <button
-          class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          @click="openCreateModal"
-        >
-          <PlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-          New Country
-        </button>
-      </div>
-    </div>
+    <!-- Search Slot -->
+    <template #search>
+      <SearchControl v-model="searchQuery" placeholder="Search countries..." />
+    </template>
 
     <!-- Countries Table -->
-    <div v-else class="mt-8 flow-root">
-      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Country
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    Created
-                  </th>
-                  <th scope="col" class="relative px-6 py-3">
-                    <span class="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr
-                  v-for="country in countryStore.sortedCountries"
-                  :key="country.id"
-                  class="hover:bg-gray-50"
-                >
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <ResourceNameDisplay
-                      :internal-name="country.internal_name"
-                      :backward-compatibility="country.backward_compatibility"
-                    />
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <DateDisplay :date="country.created_at" />
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
-                      <ViewButton
-                        data-testid="view-details-button"
-                        @click="viewCountryDetail(country.id)"
-                      />
-                      <EditButton @click="openEditModal(country)" />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    <template #default>
+      <TableElement>
+        <template #headers>
+          <TableRow>
+            <TableHeader
+              sortable
+              :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
+              @sort="handleSort('internal_name')"
+            >
+              Country
+            </TableHeader>
+            <TableHeader
+              class="hidden lg:table-cell"
+              sortable
+              :sort-direction="sortKey === 'created_at' ? sortDirection : null"
+              @sort="handleSort('created_at')"
+            >
+              Created
+            </TableHeader>
+            <TableHeader class="hidden sm:table-cell" variant="actions">
+              <span class="sr-only">Actions</span>
+            </TableHeader>
+          </TableRow>
+        </template>
 
-    <!-- Country Form Modal -->
-    <CountryForm
-      :is-visible="isFormModalVisible"
-      :country="selectedCountry"
-      @close="closeFormModal"
-      @success="handleCountrySuccess"
-    />
-  </div>
+        <template #rows>
+          <TableRow
+            v-for="country in filteredCountries"
+            :key="country.id"
+            class="cursor-pointer hover:bg-blue-50 transition"
+            @click="openCountryDetail(country.id)"
+          >
+            <TableCell>
+              <InternalName
+                small
+                :internal-name="country.internal_name"
+                :backward-compatibility="country.backward_compatibility"
+              >
+                <template #icon>
+                  <CountryIcon class="h-5 w-5 text-blue-600" />
+                </template>
+              </InternalName>
+            </TableCell>
+            <TableCell class="hidden lg:table-cell">
+              <DateDisplay :date="country.created_at" />
+            </TableCell>
+            <TableCell class="hidden sm:table-cell">
+              <div class="flex justify-end space-x-2" @click.stop>
+                <ViewButton @click="openCountryDetail(country.id)" />
+                <EditButton @click="openCountryDetail(country.id)" />
+              </div>
+            </TableCell>
+          </TableRow>
+        </template>
+      </TableElement>
+    </template>
+  </ListView>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import type { CountryResource } from '@metanull/inventory-app-api-client'
   import { useCountryStore } from '@/stores/country'
-  import CountryForm from '@/components/_obsolete/CountryForm.vue'
+  import ListView from '@/components/layout/list/ListView.vue'
+  import TableElement from '@/components/format/table/TableElement.vue'
+  import TableRow from '@/components/format/table/TableRow.vue'
+  import TableHeader from '@/components/format/table/TableHeader.vue'
+  import TableCell from '@/components/format/table/TableCell.vue'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
+  import InternalName from '@/components/format/InternalName.vue'
+  import DateDisplay from '@/components/format/Date.vue'
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
-  import DateDisplay from '@/components/format/Date.vue'
-  import ResourceNameDisplay from '@/components/format/InternalName.vue'
-  import { GlobeAltIcon, PlusIcon } from '@heroicons/vue/24/outline'
+  import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
 
   const router = useRouter()
   const countryStore = useCountryStore()
 
-  // Modal state
-  const isFormModalVisible = ref(false)
-  const selectedCountry = ref<CountryResource | null>(null)
+  // State
+  const searchQuery = ref('')
+  const sortKey = ref<keyof CountryResource>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
+
+  // Computed
+  const countries = computed(() => countryStore.countries)
+
+  const filteredCountries = computed(() => {
+    let filtered = [...countries.value]
+
+    // Apply search filter
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase().trim()
+      filtered = filtered.filter(
+        country =>
+          country.internal_name.toLowerCase().includes(query) ||
+          (country.backward_compatibility &&
+            country.backward_compatibility.toLowerCase().includes(query))
+      )
+    }
+
+    // Apply sorting - inline logic like Projects.vue
+    return [...filtered].sort((a, b) => {
+      const key = sortKey.value
+      let valA: unknown
+      let valB: unknown
+      if (key === 'internal_name') {
+        valA = a.internal_name ?? ''
+        valB = b.internal_name ?? ''
+      } else {
+        valA = (a as any)[key]
+        valB = (b as any)[key]
+      }
+      if (valA == null && valB == null) return 0
+      if (valA == null) return 1
+      if (valB == null) return -1
+      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
+      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
+      return 0
+    })
+  })
 
   // Methods
-  const refreshCountries = async (): Promise<void> => {
-    await countryStore.fetchCountries()
+  const handleSort = (key: keyof CountryResource): void => {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
+    }
   }
 
-  const openCreateModal = (): void => {
-    selectedCountry.value = null
-    isFormModalVisible.value = true
-  }
-
-  const openEditModal = (country: CountryResource): void => {
-    selectedCountry.value = country
-    isFormModalVisible.value = true
-  }
-
-  const closeFormModal = (): void => {
-    isFormModalVisible.value = false
-    selectedCountry.value = null
-  }
-
-  const handleCountrySuccess = async (): Promise<void> => {
-    // Refresh the list to ensure we have the latest data
-    await refreshCountries()
-  }
-
-  const viewCountryDetail = (id: string): void => {
+  const openCountryDetail = (id: string): void => {
     router.push(`/countries/${id}`)
+  }
+
+  const fetchCountries = async (): Promise<void> => {
+    await countryStore.fetchCountries()
   }
 
   // Lifecycle
   onMounted(async () => {
-    await refreshCountries()
+    await fetchCountries()
   })
 </script>
