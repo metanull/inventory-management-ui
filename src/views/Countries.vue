@@ -26,62 +26,60 @@
       <SearchControl v-model="searchQuery" placeholder="Search countries..." />
     </template>
 
-    <!-- Countries Table -->
-    <template #default>
-      <TableElement>
-        <template #headers>
-          <TableRow>
-            <TableHeader
-              sortable
-              :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
-              @sort="handleSort('internal_name')"
-            >
-              Country
-            </TableHeader>
-            <TableHeader
-              class="hidden lg:table-cell"
-              sortable
-              :sort-direction="sortKey === 'created_at' ? sortDirection : null"
-              @sort="handleSort('created_at')"
-            >
-              Created
-            </TableHeader>
-            <TableHeader class="hidden sm:table-cell" variant="actions">
-              <span class="sr-only">Actions</span>
-            </TableHeader>
-          </TableRow>
-        </template>
+    <!-- Countries Table Headers -->
+    <template #headers>
+      <TableRow>
+        <TableHeader
+          sortable
+          :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
+          @sort="handleSort('internal_name')"
+        >
+          Country
+        </TableHeader>
+        <TableHeader
+          class="hidden lg:table-cell"
+          sortable
+          :sort-direction="sortKey === 'created_at' ? sortDirection : null"
+          @sort="handleSort('created_at')"
+        >
+          Created
+        </TableHeader>
+        <TableHeader class="hidden sm:table-cell" variant="actions">
+          <span class="sr-only">Actions</span>
+        </TableHeader>
+      </TableRow>
+    </template>
 
-        <template #rows>
-          <TableRow
-            v-for="country in filteredCountries"
-            :key="country.id"
-            class="cursor-pointer hover:bg-blue-50 transition"
-            @click="openCountryDetail(country.id)"
+    <!-- Countries Table Rows -->
+    <template #rows>
+      <TableRow
+        v-for="country in filteredCountries"
+        :key="country.id"
+        class="cursor-pointer hover:bg-blue-50 transition"
+        @click="openCountryDetail(country.id)"
+      >
+        <TableCell>
+          <InternalName
+            small
+            :internal-name="country.internal_name"
+            :backward-compatibility="country.backward_compatibility"
           >
-            <TableCell>
-              <InternalName
-                small
-                :internal-name="country.internal_name"
-                :backward-compatibility="country.backward_compatibility"
-              >
-                <template #icon>
-                  <CountryIcon class="h-5 w-5 text-blue-600" />
-                </template>
-              </InternalName>
-            </TableCell>
-            <TableCell class="hidden lg:table-cell">
-              <DateDisplay :date="country.created_at" />
-            </TableCell>
-            <TableCell class="hidden sm:table-cell">
-              <div class="flex justify-end space-x-2" @click.stop>
-                <ViewButton @click="openCountryDetail(country.id)" />
-                <EditButton @click="openCountryDetail(country.id)" />
-              </div>
-            </TableCell>
-          </TableRow>
-        </template>
-      </TableElement>
+            <template #icon>
+              <CountryIcon class="h-5 w-5 text-blue-600" />
+            </template>
+          </InternalName>
+        </TableCell>
+        <TableCell class="hidden lg:table-cell">
+          <DateDisplay :date="country.created_at" />
+        </TableCell>
+        <TableCell class="hidden sm:table-cell">
+          <div class="flex space-x-2" @click.stop>
+            <ViewButton @click="router.push(`/countries/${country.id}`)" />
+            <EditButton @click="router.push(`/countries/${country.id}?edit=true`)" />
+            <DeleteButton @click="handleDeleteCountry(country)" />
+          </div>
+        </TableCell>
+      </TableRow>
     </template>
   </ListView>
 </template>
@@ -91,8 +89,10 @@
   import { useRouter } from 'vue-router'
   import type { CountryResource } from '@metanull/inventory-app-api-client'
   import { useCountryStore } from '@/stores/country'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
   import ListView from '@/components/layout/list/ListView.vue'
-  import TableElement from '@/components/format/table/TableElement.vue'
   import TableRow from '@/components/format/table/TableRow.vue'
   import TableHeader from '@/components/format/table/TableHeader.vue'
   import TableCell from '@/components/format/table/TableCell.vue'
@@ -101,10 +101,14 @@
   import DateDisplay from '@/components/format/Date.vue'
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
+  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
   import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
 
   const router = useRouter()
   const countryStore = useCountryStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
 
   // State
   const searchQuery = ref('')
@@ -164,11 +168,69 @@
   }
 
   const fetchCountries = async (): Promise<void> => {
-    await countryStore.fetchCountries()
+    let usedCache = false
+    // If cache exists, display immediately and refresh in background
+    if (countries.value && countries.value.length > 0) {
+      usedCache = true
+    } else {
+      loadingStore.show()
+    }
+    try {
+      // Always refresh in background
+      await countryStore.fetchCountries()
+      if (usedCache) {
+        errorStore.addMessage('info', 'List refreshed')
+      }
+    } catch {
+      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
+    } finally {
+      if (!usedCache) {
+        loadingStore.hide()
+      }
+    }
+  }
+
+  // Delete country with confirmation
+  const handleDeleteCountry = async (countryToDelete: CountryResource) => {
+    const result = await deleteStore.trigger(
+      'Delete Country',
+      `Are you sure you want to delete "${countryToDelete.internal_name}"? This action cannot be undone.`
+    )
+
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await countryStore.deleteCountry(countryToDelete.id)
+        errorStore.addMessage('info', 'Country deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Failed to delete country. Please try again.')
+      } finally {
+        loadingStore.hide()
+      }
+    }
   }
 
   // Lifecycle
   onMounted(async () => {
-    await fetchCountries()
+    let usedCache = false
+    // If cache exists, display immediately and refresh in background
+    if (countries.value && countries.value.length > 0) {
+      usedCache = true
+    } else {
+      loadingStore.show()
+    }
+    try {
+      // Always refresh in background
+      await countryStore.fetchCountries()
+      if (usedCache) {
+        errorStore.addMessage('info', 'List refreshed')
+      }
+    } catch {
+      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
+    } finally {
+      if (!usedCache) {
+        loadingStore.hide()
+      }
+    }
   })
 </script>

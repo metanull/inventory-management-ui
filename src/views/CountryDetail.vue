@@ -86,6 +86,7 @@
     CountryUpdateRequest,
   } from '@metanull/inventory-app-api-client'
   import { useCountryStore } from '@/stores/country'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
@@ -98,6 +99,7 @@
   import DisplayText from '@/components/format/DisplayText.vue'
   import DateDisplay from '@/components/format/Date.vue'
   import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
+  import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
 
   // Types
   type Mode = 'view' | 'edit' | 'create'
@@ -111,6 +113,7 @@
   const route = useRoute()
   const router = useRouter()
   const countryStore = useCountryStore()
+  const loadingStore = useLoadingOverlayStore()
   const cancelChangesStore = useCancelChangesConfirmationStore()
   const deleteConfirmationStore = useDeleteConfirmationStore()
   const errorStore = useErrorDisplayStore()
@@ -143,7 +146,7 @@
   const backLink = computed(() => ({
     title: 'Back to Countries',
     route: '/countries',
-    icon: 'ArrowLeft',
+    icon: ArrowLeftIcon,
     color: 'blue',
   }))
 
@@ -187,6 +190,7 @@
 
   const saveCountry = async (): Promise<void> => {
     try {
+      loadingStore.show('Saving...')
       if (mode.value === 'create') {
         const createData: CountryStoreRequest = {
           id: editForm.value.id,
@@ -210,9 +214,10 @@
           mode.value = 'view'
         }
       }
-    } catch (error) {
-      console.error('Error saving country:', error)
+    } catch {
       errorStore.addMessage('error', 'Failed to save country. Please try again.')
+    } finally {
+      loadingStore.hide()
     }
   }
 
@@ -240,16 +245,18 @@
     if (!country.value) return
     const result = await deleteConfirmationStore.trigger(
       'Delete Country',
-      `Are you sure you want to delete "${country.value.internal_name}"?`
+      `Are you sure you want to delete "${country.value.internal_name}"? This action cannot be undone.`
     )
     if (result === 'delete') {
       try {
+        loadingStore.show('Deleting...')
         await countryStore.deleteCountry(country.value.id)
         errorStore.addMessage('info', 'Country deleted successfully.')
         await router.push('/countries')
-      } catch (error) {
-        console.error('Error deleting country:', error)
+      } catch {
         errorStore.addMessage('error', 'Failed to delete country. Please try again.')
+      } finally {
+        loadingStore.hide()
       }
     }
   }
