@@ -11,7 +11,7 @@
       <NavigationCard
         title="Languages"
         description="Manage system languages and localization settings"
-        main-color="blue"
+        main-color="purple"
         button-text="Manage Languages"
         button-route="/languages"
       >
@@ -24,7 +24,7 @@
       <NavigationCard
         title="Countries"
         description="Manage countries and geographic regions"
-        main-color="green"
+        main-color="blue"
         button-text="Manage Countries"
         button-route="/countries"
       >
@@ -37,7 +37,7 @@
       <NavigationCard
         title="Contexts"
         description="Manage system contexts and operational environments"
-        main-color="purple"
+        main-color="green"
         button-text="Manage Contexts"
         button-route="/contexts"
       >
@@ -108,7 +108,7 @@
     XCircleIcon,
     LanguageIcon,
     GlobeAltIcon as CountryIcon,
-    ServerIcon as ContextIcon,
+    CogIcon as ContextIcon,
     FolderIcon as ProjectIcon,
     CpuChipIcon as SystemIcon,
     AdjustmentsHorizontalIcon as FeaturesIcon,

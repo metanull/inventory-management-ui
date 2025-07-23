@@ -11,8 +11,9 @@
         <nav class="hidden md:flex space-x-8 items-center">
           <RouterLink
             to="/"
-            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
           >
+            <HomeIcon class="w-4 h-4" />
             Dashboard
           </RouterLink>
 
@@ -38,30 +39,34 @@
             >
               <RouterLink
                 to="/languages"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                 @click="closeDropdown"
               >
+                <LanguageIcon class="w-4 h-4 text-purple-600" />
                 Languages
               </RouterLink>
               <RouterLink
                 to="/countries"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                 @click="closeDropdown"
               >
+                <GlobeAltIcon class="w-4 h-4 text-blue-600" />
                 Countries
               </RouterLink>
               <RouterLink
                 to="/contexts"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                 @click="closeDropdown"
               >
+                <CogIcon class="w-4 h-4 text-green-600" />
                 Contexts
               </RouterLink>
               <RouterLink
                 to="/projects"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                 @click="closeDropdown"
               >
+                <FolderIcon class="w-4 h-4 text-orange-600" />
                 Projects
               </RouterLink>
             </div>
@@ -72,9 +77,10 @@
         <div class="hidden md:flex items-center space-x-4">
           <button
             v-if="authStore.isAuthenticated"
-            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
             @click="handleLogout"
           >
+            <ArrowRightOnRectangleIcon class="w-4 h-4" />
             Logout
           </button>
         </div>
@@ -96,9 +102,10 @@
         <div class="flex flex-col space-y-2">
           <RouterLink
             to="/"
-            class="text-gray-500 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            class="text-gray-500 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
             @click="closeMobileMenu"
           >
+            <HomeIcon class="w-5 h-5" />
             Dashboard
           </RouterLink>
 
@@ -118,30 +125,34 @@
             <div v-if="isMobileDropdownOpen" class="mt-2 space-y-2 pl-4 border-l-2 border-gray-200">
               <RouterLink
                 to="/languages"
-                class="text-gray-500 hover:text-gray-900 block py-2 text-sm"
+                class="text-gray-500 hover:text-gray-900 block py-2 text-sm flex items-center gap-2"
                 @click="closeMobileMenu"
               >
+                <LanguageIcon class="w-4 h-4 text-purple-600" />
                 Languages
               </RouterLink>
               <RouterLink
                 to="/countries"
-                class="text-gray-500 hover:text-gray-900 block py-2 text-sm"
+                class="text-gray-500 hover:text-gray-900 block py-2 text-sm flex items-center gap-2"
                 @click="closeMobileMenu"
               >
+                <GlobeAltIcon class="w-4 h-4 text-blue-600" />
                 Countries
               </RouterLink>
               <RouterLink
                 to="/contexts"
-                class="text-gray-500 hover:text-gray-900 block py-2 text-sm"
+                class="text-gray-500 hover:text-gray-900 block py-2 text-sm flex items-center gap-2"
                 @click="closeMobileMenu"
               >
+                <CogIcon class="w-4 h-4 text-green-600" />
                 Contexts
               </RouterLink>
               <RouterLink
                 to="/projects"
-                class="text-gray-500 hover:text-gray-900 block py-2 text-sm"
+                class="text-gray-500 hover:text-gray-900 block py-2 text-sm flex items-center gap-2"
                 @click="closeMobileMenu"
               >
+                <FolderIcon class="w-4 h-4 text-orange-600" />
                 Projects
               </RouterLink>
             </div>
@@ -150,9 +161,10 @@
           <!-- Mobile Logout -->
           <button
             v-if="authStore.isAuthenticated"
-            class="text-gray-500 hover:text-gray-900 text-left px-3 py-2 rounded-md text-base font-medium"
+            class="text-gray-500 hover:text-gray-900 text-left px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
             @click="handleLogout"
           >
+            <ArrowRightOnRectangleIcon class="w-5 h-5" />
             Logout
           </button>
         </div>
@@ -165,7 +177,17 @@
   import { ref } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/auth'
-  import { ChevronDownIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
+  import {
+    ChevronDownIcon,
+    Bars3Icon,
+    XMarkIcon,
+    HomeIcon,
+    LanguageIcon,
+    GlobeAltIcon,
+    CogIcon,
+    FolderIcon,
+    ArrowRightOnRectangleIcon,
+  } from '@heroicons/vue/24/outline'
 
   const router = useRouter()
   const authStore = useAuthStore()
@@ -230,6 +252,7 @@
 
 <style scoped>
   .router-link-active {
-    @apply text-blue-600 font-semibold;
+    color: rgb(37 99 235);
+    font-weight: 600;
   }
 </style>
