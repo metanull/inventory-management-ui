@@ -1,4 +1,4 @@
-name: Generate Commit Documentation
+name: Github Page
 
 on:
   push:

@@ -4,12 +4,12 @@ title: Home
 nav_order: 1
 ---
 
-[![CI/CD Pipeline](https://github.com/metanull/inventory-management-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/ci.yml)
+[![Continuous integration](https://github.com/metanull/inventory-management-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/metanull/inventory-management-ui/actions/workflows/codeql.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/codeql.yml)
-[![Dependabot Updates](https://github.com/metanull/inventory-management-ui/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/dependabot/dependabot-updates)
-[![Generate Commit Documentation](https://github.com/metanull/inventory-management-ui/actions/workflows/generate-commit-docs.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/generate-commit-docs.yml)
+[![Dependabot](https://github.com/metanull/inventory-management-ui/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/dependabot/dependabot-updates)
+[![Github Page](https://github.com/metanull/inventory-management-ui/actions/workflows/generate-commit-docs.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/generate-commit-docs.yml)
 
-# Inventory Management UI
+# Museum Inventory Management UI
 
 A modern Vue.js 3 + TypeScript application for managing museum inventory systems. Built with responsive design, comprehensive testing, and production-ready architecture for museums, institutions, and collectors to catalog, organize, and preserve cultural objects and monuments.
 
