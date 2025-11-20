@@ -4,8 +4,8 @@ import {
   CountryApi,
   Configuration,
   type CountryResource,
-  type CountryStoreRequest,
-  type CountryUpdateRequest,
+  type StoreCountryRequest,
+  type UpdateCountryRequest,
 } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from './auth'
 import { ErrorHandler } from '@/utils/errorHandler'
@@ -44,7 +44,7 @@ export const useCountryStore = defineStore('country', () => {
     }
 
     if (authStore.token) {
-      configParams.accessToken = authStore.token.value
+      configParams.accessToken = authStore.token
     }
 
     // Create configuration for the API client
@@ -107,7 +107,7 @@ export const useCountryStore = defineStore('country', () => {
   }
 
   const createCountry = async (
-    countryData: CountryStoreRequest
+    countryData: StoreCountryRequest
   ): Promise<CountryResource | null> => {
     loading.value = true
     error.value = null
@@ -134,7 +134,7 @@ export const useCountryStore = defineStore('country', () => {
 
   const updateCountry = async (
     id: string,
-    countryData: CountryUpdateRequest
+    countryData: UpdateCountryRequest
   ): Promise<CountryResource | null> => {
     loading.value = true
     error.value = null

@@ -2,12 +2,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
 // Mock the API client before importing the store
+const mockApiInstance = {
+  tokenAcquire: vi.fn(),
+  tokenWipe: vi.fn(),
+}
+
 vi.mock('@metanull/inventory-app-api-client', () => ({
-  MobileAppAuthenticationApi: vi.fn().mockImplementation(() => ({
-    tokenAcquire: vi.fn(),
-    tokenWipe: vi.fn(),
-  })),
-  Configuration: vi.fn(),
+  MobileAppAuthenticationApi: vi.fn(function (this: object) {
+    return mockApiInstance
+  }),
+  Configuration: vi.fn(function (this: object) {
+    // Configuration constructor doesn't need to do anything
+  }),
 }))
 
 import { useAuthStore } from '../auth'
@@ -60,20 +66,9 @@ describe('Auth Store', () => {
   describe('Login', () => {
     it('should login successfully', async () => {
       const mockToken = 'new-auth-token'
-      const mockResponse = { data: `1;${mockToken}` }
+      const mockResponse = { data: { token: mockToken, user: {} } }
 
-      const { MobileAppAuthenticationApi } = (await vi.importMock(
-        '@metanull/inventory-app-api-client'
-      )) as {
-        MobileAppAuthenticationApi: ReturnType<typeof vi.fn>
-      }
-
-      const mockApiInstance = {
-        tokenAcquire: vi.fn().mockResolvedValueOnce(mockResponse),
-        tokenWipe: vi.fn(),
-      }
-
-      MobileAppAuthenticationApi.mockReturnValue(mockApiInstance)
+      mockApiInstance.tokenAcquire.mockResolvedValueOnce(mockResponse)
 
       await authStore.login('test@example.com', 'password')
 
@@ -98,18 +93,7 @@ describe('Auth Store', () => {
         },
       }
 
-      const { MobileAppAuthenticationApi } = (await vi.importMock(
-        '@metanull/inventory-app-api-client'
-      )) as {
-        MobileAppAuthenticationApi: ReturnType<typeof vi.fn>
-      }
-
-      const mockApiInstance = {
-        tokenAcquire: vi.fn().mockRejectedValueOnce(mockError),
-        tokenWipe: vi.fn(),
-      }
-
-      MobileAppAuthenticationApi.mockReturnValue(mockApiInstance)
+      mockApiInstance.tokenAcquire.mockRejectedValueOnce(mockError)
 
       await expect(authStore.login('test@example.com', 'wrong-password')).rejects.toThrow()
 
@@ -126,18 +110,7 @@ describe('Auth Store', () => {
     })
 
     it('should logout successfully', async () => {
-      const { MobileAppAuthenticationApi } = (await vi.importMock(
-        '@metanull/inventory-app-api-client'
-      )) as {
-        MobileAppAuthenticationApi: ReturnType<typeof vi.fn>
-      }
-
-      const mockApiInstance = {
-        tokenAcquire: vi.fn(),
-        tokenWipe: vi.fn().mockResolvedValueOnce(undefined),
-      }
-
-      MobileAppAuthenticationApi.mockReturnValue(mockApiInstance)
+      mockApiInstance.tokenWipe.mockResolvedValueOnce(undefined)
 
       await authStore.logout()
 

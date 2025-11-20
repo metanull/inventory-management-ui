@@ -49,7 +49,7 @@ export const useContextStore = defineStore('context', () => {
     }
 
     if (authStore.token) {
-      configParams.accessToken = authStore.token.value
+      configParams.accessToken = authStore.token
     }
 
     // Create configuration for the API client

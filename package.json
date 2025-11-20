@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@pinia/testing": "^1.0.3",
+    "@tailwindcss/postcss": "^4.1.17",
     "@types/form-data": "^2.5.2",
     "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
