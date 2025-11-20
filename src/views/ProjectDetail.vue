@@ -221,10 +221,9 @@
     if (!project.value) return getDefaultFormValues()
 
     // Format launch_date for HTML date input (YYYY-MM-DD)
-    let formattedLaunchDate = ''
-    if (project.value.launch_date) {
-      formattedLaunchDate = project.value.launch_date.split('T')[0]
-    }
+    const launchDate = project.value.launch_date
+    const formattedLaunchDate =
+      launchDate && typeof launchDate === 'string' ? (launchDate.split('T')[0] ?? '') : ''
 
     return {
       internal_name: project.value.internal_name,

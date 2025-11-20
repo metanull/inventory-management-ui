@@ -3,9 +3,8 @@ import { ref, computed } from 'vue'
 import {
   MobileAppAuthenticationApi,
   Configuration,
-  type TokenAcquireRequest,
+  type AcquireTokenMobileAppAuthenticationRequest,
 } from '@metanull/inventory-app-api-client'
-import { useErrorDisplayStore } from './errorDisplay'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -55,7 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const apiClient = createApiClient()
-      const tokenRequest: TokenAcquireRequest = {
+      const tokenRequest: AcquireTokenMobileAppAuthenticationRequest = {
         email,
         password,
         device_name: 'Inventory Management UI',
@@ -64,21 +63,11 @@ export const useAuthStore = defineStore('auth', () => {
 
       const response = await apiClient.tokenAcquire(tokenRequest)
 
-      // Parse the response format: "tokenCount;actualToken"
-      const responseData = response.data
-      let authToken: string
+      // The response now has a structured format with token and user
+      const authToken = response.data.token
 
-      if (typeof responseData === 'string' && responseData.includes(';')) {
-        const [tokenCount, extractedToken] = responseData.split(';')
-        const errorDisplayStore = useErrorDisplayStore()
-        errorDisplayStore.addMessage(
-          'info',
-          `Authentication successful. Active tokens: ${tokenCount}`
-        )
-        authToken = extractedToken
-      } else {
-        // Fallback for different response formats
-        authToken = responseData as string
+      if (!authToken) {
+        throw new Error('No token received from authentication')
       }
 
       token.value = authToken

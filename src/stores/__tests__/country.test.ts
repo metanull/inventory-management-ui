@@ -3,8 +3,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useCountryStore } from '@/stores/country'
 import type {
   CountryResource,
-  CountryStoreRequest,
-  CountryUpdateRequest,
+  StoreCountryRequest,
+  UpdateCountryRequest,
 } from '@metanull/inventory-app-api-client'
 
 // Mock the API client
@@ -17,7 +17,9 @@ const mockCountryApi = {
 }
 
 vi.mock('@metanull/inventory-app-api-client', () => ({
-  CountryApi: vi.fn().mockImplementation(() => mockCountryApi),
+  CountryApi: vi.fn(function (this: object) {
+    return mockCountryApi
+  }),
   Configuration: vi.fn(),
 }))
 
@@ -146,7 +148,7 @@ describe('Country Store', () => {
   describe('createCountry', () => {
     it('should create a country successfully', async () => {
       const countryStore = useCountryStore()
-      const newCountryData: CountryStoreRequest = {
+      const newCountryData: StoreCountryRequest = {
         id: 'GBR',
         internal_name: 'United Kingdom',
         backward_compatibility: 'GB',
@@ -171,7 +173,7 @@ describe('Country Store', () => {
 
     it('should handle create country error', async () => {
       const countryStore = useCountryStore()
-      const newCountryData: CountryStoreRequest = {
+      const newCountryData: StoreCountryRequest = {
         id: 'GBR',
         internal_name: 'United Kingdom',
         backward_compatibility: 'GB',
@@ -194,7 +196,7 @@ describe('Country Store', () => {
       countryStore.countries.push(mockCountryData)
       countryStore.currentCountry = mockCountryData
 
-      const updateData: CountryUpdateRequest = {
+      const updateData: UpdateCountryRequest = {
         internal_name: 'United States of America',
         backward_compatibility: 'US',
       }
@@ -216,7 +218,7 @@ describe('Country Store', () => {
 
     it('should handle update country error', async () => {
       const countryStore = useCountryStore()
-      const updateData: CountryUpdateRequest = {
+      const updateData: UpdateCountryRequest = {
         internal_name: 'Updated Name',
         backward_compatibility: null,
       }

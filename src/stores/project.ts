@@ -4,9 +4,10 @@ import {
   ProjectApi,
   Configuration,
   type ProjectResource,
-  type ProjectStoreRequest,
-  type ProjectSetEnabledRequest,
-  type ProjectSetLaunchedRequest,
+  type StoreProjectRequest,
+  type UpdateProjectRequest,
+  type SetEnabledProjectRequest,
+  type SetLaunchedProjectRequest,
 } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from './auth'
 import { ErrorHandler } from '@/utils/errorHandler'
@@ -117,7 +118,7 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   // Create a new project
-  const createProject = async (projectData: ProjectStoreRequest) => {
+  const createProject = async (projectData: StoreProjectRequest) => {
     loading.value = true
     error.value = null
 
@@ -141,7 +142,7 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   // Update an existing project
-  const updateProject = async (id: string, projectData: ProjectStoreRequest) => {
+  const updateProject = async (id: string, projectData: UpdateProjectRequest) => {
     loading.value = true
     error.value = null
 
@@ -200,7 +201,7 @@ export const useProjectStore = defineStore('project', () => {
 
     try {
       const apiClient = createApiClient()
-      const requestData: ProjectSetEnabledRequest = { is_enabled: isEnabled }
+      const requestData: SetEnabledProjectRequest = { is_enabled: isEnabled }
       const response = await apiClient.projectSetEnabled(id, requestData)
       const updatedProject = response.data.data
 
@@ -231,7 +232,7 @@ export const useProjectStore = defineStore('project', () => {
 
     try {
       const apiClient = createApiClient()
-      const requestData: ProjectSetLaunchedRequest = {
+      const requestData: SetLaunchedProjectRequest = {
         is_launched: isLaunched,
       }
       const response = await apiClient.projectSetLaunched(id, requestData)

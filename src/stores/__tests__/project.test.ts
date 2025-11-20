@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useProjectStore } from '../project'
-import type { ProjectResource, ProjectStoreRequest } from '@metanull/inventory-app-api-client'
+import type { ProjectResource, StoreProjectRequest } from '@metanull/inventory-app-api-client'
 
 // Mock the API client
 const mockProjectApi = {
@@ -16,7 +16,9 @@ const mockProjectApi = {
 }
 
 vi.mock('@metanull/inventory-app-api-client', () => ({
-  ProjectApi: vi.fn().mockImplementation(() => mockProjectApi),
+  ProjectApi: vi.fn(function (this: object) {
+    return mockProjectApi
+  }),
   Configuration: vi.fn(),
 }))
 
@@ -179,7 +181,7 @@ describe('Project Store', () => {
   describe('createProject', () => {
     it('should create project successfully', async () => {
       const projectStore = useProjectStore()
-      const newProject: ProjectStoreRequest = {
+      const newProject: StoreProjectRequest = {
         internal_name: 'New Project',
         backward_compatibility: 'new-project',
         launch_date: '2024-12-31',
@@ -210,7 +212,7 @@ describe('Project Store', () => {
 
     it('should handle create project error', async () => {
       const projectStore = useProjectStore()
-      const newProject: ProjectStoreRequest = {
+      const newProject: StoreProjectRequest = {
         internal_name: 'New Project',
         backward_compatibility: 'new-project',
         is_enabled: true,
@@ -233,7 +235,7 @@ describe('Project Store', () => {
     it('should update project successfully', async () => {
       const projectStore = useProjectStore()
       const projectId = '123e4567-e89b-12d3-a456-426614174000'
-      const updatedData: ProjectStoreRequest = {
+      const updatedData: StoreProjectRequest = {
         internal_name: 'Updated Project',
         backward_compatibility: 'updated-project',
         is_enabled: true,
@@ -258,7 +260,7 @@ describe('Project Store', () => {
     it('should handle update project error', async () => {
       const projectStore = useProjectStore()
       const projectId = '123e4567-e89b-12d3-a456-426614174000'
-      const updatedData: ProjectStoreRequest = {
+      const updatedData: StoreProjectRequest = {
         internal_name: 'Updated Project',
         backward_compatibility: 'updated-project',
         is_enabled: true,
