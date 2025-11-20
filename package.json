@@ -36,7 +36,7 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
-    "@metanull/inventory-app-api-client": "^1.1.19-dev.715.1753",
+    "@metanull/inventory-app-api-client": "1.1.0-dev.1118.2131",
     "@types/uuid": "^11.0.0",
     "@vueuse/core": "^14.0.0",
     "axios": "^1.13.2",

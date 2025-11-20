@@ -44,7 +44,7 @@ export const useCountryStore = defineStore('country', () => {
     }
 
     if (authStore.token) {
-      configParams.accessToken = authStore.token
+      configParams.accessToken = authStore.token.value
     }
 
     // Create configuration for the API client
