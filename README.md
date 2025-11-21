@@ -8,7 +8,7 @@
 ---
 
 [![Deploy](https://github.com/metanull/inventory-management-ui/actions/workflows/deploy.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/deploy.yml)
-[![Build](https://github.com/metanull/inventory-management-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/build.yml)
+[![Pull Request Validation](https://github.com/metanull/inventory-management-ui/actions/workflows/validate.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/validate.yml)
 [![CodeQL](https://github.com/metanull/inventory-management-ui/actions/workflows/codeql.yml/badge.svg)](https://github.com/metanull/inventory-management-ui/actions/workflows/codeql.yml)
 
 ## 🎯 Purpose
