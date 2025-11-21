@@ -65,17 +65,11 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Create .env file from environment variables
+    - name: Build application
       env:
         VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
         VITE_APP_TITLE: ${{ vars.VITE_APP_TITLE }}
-      run: |
-        echo "VITE_API_BASE_URL=$VITE_API_BASE_URL" > .env
-        echo "VITE_APP_TITLE='$VITE_APP_TITLE'" >> .env
-        echo "VITE_BASE_URL=/inventory-management-ui/" >> .env
-        cat .env
-    
-    - name: Build application
+        VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
       run: npm run build
     
     - name: Setup Pages
@@ -85,6 +79,34 @@ jobs:
       uses: actions/upload-pages-artifact@v4
       with:
         path: dist
+    
+    - name: Get version from package.json
+      id: package-version
+      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ steps.package-version.outputs.version }}.${{ github.run_number }}
+        name: Release v${{ steps.package-version.outputs.version }}.${{ github.run_number }}
+        body: |
+          ## Release v${{ steps.package-version.outputs.version }}.${{ github.run_number }}
+          
+          **Deployed to:** https://metanull.github.io/inventory-management-ui
+          
+          ### 📋 Details
+          - **Commit:** ${{ github.sha }}
+          - **Author:** ${{ github.actor }}
+          - **Branch:** ${{ github.ref_name }}
+          
+          ### 📦 Build Artifacts
+          - Deployed to GitHub Pages
+          - Build Number: ${{ github.run_number }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     needs: build
