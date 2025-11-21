@@ -175,3 +175,6 @@ docs/Gemfile.lock
 
 # Temporary MD files
 **/temp_*.md
+
+# NPM Configuration
+.npmrc

@@ -1,0 +1,3 @@
+@metanull:registry=https://npm.pkg.github.com/
+# Uncomment the line below and replace YOUR_GITHUB_TOKEN with a personal access token to enable authentication for GitHub Packages
+#//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN

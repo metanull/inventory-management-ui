@@ -2,11 +2,9 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "main", "develop" ]
-  pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: "30 1 * * 0"
+    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight UTC
 
 jobs:
   analyze:
@@ -31,7 +29,7 @@ jobs:
     - name: Set up Node.js 22
       uses: actions/setup-node@v4
       with:
-        node-version: '22'
+        node-version: '24'
         cache: 'npm'
         registry-url: 'https://npm.pkg.github.com'
         scope: '@metanull'
