@@ -53,6 +53,9 @@ jobs:
       pages: write
       id-token: write
     
+    environment:
+      name: github-page-deploy
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -120,10 +123,6 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    
-    environment:
-      name: github-page-deploy
-      url: ${{ steps.deployment.outputs.page_url }}
     
     runs-on: ubuntu-latest
     
