@@ -72,6 +72,7 @@ jobs:
       run: |
         echo "VITE_API_BASE_URL=$VITE_API_BASE_URL" > .env
         echo "VITE_APP_TITLE='$VITE_APP_TITLE'" >> .env
+        echo "VITE_BASE_URL=/inventory-management-ui/" >> .env
         cat .env
     
     - name: Build application
