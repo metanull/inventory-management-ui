@@ -8,6 +8,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: write
+    
     steps:
     - uses: actions/checkout@v4
       with:
@@ -55,6 +60,10 @@ jobs:
 
   security-check:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      security-events: write
     
     steps:
     - uses: actions/checkout@v4
