@@ -1,32 +1,32 @@
 <template>
   <ListView
-    title="Countries"
-    description="Manage available Countries, or add new ones."
-    add-button-route="/countries/new"
-    add-button-label="Add Country"
+    title="Glossary"
+    description="Manage glossary entries. Include notes or special instructions from the manual here. Ex. 'Always include English spelling.'"
+    add-button-route="/glossary/new"
+    add-button-label="Add Glossary Entry"
     color="blue"
-    :is-empty="filteredCountries.length === 0"
-    empty-title="No countries found"
+    :is-empty="filteredGlossary.length === 0"
+    empty-title="No glossary entries found."
     :empty-message="
       searchQuery.length > 0
-        ? `No countries match your search: '${searchQuery}'`
-        : 'Get started by creating a new country.'
+        ? `No glossary entries match your search: '${searchQuery}'`
+        : 'Get started by creating a new glossary entry.'
     "
     :show-empty-add-button="searchQuery.length === 0"
-    empty-add-button-label="New Country"
-    @retry="fetchCountries"
+    empty-add-button-label="New Glossary Entry"
+    @retry="fetchGlossary"
   >
     <!-- Icon -->
     <template #icon>
-      <CountryIcon />
+      <BookOpenIcon />
     </template>
 
     <!-- Search Slot -->
     <template #search>
-      <SearchControl v-model="searchQuery" placeholder="Search countries..." />
+      <SearchControl v-model="searchQuery" placeholder="Search glossary..." />
     </template>
 
-    <!-- Countries Table Headers -->
+    <!-- Glossary Table Headers -->
     <template #headers>
       <TableRow>
         <TableHeader
@@ -34,7 +34,7 @@
           :sort-direction="sortKey === 'internal_name' ? sortDirection : null"
           @sort="handleSort('internal_name')"
         >
-          Country
+          Glossary
         </TableHeader>
         <TableHeader
           class="hidden lg:table-cell"
@@ -50,33 +50,33 @@
       </TableRow>
     </template>
 
-    <!-- Countries Table Rows -->
+    <!-- Glossary Table Rows -->
     <template #rows>
       <TableRow
-        v-for="country in filteredCountries"
-        :key="country.id"
+        v-for="glossaryEntry in filteredGlossary"
+        :key="glossaryEntry.id"
         class="cursor-pointer hover:bg-blue-50 transition"
-        @click="openCountryDetail(country.id)"
+        @click="openGlossaryDetail(glossaryEntry.id)"
       >
         <TableCell>
           <InternalName
             small
-            :internal-name="country.internal_name"
-            :backward-compatibility="country.backward_compatibility"
+            :internal-name="glossaryEntry.internal_name"
+            :backward-compatibility="glossaryEntry.backward_compatibility"
           >
             <template #icon>
-              <CountryIcon class="h-5 w-5 text-blue-600" />
+              <BookOpenIcon class="h-5 w-5 text-blue-600" />
             </template>
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay :date="country.created_at" />
+          <DateDisplay :date="glossaryEntry.created_at" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
           <div class="flex space-x-2" @click.stop>
-            <ViewButton @click="router.push(`/countries/${country.id}`)" />
-            <EditButton @click="router.push(`/countries/${country.id}?edit=true`)" />
-            <DeleteButton @click="handleDeleteCountry(country)" />
+            <ViewButton @click="router.push(`/glossary/${glossaryEntry.id}`)" />
+            <EditButton @click="router.push(`/glossary/${glossaryEntry.id}?edit=true`)" />
+            <DeleteButton @click="handleDeleteGlossary(glossaryEntry)" />
           </div>
         </TableCell>
       </TableRow>
@@ -87,8 +87,8 @@
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
-  import type { CountryResource } from '@metanull/inventory-app-api-client'
-  import { useCountryStore } from '@/stores/country'
+  import type { GlossaryResource } from '@metanull/inventory-app-api-client'
+  import { useGlossaryStore } from '@/stores/glossary'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -102,33 +102,32 @@
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
   import DeleteButton from '@/components/layout/list/DeleteButton.vue'
-  import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
+  import { BookOpenIcon } from '@heroicons/vue/24/solid'
 
   const router = useRouter()
-  const countryStore = useCountryStore()
+  const glossaryStore = useGlossaryStore()
   const loadingStore = useLoadingOverlayStore()
   const errorStore = useErrorDisplayStore()
   const deleteStore = useDeleteConfirmationStore()
 
   // State
   const searchQuery = ref('')
-  const sortKey = ref<keyof CountryResource>('internal_name')
+  const sortKey = ref<keyof GlossaryResource>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   // Computed
-  const countries = computed(() => countryStore.countries)
-
-  const filteredCountries = computed(() => {
-    let filtered = [...countries.value]
+  const glossary = computed(() => glossaryStore.glossary)
+  const filteredGlossary = computed(() => {
+    let filtered = [...glossary.value]
 
     // Apply search filter
     if (searchQuery.value.trim()) {
       const query = searchQuery.value.toLowerCase().trim()
       filtered = filtered.filter(
-        country =>
-          country.internal_name.toLowerCase().includes(query) ||
-          (country.backward_compatibility &&
-            country.backward_compatibility.toLowerCase().includes(query))
+        glossaryEntry =>
+          glossaryEntry.internal_name.toLowerCase().startsWith(query) ||
+          (glossaryEntry.backward_compatibility &&
+            glossaryEntry.backward_compatibility.toLowerCase().startsWith(query))
       )
     }
 
@@ -154,7 +153,7 @@
   })
 
   // Methods
-  const handleSort = (key: keyof CountryResource): void => {
+  const handleSort = (key: keyof GlossaryResource): void => {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
     } else {
@@ -163,26 +162,26 @@
     }
   }
 
-  const openCountryDetail = (id: string): void => {
-    router.push(`/countries/${id}`)
+  const openGlossaryDetail = (id: string): void => {
+    router.push(`/glossary/${id}`)
   }
 
-  const fetchCountries = async (): Promise<void> => {
+  const fetchGlossary = async (): Promise<void> => {
     let usedCache = false
     // If cache exists, display immediately and refresh in background
-    if (countries.value && countries.value.length > 0) {
+    if (glossary.value && glossary.value.length > 0) {
       usedCache = true
     } else {
       loadingStore.show()
     }
     try {
       // Always refresh in background
-      await countryStore.fetchCountries()
+      await glossaryStore.fetchGlossary()
       if (usedCache) {
         errorStore.addMessage('info', 'List refreshed')
       }
     } catch {
-      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
+      errorStore.addMessage('error', 'Failed to fetch glossary. Please try again.')
     } finally {
       if (!usedCache) {
         loadingStore.hide()
@@ -190,20 +189,20 @@
     }
   }
 
-  // Delete country with confirmation
-  const handleDeleteCountry = async (countryToDelete: CountryResource) => {
+  // Delete glossary entry with confirmation
+  const handleDeleteGlossary = async (glossaryEntryToDelete: GlossaryResource) => {
     const result = await deleteStore.trigger(
-      'Delete Country',
-      `Are you sure you want to delete "${countryToDelete.internal_name}"? This action cannot be undone.`
+      'Delete Glossary Entry',
+      `Are you sure you want to delete "${glossaryEntryToDelete.internal_name}"? This action cannot be undone.`
     )
 
     if (result === 'delete') {
       try {
         loadingStore.show('Deleting...')
-        await countryStore.deleteCountry(countryToDelete.id)
-        errorStore.addMessage('info', 'Country deleted successfully.')
+        await glossaryStore.deleteGlossaryEntry(glossaryEntryToDelete.id)
+        errorStore.addMessage('info', 'Glossary entry deleted successfully.')
       } catch {
-        errorStore.addMessage('error', 'Failed to delete country. Please try again.')
+        errorStore.addMessage('error', 'Failed to delete glossary entry. Please try again.')
       } finally {
         loadingStore.hide()
       }
@@ -214,19 +213,19 @@
   onMounted(async () => {
     let usedCache = false
     // If cache exists, display immediately and refresh in background
-    if (countries.value && countries.value.length > 0) {
+    if (glossary.value && glossary.value.length > 0) {
       usedCache = true
     } else {
       loadingStore.show()
     }
     try {
       // Always refresh in background
-      await countryStore.fetchCountries()
+      await glossaryStore.fetchGlossary()
       if (usedCache) {
         errorStore.addMessage('info', 'List refreshed')
       }
     } catch {
-      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
+      errorStore.addMessage('error', 'Failed to fetch glossary. Please try again.')
     } finally {
       if (!usedCache) {
         loadingStore.hide()

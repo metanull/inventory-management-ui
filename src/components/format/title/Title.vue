@@ -29,8 +29,11 @@
       case 'card':
         return 'h2'
       case 'section':
+        return ''
       case 'system':
+        return ''
       case 'empty':
+        return ''
       default:
         return 'h3'
     }
@@ -41,9 +44,11 @@
       case 'page':
         return 'mb-2'
       case 'card':
-        return 'mb-4'
+        // return 'mb-4'
+        return ''
       case 'empty':
-        return 'mt-2'
+        // return 'mt-2'
+        return ''
       default:
         return ''
     }

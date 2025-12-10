@@ -364,9 +364,12 @@ describe('Contexts Logic Tests', () => {
     it('correctly processes context creation date', () => {
       const context = mockContexts[0]
       const date = new Date(context.created_at || '')
-      expect(date.getFullYear()).toBe(2023)
-      expect(date.getMonth()).toBe(0) // January
-      expect(date.getDate()).toBe(1)
+      // expect(date.getFullYear()).toBe(2023)
+      // expect(date.getMonth()).toBe(0) // January
+      // expect(date.getDate()).toBe(1)
+      expect(date.getUTCFullYear()).toBe(2023)
+      expect(date.getUTCMonth()).toBe(0) // January (0 is Jan)
+      expect(date.getUTCDate()).toBe(1) 
     })
 
     it('handles null backward_compatibility gracefully', () => {
