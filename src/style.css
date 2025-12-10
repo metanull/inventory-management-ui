@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-family-sans: 'Inter', system-ui, sans-serif;
+  --font-family-sans: 'Roboto Condensed', system-ui, sans-serif;
 
   --color-primary-50: #eff6ff;
   --color-primary-500: #3b82f6;

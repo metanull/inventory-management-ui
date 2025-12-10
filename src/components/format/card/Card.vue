@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-    <div class="flex items-center">
+    <div class="flex items-center content-center mb-4">
       <div :class="iconClasses" class="h-8 w-8 mr-3">
         <slot name="icon" />
       </div>
@@ -18,7 +18,7 @@
 
   const props = defineProps<{
     title: string
-    description: string
+    description?: string
     mainColor: string
   }>()
 
