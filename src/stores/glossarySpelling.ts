@@ -148,7 +148,9 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
         const updatedGlossarySpellingEntry = response.data.data
 
         // Update in glossary list
-        const index = glossarySpellings.value.findIndex(glossarySpellingEntry => glossarySpellingEntry.id === id)
+        const index = glossarySpellings.value.findIndex(
+          glossarySpellingEntry => glossarySpellingEntry.id === id
+        )
         if (index !== -1) {
           glossary.value[index] = updatedGlossarySpellingEntry
         }
@@ -180,7 +182,9 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
       await api.glossarySpellingDestroy(id)
 
       // Remove from glossary list
-      glossarySpellings.value = glossarySpellings.value.filter(glossarySpellingEntry => glossarySpellingEntry.id !== id)
+      glossarySpellings.value = glossarySpellings.value.filter(
+        glossarySpellingEntry => glossarySpellingEntry.id !== id
+      )
 
       // Clear current glossary entry if it's the same
       if (currentGlossarySpellingEntry.value && currentGlossarySpellingEntry.value.id === id) {

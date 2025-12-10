@@ -369,7 +369,7 @@ describe('Contexts Logic Tests', () => {
       // expect(date.getDate()).toBe(1)
       expect(date.getUTCFullYear()).toBe(2023)
       expect(date.getUTCMonth()).toBe(0) // January (0 is Jan)
-      expect(date.getUTCDate()).toBe(1) 
+      expect(date.getUTCDate()).toBe(1)
     })
 
     it('handles null backward_compatibility gracefully', () => {

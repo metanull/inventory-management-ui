@@ -1,13 +1,10 @@
 <template>
   <div>
     <div class="mb-8">
-      <Title variant="page" description="Welcome to the Virtual Office for MWNF!">
-        Homepage
-      </Title>
+      <Title variant="page" description="Welcome to the Virtual Office for MWNF!"> Homepage </Title>
     </div>
 
     <div class="flex flex-col mb-8 space-y-8">
-
       <div>
         <div class="flex items-center justify-between mb-4">
           <button
@@ -17,8 +14,8 @@
             :title="showCategories ? 'Collapse section' : 'Expand section'"
             @click="toggleCategories"
           >
-            <MinusCircleIcon v-if="showCategories" class="w-8 h-8 mr-4"/>
-            <PlusCircleIcon v-else class="w-8 h-8 mr-4"/>
+            <MinusCircleIcon v-if="showCategories" class="w-8 h-8 mr-4" />
+            <PlusCircleIcon v-else class="w-8 h-8 mr-4" />
             <div class="text-xl font-semibold">Categories</div>
           </button>
         </div>
@@ -28,7 +25,8 @@
             title="Contexts"
             main-color="green"
             button-text="Manage"
-            button-route="/contexts">
+            button-route="/contexts"
+          >
             <template #icon>
               <ContextIcon />
             </template>
@@ -58,8 +56,8 @@
               :title="showLists ? 'Collapse section' : 'Expand section'"
               @click="toggleLists"
             >
-              <MinusCircleIcon v-if="showLists" class="w-8 h-8 mr-4"/>
-              <PlusCircleIcon v-else class="w-8 h-8 mr-4"/>
+              <MinusCircleIcon v-if="showLists" class="w-8 h-8 mr-4" />
+              <PlusCircleIcon v-else class="w-8 h-8 mr-4" />
               <div class="text-xl font-semibold">Lists</div>
             </button>
           </div>
@@ -70,12 +68,13 @@
             title="Languages"
             main-color="purple"
             button-text="Manage"
-            button-route="/languages">
+            button-route="/languages"
+          >
             <template #icon>
               <LanguageIcon />
             </template>
           </NavigationCard>
-          
+
           <!-- Countries Management Card -->
           <NavigationCard
             title="Countries"
@@ -93,14 +92,15 @@
             title="Glossary"
             main-color="blue"
             button-text="Manage"
-            button-route="/glossary">
+            button-route="/glossary"
+          >
             <template #icon>
               <GlossaryIcon />
             </template>
           </NavigationCard>
         </div>
       </div>
-      
+
       <div>
         <div class="mb-4">
           <div class="flex items-center justify-between">
@@ -111,8 +111,8 @@
               :title="showMisc ? 'Collapse section' : 'Expand section'"
               @click="toggleMisc"
             >
-              <MinusCircleIcon v-if="showMisc" class="w-8 h-8 mr-4"/>
-              <PlusCircleIcon v-else class="w-8 h-8 mr-4"/>
+              <MinusCircleIcon v-if="showMisc" class="w-8 h-8 mr-4" />
+              <PlusCircleIcon v-else class="w-8 h-8 mr-4" />
               <div class="text-xl font-semibold">Miscellaneous</div>
             </button>
           </div>
@@ -154,7 +154,6 @@
           </InformationCard>
         </div>
       </div>
-
     </div>
   </div>
 </template>

@@ -61,7 +61,7 @@
             <DisplayText v-else>{{ glossaryEntry?.backward_compatibility }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow> -->
-        
+
         <DescriptionRow variant="white">
           <DescriptionTerm>Alternate Spellings</DescriptionTerm>
           <DescriptionDetail>
@@ -76,7 +76,9 @@
             <DisplayText v-else>
               <!-- {{ glossaryEntry?.spellings }} -->
               <ul>
-                <li v-for="(spelling, index) in glossaryEntry?.spellings" :key="index">{{ spelling.spelling }}</li>
+                <li v-for="(spelling, index) in glossaryEntry?.spellings" :key="index">
+                  {{ spelling.spelling }}
+                </li>
               </ul>
             </DisplayText>
           </DescriptionDetail>
@@ -106,7 +108,7 @@
     StoreGlossaryRequest,
     UpdateGlossaryRequest,
     // StoreGlossarySpellingRequest,
-    UpdateGlossarySpellingRequest
+    UpdateGlossarySpellingRequest,
   } from '@metanull/inventory-app-api-client'
   import { useGlossaryStore } from '@/stores/glossary'
   import { useGlossarySpellingStore } from '@/stores/glossarySpelling'
@@ -208,7 +210,8 @@
     if (!glossaryEntry.value) return false
     return (
       editForm.value.internal_name !== glossaryEntry.value.internal_name ||
-      editForm.value.backward_compatibility !== (glossaryEntry.value.backward_compatibility || '') ||
+      editForm.value.backward_compatibility !==
+        (glossaryEntry.value.backward_compatibility || '') ||
       editSpellingForm.value.spelling !== (glossaryEntry.value.spellings || '')
       // ???
     )
@@ -263,7 +266,10 @@
           internal_name: editForm.value.internal_name,
           backward_compatibility: editForm.value.backward_compatibility || undefined,
         }
-        const updatedGlossaryEntry = await glossaryStore.updateGlossaryEntry(glossaryEntry.value.id, updateData)
+        const updatedGlossaryEntry = await glossaryStore.updateGlossaryEntry(
+          glossaryEntry.value.id,
+          updateData
+        )
         if (updatedGlossaryEntry) {
           errorStore.addMessage('info', 'Glossary entry updated successfully.')
           mode.value = 'view'
@@ -279,14 +285,18 @@
   const saveGlossarySpellingEntry = async (): Promise<void> => {
     try {
       loadingStore.show('Saving...')
-      console.log('Saving glossary spelling entry:', editSpellingForm.value);
+      console.log('Saving glossary spelling entry:', editSpellingForm.value)
       // fix here
       if (mode.value === 'edit' && glossarySpellingEntries.value) {
         const updateData: UpdateGlossarySpellingRequest = {
           language_id: editSpellingForm.value.language_id,
           spelling: editSpellingForm.value.spelling,
         }
-        const updatedGlossarySpellingEntry = await glossarySpellingStore.updateGlossarySpellingEntry(glossarySpellingEntries.value.id, updateData)
+        const updatedGlossarySpellingEntry =
+          await glossarySpellingStore.updateGlossarySpellingEntry(
+            glossarySpellingEntries.value.id,
+            updateData
+          )
         if (updatedGlossarySpellingEntry) {
           errorStore.addMessage('info', 'Glossary spelling entry updated successfully.')
           mode.value = 'view'
