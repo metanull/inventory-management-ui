@@ -66,6 +66,25 @@
           <DescriptionTerm>Alternate Spellings</DescriptionTerm>
           <DescriptionDetail>
             <div v-if="mode === 'edit'">
+              <!-- <div class="mb-2">
+                <label class="block text-sm font-medium text-gray-700">Language</label>
+                <select name="language" required
+                  v-model="editSpellingForm.language_id"
+                  class="mt-1 block w-full rounded-md border-gray-300"
+                >
+                  <option disabled selected value="">Select a language</option>
+                  <option v-for="lang in languages" :key="lang.id" :value="lang.id">
+                    {{ lang.internal_name }}
+                  </option>
+                </select>
+              </div> -->
+              <FormInput
+                v-model="editSpellingForm.language_id"
+                type="select"
+                placeholder="Select language for the spelling."
+                :options="languages"
+                required
+              />
               <FormInput
                 v-model="editSpellingForm.spelling"
                 type="text"
@@ -73,11 +92,11 @@
               />
               <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
             </div>
-            <DisplayText v-else>
+            <DisplayText>
               <!-- {{ glossaryEntry?.spellings }} -->
               <ul>
                 <li v-for="(spelling, index) in glossaryEntry?.spellings" :key="index">
-                  {{ spelling.spelling }}
+                  {{ spelling.spelling }} - {{spelling.language_id}}
                 </li>
               </ul>
             </DisplayText>
@@ -107,7 +126,7 @@
   import type {
     StoreGlossaryRequest,
     UpdateGlossaryRequest,
-    // StoreGlossarySpellingRequest,
+    StoreGlossarySpellingRequest,
     UpdateGlossarySpellingRequest,
   } from '@metanull/inventory-app-api-client'
   import { useGlossaryStore } from '@/stores/glossary'
@@ -116,6 +135,7 @@
   import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useLanguageStore } from '@/stores/language'
   import SaveButton from '@/components/layout/detail/SaveButton.vue'
   import DetailView from '@/components/layout/detail/DetailView.vue'
   import DescriptionList from '@/components/format/description/DescriptionList.vue'
@@ -152,6 +172,7 @@
   const cancelChangesStore = useCancelChangesConfirmationStore()
   const deleteConfirmationStore = useDeleteConfirmationStore()
   const errorStore = useErrorDisplayStore()
+  const languageStore = useLanguageStore()
 
   // Route params
   const glossaryEntryId = computed(() => {
@@ -184,6 +205,8 @@
     language_id: '',
     spelling: '',
   })
+
+  const languages = computed(() => languageStore.languages)
 
   // Navigation
   const backLink = computed(() => ({
@@ -221,7 +244,7 @@
   const fetchGlossaryEntry = async (): Promise<void> => {
     if (mode.value === 'create') return
     if (!glossaryEntryId.value || glossaryEntryId.value === 'new') return
-    await glossaryStore.fetchGlossaryEntry(glossaryEntryId.value)
+    await glossaryStore.fetchGlossaryEntry(glossaryEntryId.value, "spellings")
   }
 
   // const fetchGlossarySpellingEntry = async (): Promise<void> => {
@@ -272,6 +295,8 @@
         )
         if (updatedGlossaryEntry) {
           errorStore.addMessage('info', 'Glossary entry updated successfully.')
+          // Refresh the glossary entry so UI reflects any server-side changes
+          await fetchGlossaryEntry()
           mode.value = 'view'
         }
       }
@@ -283,10 +308,13 @@
   }
 
   const saveGlossarySpellingEntry = async (): Promise<void> => {
+    if (editSpellingForm.value.language_id.trim() === "" || editSpellingForm.value.spelling.trim() ==="") {
+      errorStore.addMessage('error', 'Please select a language and enter a spelling before saving.')
+      return
+    }
     try {
       loadingStore.show('Saving...')
-      console.log('Saving glossary spelling entry:', editSpellingForm.value)
-      // fix here
+      // console.log('Saving glossary spelling entry:', editSpellingForm.value)
       if (mode.value === 'edit' && glossarySpellingEntries.value) {
         const updateData: UpdateGlossarySpellingRequest = {
           language_id: editSpellingForm.value.language_id,
@@ -301,6 +329,21 @@
           errorStore.addMessage('info', 'Glossary spelling entry updated successfully.')
           mode.value = 'view'
         }
+      } else if (mode.value === 'edit' && !glossarySpellingEntries.value) {
+        // Creating new spelling entry
+        const createData: StoreGlossarySpellingRequest = {
+          glossary_id: editSpellingForm.value.glossary_id,
+          language_id: editSpellingForm.value.language_id,
+          spelling: editSpellingForm.value.spelling,
+        }
+        console.log(editSpellingForm.value.glossary_id, editSpellingForm.value.spelling);
+        const newGlossarySpellingEntry =
+          await glossarySpellingStore.createGlossarySpellingEntry(createData)
+        if (newGlossarySpellingEntry) {
+          errorStore.addMessage('info', 'Glossary spelling entry created successfully.')
+          await fetchGlossaryEntry()
+          mode.value = 'view'
+        }
       }
     } catch {
       errorStore.addMessage('error', 'Failed to save glossary spelling entry. Please try again.')
@@ -308,6 +351,8 @@
       loadingStore.hide()
     }
   }
+
+  
 
   const cancelAction = async (): Promise<void> => {
     if (hasUnsavedChanges.value) {
@@ -359,6 +404,12 @@
       }
     } else {
       await fetchGlossaryEntry()
+    }
+    // Load languages for spelling selection
+    try {
+      await languageStore.fetchLanguages()
+    } catch {
+      // swallow - errorStore will display via the language store error handling
     }
   })
 

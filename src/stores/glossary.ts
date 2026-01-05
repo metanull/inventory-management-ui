@@ -83,14 +83,14 @@ export const useGlossaryStore = defineStore('glossary', () => {
     }
   }
 
-  const fetchGlossaryEntry = async (id: string): Promise<void> => {
+  const fetchGlossaryEntry = async (id: string, include?: string): Promise<void> => {
     loading.value = true
     error.value = null
     currentGlossaryEntry.value = null
 
     try {
       const api = createApiClient()
-      const response = await api.glossaryShow(id)
+      const response = await api.glossaryShow(id, include)
 
       if (response.data && response.data.data) {
         currentGlossaryEntry.value = response.data.data
