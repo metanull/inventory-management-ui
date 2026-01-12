@@ -22,19 +22,6 @@
     </template>
     <template #information>
       <DescriptionList>
-        <!-- <DescriptionRow variant="gray">
-          <DescriptionTerm>Glossary Entry ID</DescriptionTerm>
-          <DescriptionDetail>
-            <FormInput
-              v-if="mode === 'edit' || mode === 'create'"
-              v-model="editForm.id"
-              type="text"
-              placeholder="ISO glossary entry code"
-              :disabled="mode === 'edit'"
-            />
-            <DisplayText v-else>{{ glossaryEntry?.id }}</DisplayText>
-          </DescriptionDetail>
-        </DescriptionRow> -->
         <DescriptionRow variant="white">
           <DescriptionTerm>Glossary Reference</DescriptionTerm>
           <DescriptionDetail>
@@ -46,81 +33,42 @@
             <DisplayText v-else>{{ glossaryEntry?.internal_name }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <!-- <DescriptionRow
-          v-if="glossaryEntry?.backward_compatibility || mode === 'edit' || mode === 'create'"
-          variant="gray"
-        >
-          <DescriptionTerm>Legacy ID</DescriptionTerm>
-          <DescriptionDetail>
-            <FormInput
-              v-if="mode === 'edit' || mode === 'create'"
-              v-model="editForm.backward_compatibility"
-              type="text"
-              placeholder="Optional legacy identifier"
-            />
-            <DisplayText v-else>{{ glossaryEntry?.backward_compatibility }}</DisplayText>
-          </DescriptionDetail>
-        </DescriptionRow> -->
-
         <DescriptionRow variant="white">
           <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
-            <div>
+            <div class="mb-4">
               <GenericButton v-for="language in glossaryEntryLanguages"
                 :label="language.internal_name"
-                @click="assignCurrentSpellingLanguage(language)">
+                @click="assignCurrentLanguage(language)"
+                class="mr-4"
+                :class="{'bg-sky-300': currentLanguage.id === language.id}">
               </GenericButton>
             </div>
-            <div v-if="mode === 'edit' && spellingMode === 'view'">
-              <!-- <div class="mb-2">
-                <label class="block text-sm font-medium text-gray-700">Language</label>
-                <select name="language" required
-                  v-model="editSpellingForm.language_id"
-                  class="mt-1 block w-full rounded-md border-gray-300"
-                >
-                  <option disabled selected value="">Select a language</option>
-                  <option v-for="lang in languages" :key="lang.id" :value="lang.id">
-                    {{ lang.internal_name }}
-                  </option>
-                </select>
-              </div> -->
-              <FormInput
-                v-model="createSpellingForm.language_id"
-                type="select"
-                placeholder="Select language for the spelling."
-                :options="languages"
-                required
-              />
+            <div v-if="mode === 'edit' && spellingMode === 'view' && currentLanguage.id">
               <FormInput
                 v-model="createSpellingForm.spelling"
                 type="text"
-                placeholder="Enter one spelling at a time."
+                :placeholder="`Create a new ${currentLanguage.internal_name} spelling.`"
+                class="mb-2"
               />
               <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
             </div>
             <DisplayText>
-              <!-- {{ glossaryEntry?.spellings }} -->
-              <ul>
+              <ul class="mt-4 space-y-2">
                 <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
                   <div v-if="spellingMode === 'view'">
-                    {{ spelling.spelling }} - {{spelling.language_id}}
+                    {{ spelling.spelling }}
                     <EditButton @click="handleEditGlossarySpelling(spelling)" v-if="mode === 'edit'" />
                     <DeleteButton @click="handleDeleteGlossarySpelling(spelling)" v-if="mode === 'edit'" />
                   </div>
                   <div v-else-if="spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id">
                     <FormInput
-                      v-model="editSpellingForm.language_id"
-                      type="select"
-                      placeholder="Select language for the spelling."
-                      :options="languages"
-                      required
-                    />
-                    <FormInput
                       v-model="editSpellingForm.spelling"
                       type="text"
-                      placeholder="Enter one spelling at a time."
+                      :placeholder="`Editing this spelling: ${spelling.spelling}`"
+                      class="mb-2"
                     />
-                    <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
+                    <SaveButton @click="saveGlossarySpellingEntry" class="mr-2"></SaveButton>
                     <CancelButton @click="spellingMode = 'view'"></CancelButton>
                   </div>
                 </li>
@@ -222,7 +170,7 @@
   const mode = ref<Mode>('view')
   const spellingMode = ref<SpellingMode>('view');
 
-  const currentSpellingLanguage = ref<LanguageSelection>({
+  const currentLanguage = ref<LanguageSelection>({
     id: '',
     internal_name: '',
   });
@@ -257,7 +205,7 @@
   const currentLanguageSpellings = computed(() => {
     if (glossaryEntry.value && glossaryEntry.value.spellings) {
       return glossaryEntry.value.spellings.filter(
-        spelling => spelling.language_id === currentSpellingLanguage.value.id
+        spelling => spelling.language_id === currentLanguage.value.id
       )
     } else {
       return []
@@ -385,8 +333,8 @@
     }
   }
 
-  const assignCurrentSpellingLanguage = (language: LanguageSelection): void => {
-    currentSpellingLanguage.value = language;
+  const assignCurrentLanguage = (language: LanguageSelection): void => {
+    currentLanguage.value = language;
     // Reset spelling mode to view when changing language
     spellingMode.value = "view";
   }
@@ -417,16 +365,14 @@
       loadingStore.show('Saving...')
       if (spellingMode.value === 'edit' && glossarySpellingEntry.value) {
         const updateData: UpdateGlossarySpellingRequest = {
-          language_id: editSpellingForm.value.language_id,
+          language_id: currentLanguage.value.id,
           spelling: editSpellingForm.value.spelling,
         }
-        console.log(updateData);
         const updatedGlossarySpellingEntry =
           await glossarySpellingStore.updateGlossarySpellingEntry(
             glossarySpellingEntry.value.id,
             updateData
           )
-        console.log(updatedGlossarySpellingEntry);
         if (updatedGlossarySpellingEntry) {
           errorStore.addMessage('info', 'Glossary spelling entry updated successfully.')
           await fetchGlossaryEntry()
@@ -436,14 +382,14 @@
         // Creating new spelling entry
         const createData: StoreGlossarySpellingRequest = {
           glossary_id: glossaryEntry.value.id,
-          language_id: createSpellingForm.value.language_id,
+          language_id: currentLanguage.value.id,
           spelling: createSpellingForm.value.spelling,
         }
         const newGlossarySpellingEntry =
           await glossarySpellingStore.createGlossarySpellingEntry(createData)
         if (newGlossarySpellingEntry) {
           errorStore.addMessage('info', 'Glossary spelling entry created successfully.')
-          createSpellingForm.value.language_id = "";
+          // createSpellingForm.value.language_id = "";
           createSpellingForm.value.spelling = "";
           await fetchGlossaryEntry()
           // mode.value = 'view'
