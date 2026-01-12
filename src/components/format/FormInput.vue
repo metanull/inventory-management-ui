@@ -19,7 +19,8 @@
       </option>
   </select>
 
-  <input v-else
+  <input
+v-else
     :type="type"
     :placeholder="placeholder"
     :required="required"
@@ -31,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+  /*global HTMLSelectElement*/
+
   interface Option {
     id: string
     internal_name: string

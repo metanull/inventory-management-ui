@@ -37,11 +37,12 @@
           <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
             <div class="mb-4">
-              <GenericButton v-for="language in glossaryEntryLanguages"
+              <GenericButton
+v-for="language in glossaryEntryLanguages" :key="language.id"
                 :label="language.internal_name"
-                @click="assignCurrentLanguage(language)"
                 class="mr-4"
-                :class="{'bg-sky-300': currentLanguage.id === language.id}">
+                :class="{'bg-sky-300': currentLanguage.id === language.id}"
+                @click="assignCurrentLanguage(language)">
               </GenericButton>
             </div>
             <div v-if="mode === 'edit' && spellingMode === 'view' && currentLanguage.id">
@@ -58,8 +59,8 @@
                 <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
                   <div v-if="spellingMode === 'view'">
                     {{ spelling.spelling }}
-                    <EditButton @click="handleEditGlossarySpelling(spelling)" v-if="mode === 'edit'" />
-                    <DeleteButton @click="handleDeleteGlossarySpelling(spelling)" v-if="mode === 'edit'" />
+                    <EditButton v-if="mode === 'edit'" @click="handleEditGlossarySpelling(spelling)" />
+                    <DeleteButton v-if="mode === 'edit'" @click="handleDeleteGlossarySpelling(spelling)" />
                   </div>
                   <div v-else-if="spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id">
                     <FormInput
@@ -68,7 +69,7 @@
                       :placeholder="`Editing this spelling: ${spelling.spelling}`"
                       class="mb-2"
                     />
-                    <SaveButton @click="saveGlossarySpellingEntry" class="mr-2"></SaveButton>
+                    <SaveButton class="mr-2" @click="saveGlossarySpellingEntry"></SaveButton>
                     <CancelButton @click="spellingMode = 'view'"></CancelButton>
                   </div>
                 </li>
@@ -233,7 +234,7 @@
     spelling: '',
   })
 
-  const languages = computed(() => languageStore.languages)
+  // const languages = computed(() => languageStore.languages)
 
   // Navigation
   const backLink = computed(() => ({
