@@ -36,7 +36,7 @@
           </DescriptionDetail>
         </DescriptionRow> -->
         <DescriptionRow variant="white">
-          <DescriptionTerm>Glossary Entry (Word)</DescriptionTerm>
+          <DescriptionTerm>Glossary Reference</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
               v-if="mode === 'edit' || mode === 'create'"
@@ -63,9 +63,15 @@
         </DescriptionRow> -->
 
         <DescriptionRow variant="white">
-          <DescriptionTerm>Alternate Spellings</DescriptionTerm>
+          <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
-            <div v-if="mode === 'edit'">
+            <div>
+              <GenericButton v-for="language in glossaryEntryLanguages"
+                :label="language.internal_name"
+                @click="assignCurrentSpellingLanguage(language)">
+              </GenericButton>
+            </div>
+            <div v-if="mode === 'edit' && spellingMode === 'view'">
               <!-- <div class="mb-2">
                 <label class="block text-sm font-medium text-gray-700">Language</label>
                 <select name="language" required
@@ -79,14 +85,14 @@
                 </select>
               </div> -->
               <FormInput
-                v-model="editSpellingForm.language_id"
+                v-model="createSpellingForm.language_id"
                 type="select"
                 placeholder="Select language for the spelling."
                 :options="languages"
                 required
               />
               <FormInput
-                v-model="editSpellingForm.spelling"
+                v-model="createSpellingForm.spelling"
                 type="text"
                 placeholder="Enter one spelling at a time."
               />
@@ -95,8 +101,28 @@
             <DisplayText>
               <!-- {{ glossaryEntry?.spellings }} -->
               <ul>
-                <li v-for="(spelling, index) in glossaryEntry?.spellings" :key="index">
-                  {{ spelling.spelling }} - {{spelling.language_id}}
+                <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
+                  <div v-if="spellingMode === 'view'">
+                    {{ spelling.spelling }} - {{spelling.language_id}}
+                    <EditButton @click="handleEditGlossarySpelling(spelling)" v-if="mode === 'edit'" />
+                    <DeleteButton @click="handleDeleteGlossarySpelling(spelling)" v-if="mode === 'edit'" />
+                  </div>
+                  <div v-else-if="spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id">
+                    <FormInput
+                      v-model="editSpellingForm.language_id"
+                      type="select"
+                      placeholder="Select language for the spelling."
+                      :options="languages"
+                      required
+                    />
+                    <FormInput
+                      v-model="editSpellingForm.spelling"
+                      type="text"
+                      placeholder="Enter one spelling at a time."
+                    />
+                    <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
+                    <CancelButton @click="spellingMode = 'view'"></CancelButton>
+                  </div>
                 </li>
               </ul>
             </DisplayText>
@@ -129,6 +155,7 @@
     StoreGlossarySpellingRequest,
     UpdateGlossarySpellingRequest,
   } from '@metanull/inventory-app-api-client'
+  import type { GlossarySpellingResource } from '@metanull/inventory-app-api-client'
   import { useGlossaryStore } from '@/stores/glossary'
   import { useGlossarySpellingStore } from '@/stores/glossarySpelling'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
@@ -137,6 +164,7 @@
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useLanguageStore } from '@/stores/language'
   import SaveButton from '@/components/layout/detail/SaveButton.vue'
+  import CancelButton from '@/components/layout/detail/CancelButton.vue'
   import DetailView from '@/components/layout/detail/DetailView.vue'
   import DescriptionList from '@/components/format/description/DescriptionList.vue'
   import DescriptionRow from '@/components/format/description/DescriptionRow.vue'
@@ -147,9 +175,13 @@
   import DateDisplay from '@/components/format/Date.vue'
   import { BookOpenIcon as GlossaryIcon } from '@heroicons/vue/24/solid'
   import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
+  import EditButton from '@/components/layout/list/EditButton.vue'
+  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+  import GenericButton from '@/components/layout/detail/GenericButton.vue'
 
   // Types
-  type Mode = 'view' | 'edit' | 'create'
+  type Mode = 'view' | 'edit' |'create'
+  type SpellingMode = "view" | "edit" | "create"
 
   interface GlossaryFormData {
     id: string
@@ -164,6 +196,11 @@
     spelling: string
   }
 
+  interface LanguageSelection {
+    id: string
+    internal_name: string
+  }
+
   const route = useRoute()
   const router = useRouter()
   const glossaryStore = useGlossaryStore()
@@ -173,6 +210,7 @@
   const deleteConfirmationStore = useDeleteConfirmationStore()
   const errorStore = useErrorDisplayStore()
   const languageStore = useLanguageStore()
+  const deleteStore = useDeleteConfirmationStore()
 
   // Route params
   const glossaryEntryId = computed(() => {
@@ -182,6 +220,12 @@
 
   // Mode determination
   const mode = ref<Mode>('view')
+  const spellingMode = ref<SpellingMode>('view');
+
+  const currentSpellingLanguage = ref<LanguageSelection>({
+    id: '',
+    internal_name: '',
+  });
 
   // Determine mode from route
   if (glossaryEntryId.value === 'new') {
@@ -190,13 +234,48 @@
 
   // Resource data
   const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
-  const glossarySpellingEntries = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
+  const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
+
+  const glossaryEntryLanguages = computed(() => {
+    if (glossaryEntry.value && glossaryEntry.value.spellings) {
+      const ids = glossaryEntry.value.spellings.map(spelling => spelling.language_id)
+      const languages = Array.from(new Set(ids))
+      let available = languages.sort((a, b) => a.localeCompare(b));
+      let list = [];
+      for (let i = 0; i < available.length; i++) {
+        const lang = languageStore.languages.find(l => l.id === available[i]);
+        if (lang) {
+          list.push({ id: lang.id, internal_name: lang.internal_name });
+        }
+      }
+      return list;
+    } else {
+      return []
+    }
+  })
+
+  const currentLanguageSpellings = computed(() => {
+    if (glossaryEntry.value && glossaryEntry.value.spellings) {
+      return glossaryEntry.value.spellings.filter(
+        spelling => spelling.language_id === currentSpellingLanguage.value.id
+      )
+    } else {
+      return []
+    }
+  })
 
   // Edit form state
   const editForm = ref<GlossaryFormData>({
     id: '',
     internal_name: '',
     backward_compatibility: '',
+  })
+
+  const createSpellingForm = ref<GlossarySpellingFormData>({
+    id: '',
+    glossary_id: '',
+    language_id: '',
+    spelling: '',
   })
 
   const editSpellingForm = ref<GlossarySpellingFormData>({
@@ -233,9 +312,8 @@
     if (!glossaryEntry.value) return false
     return (
       editForm.value.internal_name !== glossaryEntry.value.internal_name ||
-      editForm.value.backward_compatibility !==
-        (glossaryEntry.value.backward_compatibility || '') ||
-      editSpellingForm.value.spelling !== (glossaryEntry.value.spellings || '')
+      editSpellingForm.value.language_id !=="" ||
+      editSpellingForm.value.spelling !== ""
       // ???
     )
   })
@@ -261,10 +339,10 @@
       backward_compatibility: glossaryEntry.value.backward_compatibility || '',
     }
     editSpellingForm.value = {
-      id: glossarySpellingEntries.value?.id || '',
+      id: glossarySpellingEntry.value?.id || '',
       glossary_id: glossaryEntry.value.id,
-      language_id: glossarySpellingEntries.value?.language_id || '',
-      spelling: glossarySpellingEntries.value?.spelling || '',
+      language_id: glossarySpellingEntry.value?.language_id || '',
+      spelling: glossarySpellingEntry.value?.spelling || '',
     }
     mode.value = 'edit'
   }
@@ -307,42 +385,68 @@
     }
   }
 
-  const saveGlossarySpellingEntry = async (): Promise<void> => {
-    if (editSpellingForm.value.language_id.trim() === "" || editSpellingForm.value.spelling.trim() ==="") {
-      errorStore.addMessage('error', 'Please select a language and enter a spelling before saving.')
-      return
+  const assignCurrentSpellingLanguage = (language: LanguageSelection): void => {
+    currentSpellingLanguage.value = language;
+    // Reset spelling mode to view when changing language
+    spellingMode.value = "view";
+  }
+
+  const handleEditGlossarySpelling = async (spellingToEdit: GlossarySpellingResource) => {
+    await glossarySpellingStore.fetchGlossarySpellingEntry(spellingToEdit.id);
+    if (glossaryEntry.value) {
+      editSpellingForm.value = {
+        id: spellingToEdit.id,
+        glossary_id: glossaryEntry.value.id,
+        language_id: spellingToEdit.language_id,
+        spelling: spellingToEdit.spelling,
+      };
     }
+    spellingMode.value = "edit";
+  }
+
+  const saveGlossarySpellingEntry = async (): Promise<void> => {
+    // if (editSpellingForm.value.language_id.trim() === "") {
+    //   errorStore.addMessage('error', 'Please select a language.')
+    //   return
+    // }
+    // if (editSpellingForm.value.spelling.trim() ==="") {
+    //   errorStore.addMessage('error', 'Please enter a spelling.')
+    //   return
+    // }
     try {
       loadingStore.show('Saving...')
-      // console.log('Saving glossary spelling entry:', editSpellingForm.value)
-      if (mode.value === 'edit' && glossarySpellingEntries.value) {
+      if (spellingMode.value === 'edit' && glossarySpellingEntry.value) {
         const updateData: UpdateGlossarySpellingRequest = {
           language_id: editSpellingForm.value.language_id,
           spelling: editSpellingForm.value.spelling,
         }
+        console.log(updateData);
         const updatedGlossarySpellingEntry =
           await glossarySpellingStore.updateGlossarySpellingEntry(
-            glossarySpellingEntries.value.id,
+            glossarySpellingEntry.value.id,
             updateData
           )
+        console.log(updatedGlossarySpellingEntry);
         if (updatedGlossarySpellingEntry) {
           errorStore.addMessage('info', 'Glossary spelling entry updated successfully.')
-          mode.value = 'view'
+          await fetchGlossaryEntry()
+          spellingMode.value = 'view'
         }
-      } else if (mode.value === 'edit' && !glossarySpellingEntries.value) {
+      } else if (mode.value === 'edit' && glossaryEntry.value && !glossarySpellingEntry.value) {
         // Creating new spelling entry
         const createData: StoreGlossarySpellingRequest = {
-          glossary_id: editSpellingForm.value.glossary_id,
-          language_id: editSpellingForm.value.language_id,
-          spelling: editSpellingForm.value.spelling,
+          glossary_id: glossaryEntry.value.id,
+          language_id: createSpellingForm.value.language_id,
+          spelling: createSpellingForm.value.spelling,
         }
-        console.log(editSpellingForm.value.glossary_id, editSpellingForm.value.spelling);
         const newGlossarySpellingEntry =
           await glossarySpellingStore.createGlossarySpellingEntry(createData)
         if (newGlossarySpellingEntry) {
           errorStore.addMessage('info', 'Glossary spelling entry created successfully.')
+          createSpellingForm.value.language_id = "";
+          createSpellingForm.value.spelling = "";
           await fetchGlossaryEntry()
-          mode.value = 'view'
+          // mode.value = 'view'
         }
       }
     } catch {
@@ -352,7 +456,26 @@
     }
   }
 
-  
+  // Delete spelling with confirmation
+  const handleDeleteGlossarySpelling = async (spellingToDelete: GlossarySpellingResource) => {
+    const result = await deleteStore.trigger(
+      'Delete Spelling',
+      `Are you sure you want to delete "${spellingToDelete.spelling}"? This action cannot be undone.`
+    )
+
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await glossarySpellingStore.deleteGlossarySpellingEntry(spellingToDelete.id)
+        errorStore.addMessage('info', 'Spelling deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Failed to delete spelling. Please try again.')
+      } finally {
+        await fetchGlossaryEntry()
+        loadingStore.hide()
+      }
+    }
+  }
 
   const cancelAction = async (): Promise<void> => {
     if (hasUnsavedChanges.value) {
