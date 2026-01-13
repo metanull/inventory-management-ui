@@ -274,6 +274,8 @@
     spelling: '',
   })
 
+  // const languages = computed(() => languageStore.languages)
+
   // Navigation
   const backLink = computed(() => ({
     title: 'Back to Glossary Entries',
