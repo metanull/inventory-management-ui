@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AppFooter from '../../../layout/app/AppFooter.vue'
+import { version } from '../../../../../package.json'
 
 // Mock the package.json imports
 vi.mock('../../../../package.json', () => ({
@@ -39,7 +40,7 @@ describe('AppFooter', () => {
   it('displays UI version from package.json', () => {
     const wrapper = mount(AppFooter)
 
-    expect(wrapper.text()).toContain('UI Version: 0.1.0')
+    expect(wrapper.text()).toContain(`UI Version: ${version}`)
   })
 
   it('displays API client version', () => {
