@@ -38,11 +38,13 @@
           <DescriptionDetail>
             <div class="mb-4">
               <GenericButton
-v-for="language in glossaryEntryLanguages" :key="language.id"
+                v-for="language in glossaryEntryLanguages"
+                :key="language.id"
                 :label="language.internal_name"
                 class="mr-4"
-                :class="{'bg-sky-300': currentLanguage.id === language.id}"
-                @click="assignCurrentLanguage(language)">
+                :class="{ 'bg-sky-300': currentLanguage.id === language.id }"
+                @click="assignCurrentLanguage(language)"
+              >
               </GenericButton>
             </div>
             <div v-if="mode === 'edit' && spellingMode === 'view' && currentLanguage.id">
@@ -59,10 +61,18 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
                 <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
                   <div v-if="spellingMode === 'view'">
                     {{ spelling.spelling }}
-                    <EditButton v-if="mode === 'edit'" @click="handleEditGlossarySpelling(spelling)" />
-                    <DeleteButton v-if="mode === 'edit'" @click="handleDeleteGlossarySpelling(spelling)" />
+                    <EditButton
+                      v-if="mode === 'edit'"
+                      @click="handleEditGlossarySpelling(spelling)"
+                    />
+                    <DeleteButton
+                      v-if="mode === 'edit'"
+                      @click="handleDeleteGlossarySpelling(spelling)"
+                    />
                   </div>
-                  <div v-else-if="spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id">
+                  <div
+                    v-else-if="spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id"
+                  >
                     <FormInput
                       v-model="editSpellingForm.spelling"
                       type="text"
@@ -129,8 +139,8 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
   import GenericButton from '@/components/layout/detail/GenericButton.vue'
 
   // Types
-  type Mode = 'view' | 'edit' |'create'
-  type SpellingMode = "view" | "edit" | "create"
+  type Mode = 'view' | 'edit' | 'create'
+  type SpellingMode = 'view' | 'edit' | 'create'
 
   interface GlossaryFormData {
     id: string
@@ -169,12 +179,12 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
 
   // Mode determination
   const mode = ref<Mode>('view')
-  const spellingMode = ref<SpellingMode>('view');
+  const spellingMode = ref<SpellingMode>('view')
 
   const currentLanguage = ref<LanguageSelection>({
     id: '',
     internal_name: '',
-  });
+  })
 
   // Determine mode from route
   if (glossaryEntryId.value === 'new') {
@@ -189,15 +199,15 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
     if (glossaryEntry.value && glossaryEntry.value.spellings) {
       const ids = glossaryEntry.value.spellings.map(spelling => spelling.language_id)
       const languages = Array.from(new Set(ids))
-      let available = languages.sort((a, b) => a.localeCompare(b));
-      let list = [];
+      let available = languages.sort((a, b) => a.localeCompare(b))
+      let list = []
       for (let i = 0; i < available.length; i++) {
-        const lang = languageStore.languages.find(l => l.id === available[i]);
+        const lang = languageStore.languages.find(l => l.id === available[i])
         if (lang) {
-          list.push({ id: lang.id, internal_name: lang.internal_name });
+          list.push({ id: lang.id, internal_name: lang.internal_name })
         }
       }
-      return list;
+      return list
     } else {
       return []
     }
@@ -261,8 +271,8 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
     if (!glossaryEntry.value) return false
     return (
       editForm.value.internal_name !== glossaryEntry.value.internal_name ||
-      editSpellingForm.value.language_id !=="" ||
-      editSpellingForm.value.spelling !== ""
+      editSpellingForm.value.language_id !== '' ||
+      editSpellingForm.value.spelling !== ''
       // ???
     )
   })
@@ -271,7 +281,7 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
   const fetchGlossaryEntry = async (): Promise<void> => {
     if (mode.value === 'create') return
     if (!glossaryEntryId.value || glossaryEntryId.value === 'new') return
-    await glossaryStore.fetchGlossaryEntry(glossaryEntryId.value, "spellings")
+    await glossaryStore.fetchGlossaryEntry(glossaryEntryId.value, 'spellings')
   }
 
   // const fetchGlossarySpellingEntry = async (): Promise<void> => {
@@ -335,22 +345,22 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
   }
 
   const assignCurrentLanguage = (language: LanguageSelection): void => {
-    currentLanguage.value = language;
+    currentLanguage.value = language
     // Reset spelling mode to view when changing language
-    spellingMode.value = "view";
+    spellingMode.value = 'view'
   }
 
   const handleEditGlossarySpelling = async (spellingToEdit: GlossarySpellingResource) => {
-    await glossarySpellingStore.fetchGlossarySpellingEntry(spellingToEdit.id);
+    await glossarySpellingStore.fetchGlossarySpellingEntry(spellingToEdit.id)
     if (glossaryEntry.value) {
       editSpellingForm.value = {
         id: spellingToEdit.id,
         glossary_id: glossaryEntry.value.id,
         language_id: spellingToEdit.language_id,
         spelling: spellingToEdit.spelling,
-      };
+      }
     }
-    spellingMode.value = "edit";
+    spellingMode.value = 'edit'
   }
 
   const saveGlossarySpellingEntry = async (): Promise<void> => {
@@ -391,7 +401,7 @@ v-for="language in glossaryEntryLanguages" :key="language.id"
         if (newGlossarySpellingEntry) {
           errorStore.addMessage('info', 'Glossary spelling entry created successfully.')
           // createSpellingForm.value.language_id = "";
-          createSpellingForm.value.spelling = "";
+          createSpellingForm.value.spelling = ''
           await fetchGlossaryEntry()
           // mode.value = 'view'
         }
