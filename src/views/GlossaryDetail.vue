@@ -38,9 +38,10 @@
           <DescriptionDetail>
             <div class="mb-4 grid grid-cols-5 gap-2">
               <GenericButton
+                v-if="mode === 'edit'"
                 label="Add New Language"
                 @click="createNewLanguage"
-                v-if="mode === 'edit'">
+              >
               </GenericButton>
               <GenericButton
                 v-for="language in glossaryEntryLanguages"
@@ -385,18 +386,18 @@
   }
 
   const assignNewLanguage = (id: string): void => {
-    const match = languages.value.find(l => l.id === id);
+    const match = languages.value.find(l => l.id === id)
 
     if (match) {
       newLanguage.value = {
         id: match.id,
-        internal_name: match.internal_name
-      };
+        internal_name: match.internal_name,
+      }
     } else {
       // Reset to empty state if not found
-      newLanguage.value = { id: '', internal_name: '' };
+      newLanguage.value = { id: '', internal_name: '' }
     }
-  };
+  }
 
   const cancelNewLanguage = (): void => {
     newLanguage.value = { id: '', internal_name: '' }
