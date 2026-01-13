@@ -139,7 +139,6 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
   ): Promise<GlossarySpellingResource | null> => {
     loading.value = true
     error.value = null
-
     try {
       const api = createApiClient()
       const response = await api.glossarySpellingUpdate(id, glossarySpellingData)
