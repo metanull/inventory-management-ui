@@ -36,16 +36,39 @@
         <DescriptionRow variant="white">
           <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
-            <div class="mb-4">
+            <div class="mb-4 grid grid-cols-5 gap-2">
+              <GenericButton
+                v-if="mode === 'edit'"
+                label="Add New Language"
+                @click="createNewLanguage"
+              >
+              </GenericButton>
               <GenericButton
                 v-for="language in glossaryEntryLanguages"
                 :key="language.id"
                 :label="language.internal_name"
-                class="mr-4"
                 :class="{ 'bg-sky-300': currentLanguage.id === language.id }"
                 @click="assignCurrentLanguage(language)"
               >
               </GenericButton>
+            </div>
+            <div v-if="mode === 'edit' && languageMode === 'create'">
+              <FormInput
+                v-model="newLanguage.id"
+                type="select"
+                :options="languages"
+                placeholder="Select a language"
+                class="mb-2"
+                @change="assignNewLanguage($event.target.value)"
+              />
+              <FormInput
+                v-model="createSpellingForm.spelling"
+                type="text"
+                :placeholder="`Create a new ${newLanguage.internal_name} spelling.`"
+                class="mb-2"
+              />
+              <SaveButton class="mr-2" @click="saveGlossarySpellingEntry"></SaveButton>
+              <CancelButton @click="cancelNewLanguage"></CancelButton>
             </div>
             <div v-if="mode === 'edit' && spellingMode === 'view' && currentLanguage.id">
               <FormInput
@@ -141,6 +164,7 @@
   // Types
   type Mode = 'view' | 'edit' | 'create'
   type SpellingMode = 'view' | 'edit' | 'create'
+  type LanguageMode = 'view' | 'create'
 
   interface GlossaryFormData {
     id: string
@@ -180,8 +204,13 @@
   // Mode determination
   const mode = ref<Mode>('view')
   const spellingMode = ref<SpellingMode>('view')
+  const languageMode = ref<LanguageMode>('view')
 
   const currentLanguage = ref<LanguageSelection>({
+    id: '',
+    internal_name: '',
+  })
+  const newLanguage = ref<LanguageSelection>({
     id: '',
     internal_name: '',
   })
@@ -194,6 +223,7 @@
   // Resource data
   const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
   const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
+  const languages = computed(() => languageStore.languages)
 
   const glossaryEntryLanguages = computed(() => {
     if (glossaryEntry.value && glossaryEntry.value.spellings) {
@@ -345,9 +375,35 @@
   }
 
   const assignCurrentLanguage = (language: LanguageSelection): void => {
+    createSpellingForm.value.spelling = ''
     currentLanguage.value = language
-    // Reset spelling mode to view when changing language
     spellingMode.value = 'view'
+    newLanguage.value = { id: '', internal_name: '' }
+    languageMode.value = 'view'
+  }
+
+  const createNewLanguage = (): void => {
+    languageMode.value = 'create'
+    currentLanguage.value = { id: '', internal_name: '' }
+  }
+
+  const assignNewLanguage = (id: string): void => {
+    const match = languages.value.find(l => l.id === id)
+
+    if (match) {
+      newLanguage.value = {
+        id: match.id,
+        internal_name: match.internal_name,
+      }
+    } else {
+      // Reset to empty state if not found
+      newLanguage.value = { id: '', internal_name: '' }
+    }
+  }
+
+  const cancelNewLanguage = (): void => {
+    newLanguage.value = { id: '', internal_name: '' }
+    languageMode.value = 'view'
   }
 
   const handleEditGlossarySpelling = async (spellingToEdit: GlossarySpellingResource) => {
@@ -374,6 +430,14 @@
     // }
     try {
       loadingStore.show('Saving...')
+      if (languageMode.value === 'create') {
+        if (newLanguage.value.id) {
+          currentLanguage.value = {
+            id: newLanguage.value.id,
+            internal_name: newLanguage.value.internal_name,
+          }
+        }
+      }
       if (spellingMode.value === 'edit' && glossarySpellingEntry.value) {
         const updateData: UpdateGlossarySpellingRequest = {
           language_id: currentLanguage.value.id,
@@ -402,6 +466,8 @@
           errorStore.addMessage('info', 'Glossary spelling entry created successfully.')
           // createSpellingForm.value.language_id = "";
           createSpellingForm.value.spelling = ''
+          newLanguage.value = { id: '', internal_name: '' }
+          languageMode.value = 'view'
           await fetchGlossaryEntry()
           // mode.value = 'view'
         }
@@ -445,12 +511,14 @@
           router.push('/glossary')
         } else {
           mode.value = 'view'
+          currentLanguage.value = { id: '', internal_name: '' }
         }
       }
     } else if (mode.value === 'create') {
       router.push('/glossary')
     } else {
       mode.value = 'view'
+      currentLanguage.value = { id: '', internal_name: '' }
     }
   }
 
