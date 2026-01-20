@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import Languages from '../Languages.vue'
