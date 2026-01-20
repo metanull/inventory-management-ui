@@ -119,11 +119,19 @@
       </TableRow>
     </template>
   </ListView>
+  <PageNavigation v-if="links && meta"
+    :links="links"
+    :meta="meta"
+    v-model:perPage="currentPerPage"
+    @change-page-number="handlePageChange"
+    @per-page-change="handlePerPageChange"
+    @change-page="handleUrlChange"
+  />
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
+  import { ref, computed, watch, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
   import { useLanguageStore } from '@/stores/language'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
@@ -140,9 +148,11 @@
   import TableCell from '@/components/format/table/TableCell.vue'
   import Toggle from '@/components/format/Toggle.vue'
   import InternalName from '@/components/format/InternalName.vue'
+  import PageNavigation from '@/components/format/PageNavigation.vue'
   import { LanguageIcon } from '@heroicons/vue/24/solid'
   import SearchControl from '@/components/layout/list/SearchControl.vue'
 
+  const route = useRoute()
   const router = useRouter()
 
   const languageStore = useLanguageStore()
@@ -152,6 +162,10 @@
 
   const languages = computed(() => languageStore.languages)
   const defaultLanguages = computed(() => languageStore.defaultLanguages)
+  const links = computed(() => languageStore.pageLinks)
+  const meta = computed(() => languageStore.pageMeta)
+  const currentPage = computed(() => Number(route.query.page) || 1)
+  const currentPerPage = computed(() => Number(route.query.perPage) || 10)
 
   // Filter state - default to 'all'
   const filterMode = ref<'all' | 'default'>('all')
@@ -265,10 +279,10 @@
   }
 
   // Fetch languages function for retry
-  const fetchLanguages = async () => {
+  const fetchLanguages = async (page = languageStore.pageMeta?.current_page || 1) => {
     try {
       loadingStore.show()
-      await languageStore.fetchLanguages()
+      await languageStore.fetchLanguages(page)
       errorStore.addMessage('info', 'Languages refreshed successfully.')
     } catch {
       errorStore.addMessage('error', 'Failed to refresh languages. Please try again.')
@@ -296,6 +310,29 @@
       }
     }
   }
+
+  const handlePageChange = (page: number) => {
+  router.push({ query: { ...route.query, page } })
+}
+
+  const handlePerPageChange = (perPage: number) => {
+    router.push({ query: { ...route.query, page: 1, perPage } })
+  }
+
+  const handleUrlChange = (url: string | null) => {
+    if (!url) return
+    const urlParams = new URL(url, window.location.origin).searchParams
+    const page = urlParams.get('page')
+    if (page) handlePageChange(Number(page))
+  }
+
+  watch(
+    () => [route.query.page, route.query.perPage],
+    () => {
+      languageStore.fetchLanguages(currentPage.value, currentPerPage.value)
+    },
+    { immediate: true }
+  )
 
   // Expose properties for testing
   defineExpose({
