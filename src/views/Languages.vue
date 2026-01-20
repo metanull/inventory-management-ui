@@ -238,8 +238,6 @@
       loadingStore.show()
     }
     try {
-      // Always refresh in background
-      await languageStore.fetchLanguages()
       if (usedCache) {
         errorStore.addMessage('info', 'List refreshed')
       }
