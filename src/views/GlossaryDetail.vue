@@ -223,7 +223,7 @@
   // Resource data
   const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
   const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
-  const languages = computed(() => languageStore.languages)
+  const languages = computed(() => languageStore.allLanguages)
 
   const glossaryEntryLanguages = computed(() => {
     if (glossaryEntry.value && glossaryEntry.value.spellings) {
@@ -232,7 +232,7 @@
       let available = languages.sort((a, b) => a.localeCompare(b))
       let list = []
       for (let i = 0; i < available.length; i++) {
-        const lang = languageStore.languages.find(l => l.id === available[i])
+        const lang = languageStore.allLanguages.find(l => l.id === available[i])
         if (lang) {
           list.push({ id: lang.id, internal_name: lang.internal_name })
         }
@@ -553,7 +553,7 @@
     }
     // Load languages for spelling selection
     try {
-      await languageStore.fetchLanguages()
+      await languageStore.fetchAllLanguages()
     } catch {
       // swallow - errorStore will display via the language store error handling
     }
