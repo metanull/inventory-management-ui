@@ -1,6 +1,11 @@
 import { ref, computed, watch } from 'vue'
 
-export type PageLinks = { first?: string | null; last?: string | null; prev?: string | null; next?: string | null }
+export type PageLinks = {
+  first?: string | null
+  last?: string | null
+  prev?: string | null
+  next?: string | null
+}
 export type MetaLink = { url?: string | null; label: string; active: boolean }
 export type PageMeta = { current_page: number; last_page: number; links: MetaLink[] }
 
@@ -22,15 +27,18 @@ export function usePagination({ props, emit }: UsePaginationOptions) {
   const localPerPage = ref<number>(props.perPage)
 
   // Sync internal state with prop changes
-  watch(() => props.perPage, (newVal) => {
-    localPerPage.value = newVal
-  })
+  watch(
+    () => props.perPage,
+    newVal => {
+      localPerPage.value = newVal
+    }
+  )
 
   // Filter out "Next" and "Previous" labels from the links array
   const filteredLinks = computed(() => {
-    return props.meta.links.filter(link => 
-      !link.label.toLowerCase().includes('previous') && 
-      !link.label.toLowerCase().includes('next')
+    return props.meta.links.filter(
+      link =>
+        !link.label.toLowerCase().includes('previous') && !link.label.toLowerCase().includes('next')
     )
   })
 
@@ -60,6 +68,6 @@ export function usePagination({ props, emit }: UsePaginationOptions) {
     goTo,
     goToPage,
     onPerPageChange,
-    isEllipsis
+    isEllipsis,
   }
 }

@@ -61,7 +61,10 @@ export const useLanguageStore = defineStore('language', () => {
   const defaultLanguages = computed(() => languages.value.filter(lang => lang.is_default))
 
   // Fetch languages by page
-  const fetchLanguages = async (page: number = 1, perPage: number = 10): Promise<LanguageResource[]> => {
+  const fetchLanguages = async (
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<LanguageResource[]> => {
     loading.value = true
     error.value = null
 
@@ -112,7 +115,7 @@ export const useLanguageStore = defineStore('language', () => {
   const fetchAllLanguages = async (): Promise<LanguageResource[]> => {
     loading.value = true
     error.value = null
-    
+
     const fullList: LanguageResource[] = []
     let currentPage = 1
     let hasMorePages = true
@@ -134,19 +137,19 @@ export const useLanguageStore = defineStore('language', () => {
         }
       }
 
-      allLanguages.value = fullList.sort((a, b) => 
+      allLanguages.value = fullList.sort((a, b) =>
         (a.internal_name || '').localeCompare(b.internal_name || '')
       )
-      
-      pageMeta.value = { 
-        current_page: 1, 
-        last_page: 1, 
+
+      pageMeta.value = {
+        current_page: 1,
+        last_page: 1,
         // Provide a basic links array to satisfy the type
         links: [
           { url: null, label: 'pagination.previous', active: false },
           { url: null, label: '1', active: true },
-          { url: null, label: 'pagination.next', active: false }
-        ]
+          { url: null, label: 'pagination.next', active: false },
+        ],
       }
 
       return allLanguages.value

@@ -119,7 +119,8 @@
       </TableRow>
     </template>
   </ListView>
-  <PageNavigation v-if="links && meta"
+  <PageNavigation
+    v-if="links && meta"
     :links="links"
     :meta="meta"
     v-model:perPage="currentPerPage"
@@ -312,8 +313,8 @@
   }
 
   const handlePageChange = (page: number) => {
-  router.push({ query: { ...route.query, page } })
-}
+    router.push({ query: { ...route.query, page } })
+  }
 
   const handlePerPageChange = (perPage: number) => {
     router.push({ query: { ...route.query, page: 1, perPage } })
