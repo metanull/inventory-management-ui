@@ -86,7 +86,7 @@ export const useLanguageStore = defineStore('language', () => {
       ErrorHandler.handleError(err, 'Failed to fetch languages')
       error.value = 'Failed to fetch languages'
       languages.value = []
-      return languages.value
+      throw err
     } finally {
       loading.value = false
     }
