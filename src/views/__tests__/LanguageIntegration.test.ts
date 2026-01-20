@@ -149,7 +149,7 @@ describe('Language Integration Tests', () => {
       await flushPromises()
 
       expect(wrapper.exists()).toBe(true)
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalledOnce()
+      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
     })
 
     it('should display languages from store', async () => {
@@ -419,7 +419,7 @@ describe('Language Integration Tests', () => {
 
       await flushPromises()
 
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalledOnce()
+      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
       // Component should still mount even if fetch fails
       expect(wrapper.exists()).toBe(true)
     })

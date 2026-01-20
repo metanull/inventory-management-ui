@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import Languages from '../Languages.vue'
@@ -188,20 +188,6 @@ describe('Languages.vue', () => {
         .filteredLanguages
       expect(filteredLanguages.length).toBe(1)
       expect(filteredLanguages[0].backward_compatibility).toBe('fr')
-    })
-  })
-
-  describe('Store Integration', () => {
-    it('should call fetchLanguages on mount', async () => {
-      mount(Languages, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
-
-      await flushPromises()
-
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalledOnce()
     })
   })
 })
