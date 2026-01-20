@@ -121,9 +121,9 @@
   </ListView>
   <PageNavigation
     v-if="links && meta"
+    v-model:per-page="currentPerPage"
     :links="links"
     :meta="meta"
-    v-model:perPage="currentPerPage"
     @change-page-number="handlePageChange"
     @per-page-change="handlePerPageChange"
     @change-page="handleUrlChange"

@@ -4,8 +4,8 @@
       <button
         class="px-2 py-1 bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
         :disabled="!links.first || meta.current_page === 1"
-        @click="goTo(links.first)"
         aria-label="First page"
+        @click="goTo(links.first)"
       >
         «
       </button>
@@ -13,8 +13,8 @@
       <button
         class="px-2 py-1 bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
         :disabled="!links.prev"
-        @click="goTo(links.prev)"
         aria-label="Previous page"
+        @click="goTo(links.prev)"
       >
         ‹
       </button>
@@ -43,8 +43,8 @@
       <button
         class="px-2 py-1 bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
         :disabled="!links.next"
-        @click="goTo(links.next)"
         aria-label="Next page"
+        @click="goTo(links.next)"
       >
         ›
       </button>
@@ -52,8 +52,8 @@
       <button
         class="px-2 py-1 bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
         :disabled="!links.last || meta.current_page === meta.last_page"
-        @click="goTo(links.last)"
         aria-label="Last page"
+        @click="goTo(links.last)"
       >
         »
       </button>
@@ -67,8 +67,8 @@
         min="1"
         :max="meta.last_page"
         class="w-12 border rounded px-1 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        @keydown.enter="e => goToPage((e.target as HTMLInputElement).value)"
         placeholder="#"
+        @keydown.enter="e => goToPage((e.target as HTMLInputElement).value)"
       />
     </div>
 
@@ -77,8 +77,8 @@
         <label :for="perPageId" class="text-sm text-gray-600 whitespace-nowrap">Per page</label>
         <select
           :id="perPageId"
-          class="border rounded px-1 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500"
           v-model.number="localPerPage"
+          class="border rounded px-1 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500"
           @change="onPerPageChange"
         >
           <option v-for="per in perPageOptions" :key="per" :value="per">
@@ -112,10 +112,10 @@
   )
 
   const emit = defineEmits<{
-    (e: 'change-page', url: string | null): void
-    (e: 'change-page-number', page: number): void
-    (e: 'update:perPage', value: number): void
-    (e: 'per-page-change', perPage: number): void
+    'change-page': [url: string | null]
+    'change-page-number': [page: number]
+    'update:perPage': [value: number]
+    'per-page-change': [perPage: number]
   }>()
 
   const perPageId = useId()
