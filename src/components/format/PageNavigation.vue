@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-3">
+  <div class="flex items-center gap-3 mt-5">
     <div class="flex items-center gap-1">
       <button
         class="px-2 py-1 bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
