@@ -9,6 +9,7 @@ import {
 } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from './auth'
 import { ErrorHandler } from '@/utils/errorHandler'
+import { type PageLinks, type PageMeta } from '@/composables/usePagination'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -17,6 +18,9 @@ declare const process: {
 
 export const useLanguageStore = defineStore('language', () => {
   const languages = ref<LanguageResource[]>([])
+  const allLanguages = ref<LanguageResource[]>([])
+  const pageLinks = ref<PageLinks | null>(null)
+  const pageMeta = ref<PageMeta | null>(null)
   const currentLanguage = ref<LanguageResource | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -56,19 +60,30 @@ export const useLanguageStore = defineStore('language', () => {
   const defaultLanguage = computed(() => languages.value.find(lang => lang.is_default))
   const defaultLanguages = computed(() => languages.value.filter(lang => lang.is_default))
 
-  // Fetch all languages
-  const fetchLanguages = async () => {
+  // Fetch languages by page
+  const fetchLanguages = async (page: number = 1, perPage: number = 10): Promise<LanguageResource[]> => {
     loading.value = true
     error.value = null
 
     try {
       const apiClient = createApiClient()
-      const response = await apiClient.languageIndex()
-      languages.value = response.data.data || []
+      const response = await apiClient.languageIndex(page, perPage)
+
+      if (response.data && response.data.data) {
+        languages.value = response.data.data
+      } else {
+        languages.value = []
+      }
+
+      pageLinks.value = response.data?.links ?? null
+      pageMeta.value = response.data?.meta ?? null
+
+      return languages.value
     } catch (err: unknown) {
       ErrorHandler.handleError(err, 'Failed to fetch languages')
       error.value = 'Failed to fetch languages'
-      throw err
+      languages.value = []
+      return languages.value
     } finally {
       loading.value = false
     }
@@ -88,6 +103,57 @@ export const useLanguageStore = defineStore('language', () => {
       ErrorHandler.handleError(err, `Failed to fetch language ${id}`)
       error.value = 'Failed to fetch language'
       throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Fetch all languages
+  const fetchAllLanguages = async (): Promise<LanguageResource[]> => {
+    loading.value = true
+    error.value = null
+    
+    const fullList: LanguageResource[] = []
+    let currentPage = 1
+    let hasMorePages = true
+
+    try {
+      const apiClient = createApiClient()
+
+      while (hasMorePages) {
+        const response = await apiClient.languageIndex(currentPage, 100)
+        const data = response.data.data || []
+        const meta = response.data.meta
+
+        fullList.push(...data)
+
+        if (meta && meta.current_page < meta.last_page) {
+          currentPage++
+        } else {
+          hasMorePages = false
+        }
+      }
+
+      allLanguages.value = fullList.sort((a, b) => 
+        (a.internal_name || '').localeCompare(b.internal_name || '')
+      )
+      
+      pageMeta.value = { 
+        current_page: 1, 
+        last_page: 1, 
+        // Provide a basic links array to satisfy the type
+        links: [
+          { url: null, label: 'pagination.previous', active: false },
+          { url: null, label: '1', active: true },
+          { url: null, label: 'pagination.next', active: false }
+        ]
+      }
+
+      return allLanguages.value
+    } catch (err: unknown) {
+      ErrorHandler.handleError(err, 'Failed to fetch all languages')
+      error.value = 'Failed to fetch all languages'
+      return []
     } finally {
       loading.value = false
     }
@@ -242,6 +308,9 @@ export const useLanguageStore = defineStore('language', () => {
 
   return {
     languages,
+    allLanguages,
+    pageLinks,
+    pageMeta,
     currentLanguage,
     loading,
     error,
@@ -249,6 +318,7 @@ export const useLanguageStore = defineStore('language', () => {
     defaultLanguages,
     fetchLanguages,
     fetchLanguage,
+    fetchAllLanguages,
     createLanguage,
     updateLanguage,
     deleteLanguage,
