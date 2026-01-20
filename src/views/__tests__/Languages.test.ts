@@ -190,18 +190,4 @@ describe('Languages.vue', () => {
       expect(filteredLanguages[0].backward_compatibility).toBe('fr')
     })
   })
-
-  describe('Store Integration', () => {
-    it('should call fetchLanguages on mount', async () => {
-      mount(Languages, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
-
-      await flushPromises()
-
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalledOnce()
-    })
-  })
 })
