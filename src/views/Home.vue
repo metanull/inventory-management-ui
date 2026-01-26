@@ -201,8 +201,8 @@
   })
 
   // Section visibility state
-  const showCategories = ref<boolean>(true)
-  const showLists = ref<boolean>(false)
+  const showCategories = ref<boolean>(false)
+  const showLists = ref<boolean>(true)
   const showMisc = ref<boolean>(false)
 
   // Toggle functions for show/hide
