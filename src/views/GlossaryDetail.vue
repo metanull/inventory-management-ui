@@ -62,58 +62,79 @@
                 class="mb-2"
                 @change="assignNewLanguage($event.target.value)"
               />
-              <FormInput
-                v-model="createSpellingForm.spelling"
-                type="text"
-                :placeholder="`Create a new ${newLanguage.internal_name} spelling.`"
-                class="mb-2"
-              />
-              <SaveButton class="mr-2" @click="saveGlossarySpellingEntry"></SaveButton>
-              <CancelButton @click="cancelNewLanguage"></CancelButton>
             </div>
-            <div v-if="mode === 'edit' && spellingMode === 'view' && currentLanguage.id">
-              <FormInput
-                v-model="createSpellingForm.spelling"
-                type="text"
-                :placeholder="`Create a new ${currentLanguage.internal_name} spelling.`"
-                class="mb-2"
-              />
-              <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
-            </div>
-            <DisplayText>
-              <ul class="mt-4 space-y-2">
-                <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
-                  <div v-if="spellingMode === 'view'">
-                    {{ spelling.spelling }}
-                    <EditButton
-                      v-if="mode === 'edit'"
-                      @click="handleEditGlossarySpelling(spelling)"
-                    />
-                    <DeleteButton
-                      v-if="mode === 'edit'"
-                      @click="handleDeleteGlossarySpelling(spelling)"
-                    />
-                  </div>
-                  <div
-                    v-else-if="spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id"
-                  >
-                    <FormInput
-                      v-model="editSpellingForm.spelling"
-                      type="text"
-                      :placeholder="`Editing this spelling: ${spelling.spelling}`"
-                      class="mb-2"
-                    />
-                    <SaveButton class="mr-2" @click="saveGlossarySpellingEntry"></SaveButton>
-                    <CancelButton @click="spellingMode = 'view'"></CancelButton>
-                  </div>
-                </li>
-              </ul>
-            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
 
         <DescriptionRow
-          v-if="glossaryEntry && glossaryEntry.translations && currentLanguage.id"
+          v-if="glossaryEntry && glossaryEntry.spellings && (currentLanguage.id || newLanguage.id)"
+          variant="white"
+        >
+          <DescriptionTerm>Spellings</DescriptionTerm>
+          <DescriptionDetail>
+            <div
+              v-if="
+                mode === 'edit' && spellingMode === 'view' && (currentLanguage.id || newLanguage.id)
+              "
+            >
+              <FormInput
+                v-model="createSpellingForm.spelling"
+                type="text"
+                :placeholder="`Create a new ${currentLanguage.id ? currentLanguage.internal_name : newLanguage.internal_name} spelling.`"
+                class="mb-2"
+              />
+              <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
+            </div>
+            <div v-if="spellingMode === 'view' && currentLanguageSpellings.length > 0">
+              <DisplayText>
+                <ul class="mt-4 space-y-2">
+                  <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
+                    <div v-if="spellingMode === 'view'">
+                      {{ spelling.spelling }}
+                      <EditButton
+                        v-if="mode === 'edit'"
+                        @click="handleEditGlossarySpelling(spelling)"
+                      />
+                      <DeleteButton
+                        v-if="mode === 'edit'"
+                        @click="handleDeleteGlossarySpelling(spelling)"
+                      />
+                    </div>
+                    <div
+                      v-else-if="
+                        spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id
+                      "
+                    >
+                      <FormInput
+                        v-model="editSpellingForm.spelling"
+                        type="text"
+                        :placeholder="`Editing this spelling: ${spelling.spelling}`"
+                        class="mb-2"
+                      />
+                      <SaveButton class="mr-2" @click="saveGlossarySpellingEntry"></SaveButton>
+                      <CancelButton @click="spellingMode = 'view'"></CancelButton>
+                    </div>
+                  </li>
+                </ul>
+              </DisplayText>
+            </div>
+            <div
+              v-else-if="
+                mode === 'view' && spellingMode === 'view' && currentLanguageSpellings.length === 0
+              "
+            >
+              <DisplayText
+                >{{ currentLanguage.internal_name }} spellings not yet entered. Click "Edit" to add
+                spellings.</DisplayText
+              >
+            </div>
+          </DescriptionDetail>
+        </DescriptionRow>
+
+        <DescriptionRow
+          v-if="
+            glossaryEntry && glossaryEntry.translations && (currentLanguage.id || newLanguage.id)
+          "
           variant="white"
         >
           <DescriptionTerm>Definition</DescriptionTerm>
@@ -139,7 +160,7 @@
               <FormInput
                 v-model="createTranslationForm.definition"
                 type="text"
-                :placeholder="`Enter the ${currentLanguage.internal_name} definition here.`"
+                :placeholder="`Enter the ${currentLanguage.id ? currentLanguage.internal_name : newLanguage.internal_name} definition here.`"
                 class="mb-2"
               />
               <SaveButton class="mr-2" @click="saveGlossaryTranslation"></SaveButton>
@@ -394,6 +415,29 @@
     return 'Glossary entry with entered spellings and translations.'
   })
 
+  const languageHasEntries = computed(() => {
+    let exists = false
+    if (
+      glossaryEntry.value &&
+      glossaryEntry.value.spellings &&
+      !glossaryEntry.value.spellings.find(s => s.language_id === currentLanguage.value.id)
+    ) {
+      exists = false
+    } else {
+      return true
+    }
+    if (
+      glossaryEntry.value &&
+      glossaryEntry.value.translations &&
+      !glossaryEntry.value.translations.find(t => t.language_id === currentLanguage.value.id)
+    ) {
+      exists = false
+    } else {
+      return true
+    }
+    return exists
+  })
+
   // Unsaved changes tracking
   const hasUnsavedChanges = computed(() => {
     if (mode.value === 'view') return false
@@ -503,10 +547,10 @@
     }
   }
 
-  const cancelNewLanguage = (): void => {
-    newLanguage.value = { id: '', internal_name: '' }
-    languageMode.value = 'view'
-  }
+  // const cancelNewLanguage = (): void => {
+  //   newLanguage.value = { id: '', internal_name: '' }
+  //   languageMode.value = 'view'
+  // }
 
   const handleEditGlossarySpelling = async (spellingToEdit: GlossarySpellingResource) => {
     await glossarySpellingStore.fetchGlossarySpellingEntry(spellingToEdit.id)
@@ -597,6 +641,9 @@
         errorStore.addMessage('error', 'Failed to delete spelling. Please try again.')
       } finally {
         await fetchGlossaryEntry()
+        if (languageHasEntries.value === false) {
+          currentLanguage.value = { id: '', internal_name: '' }
+        }
         loadingStore.hide()
       }
     }
@@ -626,14 +673,14 @@
     // }
     try {
       loadingStore.show('Saving...')
-      // if (languageMode.value === 'create') {
-      //   if (newLanguage.value.id) {
-      //     currentLanguage.value = {
-      //       id: newLanguage.value.id,
-      //       internal_name: newLanguage.value.internal_name,
-      //     }
-      //   }
-      // }
+      if (languageMode.value === 'create') {
+        if (newLanguage.value.id) {
+          currentLanguage.value = {
+            id: newLanguage.value.id,
+            internal_name: newLanguage.value.internal_name,
+          }
+        }
+      }
       if (translationMode.value === 'edit' && glossaryTranslationEntry.value) {
         const updateData: UpdateGlossaryTranslationRequest = {
           language_id: currentLanguage.value.id,
@@ -662,6 +709,7 @@
           errorStore.addMessage('info', 'Glossary definition created successfully.')
           createTranslationForm.value.definition = ''
           translationMode.value = 'view'
+          languageMode.value = 'view'
           await fetchGlossaryEntry()
           // mode.value = 'view'
         }
@@ -689,6 +737,9 @@
         errorStore.addMessage('error', 'Failed to delete definition. Please try again.')
       } finally {
         await fetchGlossaryEntry()
+        if (languageHasEntries.value === false) {
+          currentLanguage.value = { id: '', internal_name: '' }
+        }
         loadingStore.hide()
       }
     }
@@ -712,6 +763,10 @@
       router.push('/glossary')
     } else {
       mode.value = 'view'
+      languageMode.value = 'view'
+      spellingMode.value = 'view'
+      translationMode.value = 'view'
+      newLanguage.value = { id: '', internal_name: '' }
       currentLanguage.value = { id: '', internal_name: '' }
     }
   }
