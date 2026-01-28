@@ -68,10 +68,15 @@
 
         <DescriptionRow
           v-if="glossaryEntry && glossaryEntry.spellings && (currentLanguage.id || newLanguage.id)"
-          variant="white">
+          variant="white"
+        >
           <DescriptionTerm>Spellings</DescriptionTerm>
           <DescriptionDetail>
-            <div v-if="mode === 'edit' && spellingMode === 'view' && (currentLanguage.id || newLanguage.id)">
+            <div
+              v-if="
+                mode === 'edit' && spellingMode === 'view' && (currentLanguage.id || newLanguage.id)
+              "
+            >
               <FormInput
                 v-model="createSpellingForm.spelling"
                 type="text"
@@ -96,7 +101,9 @@
                       />
                     </div>
                     <div
-                      v-else-if="spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id"
+                      v-else-if="
+                        spellingMode === 'edit' && glossarySpellingEntry?.id === spelling.id
+                      "
                     >
                       <FormInput
                         v-model="editSpellingForm.spelling"
@@ -125,7 +132,9 @@
         </DescriptionRow>
 
         <DescriptionRow
-          v-if="glossaryEntry && glossaryEntry.translations && (currentLanguage.id || newLanguage.id)"
+          v-if="
+            glossaryEntry && glossaryEntry.translations && (currentLanguage.id || newLanguage.id)
+          "
           variant="white"
         >
           <DescriptionTerm>Definition</DescriptionTerm>
