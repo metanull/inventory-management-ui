@@ -98,7 +98,9 @@ describe('Languages Logic Tests', () => {
       currentLanguage: null,
       loading: false,
       error: null,
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
+      isLoaded: true,
+      ensureLoaded: vi.fn().mockResolvedValue(mockLanguages),
+      refresh: vi.fn().mockResolvedValue(mockLanguages),
       getLanguageById: vi.fn(),
       createLanguage: vi.fn(),
       updateLanguage: vi.fn(),
@@ -256,26 +258,26 @@ describe('Languages Logic Tests', () => {
   })
 
   describe('Store Operations', () => {
-    it('should call fetchLanguages', async () => {
+    it('should call ensureLoaded', async () => {
       const store = useLanguageStore()
-      await store.fetchLanguages()
+      await store.ensureLoaded()
 
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalledOnce()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalledOnce()
     })
 
-    it('should handle fetchLanguages error', async () => {
+    it('should handle ensureLoaded error', async () => {
       const error = new Error('Fetch failed')
-      mockLanguageStore.fetchLanguages = vi.fn().mockRejectedValue(error)
+      mockLanguageStore.ensureLoaded = vi.fn().mockRejectedValue(error)
 
       const store = useLanguageStore()
 
       try {
-        await store.fetchLanguages()
+        await store.ensureLoaded()
       } catch (e) {
         expect(e).toBe(error)
       }
 
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalledOnce()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalledOnce()
     })
 
     it('should call deleteLanguage with correct id', async () => {

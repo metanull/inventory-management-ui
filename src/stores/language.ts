@@ -1,3 +1,15 @@
+/**
+ * Language Store - Reference Data Pattern
+ *
+ * Languages are reference data (small dataset used for dropdowns, lookups).
+ * We load all languages once and cache them client-side.
+ *
+ * Key methods:
+ * - ensureLoaded() - loads data if not cached, returns cached data if available
+ * - refresh() - force re-fetch from API
+ * - mutations (create/update/delete) update the cache in-place
+ */
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
@@ -9,7 +21,6 @@ import {
 } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from './auth'
 import { ErrorHandler } from '@/utils/errorHandler'
-import { type PageLinks, type PageMeta } from '@/composables/usePagination'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -17,19 +28,24 @@ declare const process: {
 }
 
 export const useLanguageStore = defineStore('language', () => {
+  // All languages (cached)
   const languages = ref<LanguageResource[]>([])
-  const allLanguages = ref<LanguageResource[]>([])
-  const pageLinks = ref<PageLinks | null>(null)
-  const pageMeta = ref<PageMeta | null>(null)
-  const currentLanguage = ref<LanguageResource | null>(null)
+
+  // Whether the full dataset has been loaded
+  const isLoaded = ref(false)
+
+  // Loading state (prevents concurrent fetches)
   const loading = ref(false)
+
+  // Currently viewed language (for detail view)
+  const currentLanguage = ref<LanguageResource | null>(null)
+
+  // Last error message
   const error = ref<string | null>(null)
 
   const authStore = useAuthStore()
 
-  // Create API client instance with configuration
   const createApiClient = () => {
-    // Support both Vite (import.meta.env) and Node (process.env) for baseURL
     let baseURL: string
     if (
       typeof import.meta !== 'undefined' &&
@@ -51,57 +67,103 @@ export const useLanguageStore = defineStore('language', () => {
       configParams.accessToken = authStore.token
     }
 
-    // Create configuration for the API client
     const configuration = new Configuration(configParams)
-
     return new LanguageApi(configuration)
   }
 
+  // Computed
   const defaultLanguage = computed(() => languages.value.find(lang => lang.is_default))
   const defaultLanguages = computed(() => languages.value.filter(lang => lang.is_default))
 
-  // Fetch languages by page
-  const fetchLanguages = async (
-    page: number = 1,
-    perPage: number = 10
-  ): Promise<LanguageResource[]> => {
+  // Main entry point: loads data if needed, returns cached data if available
+  const ensureLoaded = async (): Promise<LanguageResource[]> => {
+    // Already loaded
+    if (isLoaded.value) {
+      return languages.value
+    }
+
+    // Another component is already fetching - wait for it
+    if (loading.value) {
+      return new Promise(resolve => {
+        const checkLoaded = setInterval(() => {
+          if (!loading.value) {
+            clearInterval(checkLoaded)
+            resolve(languages.value)
+          }
+        }, 50)
+      })
+    }
+
+    // Not loaded - fetch all
+    await loadAll()
+    return languages.value
+  }
+
+  // Fetches all pages in parallel
+  const loadAll = async (): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
       const apiClient = createApiClient()
-      const response = await apiClient.languageIndex(page, perPage)
 
-      if (response.data && response.data.data) {
-        languages.value = response.data.data
+      // Fetch first page to get total page count
+      const firstPageResponse = await apiClient.languageIndex(1, 100)
+      const firstPageData = firstPageResponse.data.data || []
+      const totalPages = firstPageResponse.data.meta?.last_page ?? 1
+
+      if (totalPages === 1) {
+        languages.value = sortLanguages(firstPageData)
       } else {
-        languages.value = []
+        // Fetch remaining pages in parallel
+        const remainingPageNumbers = Array.from({ length: totalPages - 1 }, (_, i) => i + 2)
+
+        const remainingResponses = await Promise.all(
+          remainingPageNumbers.map(page => apiClient.languageIndex(page, 100))
+        )
+
+        // Combine all results
+        const allLanguages = [
+          ...firstPageData,
+          ...remainingResponses.flatMap(response => response.data.data || []),
+        ]
+
+        languages.value = sortLanguages(allLanguages)
       }
 
-      pageLinks.value = response.data?.links ?? null
-      pageMeta.value = response.data?.meta ?? null
-
-      return languages.value
+      isLoaded.value = true
     } catch (err: unknown) {
-      ErrorHandler.handleError(err, 'Failed to fetch languages')
-      error.value = 'Failed to fetch languages'
-      languages.value = []
+      ErrorHandler.handleError(err, 'Failed to load languages')
+      error.value = 'Failed to load languages'
       throw err
     } finally {
       loading.value = false
     }
   }
 
-  // Fetch a single language by ID
-  const fetchLanguage = async (id: string) => {
+  // Force re-fetch from API
+  const refresh = async (): Promise<LanguageResource[]> => {
+    isLoaded.value = false
+    await loadAll()
+    return languages.value
+  }
+
+  // Fetch a single language (also updates cache)
+  const fetchLanguage = async (id: string): Promise<LanguageResource> => {
     loading.value = true
     error.value = null
 
     try {
       const apiClient = createApiClient()
       const response = await apiClient.languageShow(id)
-      currentLanguage.value = response.data.data
-      return response.data.data
+      const fetchedLanguage = response.data.data
+
+      currentLanguage.value = fetchedLanguage
+
+      // Update in cache if exists (keeps cache in sync)
+      updateInCache(fetchedLanguage)
+
+      return fetchedLanguage
     } catch (err: unknown) {
       ErrorHandler.handleError(err, `Failed to fetch language ${id}`)
       error.value = 'Failed to fetch language'
@@ -111,59 +173,8 @@ export const useLanguageStore = defineStore('language', () => {
     }
   }
 
-  // Fetch all languages
-  const fetchAllLanguages = async (): Promise<LanguageResource[]> => {
-    loading.value = true
-    error.value = null
-
-    const fullList: LanguageResource[] = []
-    let currentPage = 1
-    let hasMorePages = true
-
-    try {
-      const apiClient = createApiClient()
-
-      while (hasMorePages) {
-        const response = await apiClient.languageIndex(currentPage, 100)
-        const data = response.data.data || []
-        const meta = response.data.meta
-
-        fullList.push(...data)
-
-        if (meta && meta.current_page < meta.last_page) {
-          currentPage++
-        } else {
-          hasMorePages = false
-        }
-      }
-
-      allLanguages.value = fullList.sort((a, b) =>
-        (a.internal_name || '').localeCompare(b.internal_name || '')
-      )
-
-      pageMeta.value = {
-        current_page: 1,
-        last_page: 1,
-        // Provide a basic links array to satisfy the type
-        links: [
-          { url: null, label: 'pagination.previous', active: false },
-          { url: null, label: '1', active: true },
-          { url: null, label: 'pagination.next', active: false },
-        ],
-      }
-
-      return allLanguages.value
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, 'Failed to fetch all languages')
-      error.value = 'Failed to fetch all languages'
-      return []
-    } finally {
-      loading.value = false
-    }
-  }
-
-  // Create a new language
-  const createLanguage = async (languageData: StoreLanguageRequest) => {
+  // Create language (adds to cache)
+  const createLanguage = async (languageData: StoreLanguageRequest): Promise<LanguageResource> => {
     loading.value = true
     error.value = null
 
@@ -172,8 +183,8 @@ export const useLanguageStore = defineStore('language', () => {
       const response = await apiClient.languageStore(languageData)
       const newLanguage = response.data.data
 
-      // Add to local languages array
-      languages.value.push(newLanguage)
+      // Add to cache
+      languages.value = sortLanguages([...languages.value, newLanguage])
 
       return newLanguage
     } catch (err: unknown) {
@@ -185,8 +196,11 @@ export const useLanguageStore = defineStore('language', () => {
     }
   }
 
-  // Update an existing language
-  const updateLanguage = async (id: string, languageData: UpdateLanguageRequest) => {
+  // Update language (updates cache)
+  const updateLanguage = async (
+    id: string,
+    languageData: UpdateLanguageRequest
+  ): Promise<LanguageResource> => {
     loading.value = true
     error.value = null
 
@@ -195,13 +209,10 @@ export const useLanguageStore = defineStore('language', () => {
       const response = await apiClient.languageUpdate(id, languageData)
       const updatedLanguage = response.data.data
 
-      // Update in local languages array
-      const index = languages.value.findIndex(lang => lang.id === id)
-      if (index !== -1) {
-        languages.value[index] = updatedLanguage
-      }
+      // Update cache
+      updateInCache(updatedLanguage)
 
-      // Update current language if it matches
+      // Update current language if viewing it
       if (currentLanguage.value?.id === id) {
         currentLanguage.value = updatedLanguage
       }
@@ -216,8 +227,8 @@ export const useLanguageStore = defineStore('language', () => {
     }
   }
 
-  // Delete a language
-  const deleteLanguage = async (id: string) => {
+  // Delete language (removes from cache)
+  const deleteLanguage = async (id: string): Promise<void> => {
     loading.value = true
     error.value = null
 
@@ -225,10 +236,10 @@ export const useLanguageStore = defineStore('language', () => {
       const apiClient = createApiClient()
       await apiClient.languageDestroy(id)
 
-      // Remove from local languages array
+      // Remove from cache
       languages.value = languages.value.filter(lang => lang.id !== id)
 
-      // Clear current language if it matches
+      // Clear current if deleted
       if (currentLanguage.value?.id === id) {
         currentLanguage.value = null
       }
@@ -241,8 +252,8 @@ export const useLanguageStore = defineStore('language', () => {
     }
   }
 
-  // Set a language as default
-  const setDefaultLanguage = async (id: string, isDefault: boolean) => {
+  // Set default language (updates all languages in cache)
+  const setDefaultLanguage = async (id: string, isDefault: boolean): Promise<LanguageResource> => {
     loading.value = true
     error.value = null
 
@@ -251,13 +262,13 @@ export const useLanguageStore = defineStore('language', () => {
       const response = await apiClient.languageSetDefault(id, { is_default: isDefault })
       const updatedLanguage = response.data.data
 
-      // Update the default status for all languages
+      // Update cache (setting one as default unsets others)
       languages.value = languages.value.map(lang => ({
         ...lang,
         is_default: lang.id === id ? isDefault : false,
       }))
 
-      // Update current language if it matches
+      // Update current language if viewing it
       if (currentLanguage.value?.id === id) {
         currentLanguage.value = updatedLanguage
       }
@@ -272,8 +283,8 @@ export const useLanguageStore = defineStore('language', () => {
     }
   }
 
-  // Get the default language
-  const getDefaultLanguage = async () => {
+  // Fetch default language from API
+  const getDefaultLanguage = async (): Promise<LanguageResource> => {
     loading.value = true
     error.value = null
 
@@ -282,14 +293,8 @@ export const useLanguageStore = defineStore('language', () => {
       const response = await apiClient.languageGetDefault()
       const defaultLang = response.data.data
 
-      // Update the default language in the languages array if it exists
-      const index = languages.value.findIndex(lang => lang.id === defaultLang.id)
-      if (index !== -1) {
-        languages.value[index] = defaultLang
-      } else {
-        // If the default language isn't in our languages array, add it
-        languages.value.push(defaultLang)
-      }
+      // Update cache if needed
+      updateInCache(defaultLang)
 
       return defaultLang
     } catch (err: unknown) {
@@ -301,6 +306,22 @@ export const useLanguageStore = defineStore('language', () => {
     }
   }
 
+  // Helper: update or add to cache
+  const updateInCache = (language: LanguageResource): void => {
+    const index = languages.value.findIndex(l => l.id === language.id)
+    if (index !== -1) {
+      languages.value[index] = language
+    } else if (isLoaded.value) {
+      // Only add if cache is loaded (avoid partial data)
+      languages.value = sortLanguages([...languages.value, language])
+    }
+  }
+
+  // Helper: sort alphabetically
+  const sortLanguages = (list: LanguageResource[]): LanguageResource[] => {
+    return [...list].sort((a, b) => (a.internal_name || '').localeCompare(b.internal_name || ''))
+  }
+
   const clearError = () => {
     error.value = null
   }
@@ -310,23 +331,32 @@ export const useLanguageStore = defineStore('language', () => {
   }
 
   return {
+    // State
     languages,
-    allLanguages,
-    pageLinks,
-    pageMeta,
     currentLanguage,
     loading,
     error,
+    isLoaded,
+
+    // Computed
     defaultLanguage,
     defaultLanguages,
-    fetchLanguages,
+
+    // Core methods (Reference Data Pattern)
+    ensureLoaded,
+    refresh,
+
+    // Single item operations
     fetchLanguage,
-    fetchAllLanguages,
+
+    // Mutation operations (update cache in-place)
     createLanguage,
     updateLanguage,
     deleteLanguage,
     setDefaultLanguage,
     getDefaultLanguage,
+
+    // Utilities
     clearError,
     clearCurrentLanguage,
   }

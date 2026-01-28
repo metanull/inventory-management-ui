@@ -3,6 +3,15 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useLanguageStore } from '../language'
 import type { LanguageResource } from '@metanull/inventory-app-api-client'
 
+/**
+ * Language Store Tests - Reference Data Pattern
+ *
+ * These tests verify the Reference Data pattern implementation:
+ * 1. ensureLoaded() - Main entry point, returns cached data or fetches all
+ * 2. loadAll() - Internal method that fetches all pages in parallel
+ * 3. Mutations update the cache in-place
+ */
+
 // Mock the ErrorHandler
 vi.mock('@/utils/errorHandler', () => ({
   ErrorHandler: {
@@ -71,6 +80,7 @@ describe('Language Store', () => {
     expect(store.currentLanguage).toBeNull()
     expect(store.loading).toBe(false)
     expect(store.error).toBeNull()
+    expect(store.isLoaded).toBe(false)
   })
 
   it('should compute default language correctly', () => {
@@ -102,31 +112,112 @@ describe('Language Store', () => {
     expect(store.currentLanguage).toBeNull()
   })
 
-  it('should handle fetchLanguages success', async () => {
-    const store = useLanguageStore()
+  describe('ensureLoaded - Reference Data Pattern', () => {
+    it('should fetch all languages on first call', async () => {
+      const store = useLanguageStore()
 
-    mockLanguageApi.languageIndex.mockResolvedValue({
-      data: { data: mockLanguages },
+      // Mock single page response
+      mockLanguageApi.languageIndex.mockResolvedValue({
+        data: {
+          data: mockLanguages,
+          meta: { current_page: 1, last_page: 1 },
+        },
+      })
+
+      const result = await store.ensureLoaded()
+
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledWith(1, 100)
+      expect(result).toHaveLength(2)
+      expect(store.isLoaded).toBe(true)
+      expect(store.loading).toBe(false)
     })
 
-    await store.fetchLanguages()
+    it('should return cached data on subsequent calls', async () => {
+      const store = useLanguageStore()
 
-    expect(mockLanguageApi.languageIndex).toHaveBeenCalled()
-    expect(store.languages).toEqual(mockLanguages)
-    expect(store.loading).toBe(false)
-    expect(store.error).toBeNull()
+      // Mock single page response
+      mockLanguageApi.languageIndex.mockResolvedValue({
+        data: {
+          data: mockLanguages,
+          meta: { current_page: 1, last_page: 1 },
+        },
+      })
+
+      // First call - should fetch
+      await store.ensureLoaded()
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledTimes(1)
+
+      // Second call - should return cached data
+      const result = await store.ensureLoaded()
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledTimes(1) // Not called again
+      expect(result).toHaveLength(2)
+    })
+
+    it('should fetch multiple pages in parallel', async () => {
+      const store = useLanguageStore()
+
+      const page1Languages = [mockLanguages[0]]
+      const page2Languages = [mockLanguages[1]]
+
+      // Mock multi-page response
+      mockLanguageApi.languageIndex
+        .mockResolvedValueOnce({
+          data: {
+            data: page1Languages,
+            meta: { current_page: 1, last_page: 2 },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            data: page2Languages,
+            meta: { current_page: 2, last_page: 2 },
+          },
+        })
+
+      await store.ensureLoaded()
+
+      // Should have called for both pages
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledTimes(2)
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledWith(1, 100)
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledWith(2, 100)
+
+      // Should have all languages combined and sorted
+      expect(store.languages).toHaveLength(2)
+    })
+
+    it('should handle fetch error', async () => {
+      const store = useLanguageStore()
+      const error = new Error('Network error')
+
+      mockLanguageApi.languageIndex.mockRejectedValue(error)
+
+      await expect(store.ensureLoaded()).rejects.toThrow('Network error')
+
+      expect(store.loading).toBe(false)
+      expect(store.error).toBe('Failed to load languages')
+      expect(store.isLoaded).toBe(false)
+    })
   })
 
-  it('should handle fetchLanguages error', async () => {
-    const store = useLanguageStore()
-    const error = new Error('Network error')
+  describe('refresh', () => {
+    it('should force re-fetch even if data is cached', async () => {
+      const store = useLanguageStore()
 
-    mockLanguageApi.languageIndex.mockRejectedValue(error)
+      mockLanguageApi.languageIndex.mockResolvedValue({
+        data: {
+          data: mockLanguages,
+          meta: { current_page: 1, last_page: 1 },
+        },
+      })
 
-    await expect(store.fetchLanguages()).rejects.toThrow('Network error')
+      // First load
+      await store.ensureLoaded()
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledTimes(1)
 
-    expect(store.loading).toBe(false)
-    expect(store.error).toBe('Failed to fetch languages')
+      // Refresh should fetch again
+      await store.refresh()
+      expect(mockLanguageApi.languageIndex).toHaveBeenCalledTimes(2)
+    })
   })
 
   it('should handle fetchLanguage success', async () => {
@@ -144,135 +235,141 @@ describe('Language Store', () => {
     expect(result).toEqual(language)
   })
 
-  it('should handle createLanguage success', async () => {
-    const store = useLanguageStore()
-    const newLanguage = {
-      id: 'spa',
-      internal_name: 'Spanish',
-      backward_compatibility: 'es',
-      is_default: false,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    }
-    const createData = {
-      id: 'spa',
-      internal_name: 'Spanish',
-      backward_compatibility: 'es',
-      is_default: false,
-    }
+  describe('Mutations - Cache Update In-Place', () => {
+    it('should handle createLanguage success and update cache', async () => {
+      const store = useLanguageStore()
+      const newLanguage: LanguageResource = {
+        id: 'spa',
+        internal_name: 'Spanish',
+        backward_compatibility: 'es',
+        is_default: false,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      }
+      const createData = {
+        id: 'spa',
+        internal_name: 'Spanish',
+        backward_compatibility: 'es',
+        is_default: false,
+      }
 
-    mockLanguageApi.languageStore.mockResolvedValue({
-      data: { data: newLanguage },
+      mockLanguageApi.languageStore.mockResolvedValue({
+        data: { data: newLanguage },
+      })
+
+      const result = await store.createLanguage(createData)
+
+      expect(mockLanguageApi.languageStore).toHaveBeenCalledWith(createData)
+      expect(store.languages).toHaveLength(1)
+      expect(store.languages[0]).toEqual(newLanguage)
+      expect(result).toEqual(newLanguage)
     })
 
-    const result = await store.createLanguage(createData)
+    it('should handle updateLanguage success and update cache', async () => {
+      const store = useLanguageStore()
+      store.languages = [...mockLanguages]
 
-    expect(mockLanguageApi.languageStore).toHaveBeenCalledWith(createData)
-    expect(store.languages).toHaveLength(1)
-    expect(store.languages[0]).toEqual(newLanguage)
-    expect(result).toEqual(newLanguage)
-  })
+      const updatedLanguage = { ...mockLanguages[0], internal_name: 'Updated English' }
+      const updateData = {
+        internal_name: 'Updated English',
+        backward_compatibility: 'en',
+        is_default: true,
+      }
 
-  it('should handle updateLanguage success', async () => {
-    const store = useLanguageStore()
-    store.languages = [...mockLanguages]
+      mockLanguageApi.languageUpdate.mockResolvedValue({
+        data: { data: updatedLanguage },
+      })
 
-    const updatedLanguage = { ...mockLanguages[0], internal_name: 'Updated English' }
-    const updateData = {
-      internal_name: 'Updated English',
-      backward_compatibility: 'en',
-      is_default: true,
-    }
+      const result = await store.updateLanguage('eng', updateData)
 
-    mockLanguageApi.languageUpdate.mockResolvedValue({
-      data: { data: updatedLanguage },
+      expect(mockLanguageApi.languageUpdate).toHaveBeenCalledWith('eng', updateData)
+      expect(store.languages[0]).toEqual(updatedLanguage)
+      expect(result).toEqual(updatedLanguage)
     })
 
-    const result = await store.updateLanguage('eng', updateData)
+    it('should handle deleteLanguage success and update cache', async () => {
+      const store = useLanguageStore()
+      store.languages = [...mockLanguages]
 
-    expect(mockLanguageApi.languageUpdate).toHaveBeenCalledWith('eng', updateData)
-    expect(store.languages[0]).toEqual(updatedLanguage)
-    expect(result).toEqual(updatedLanguage)
-  })
+      mockLanguageApi.languageDestroy.mockResolvedValue({})
 
-  it('should handle deleteLanguage success', async () => {
-    const store = useLanguageStore()
-    store.languages = [...mockLanguages]
+      await store.deleteLanguage('fra')
 
-    mockLanguageApi.languageDestroy.mockResolvedValue({})
-
-    await store.deleteLanguage('fra')
-
-    expect(mockLanguageApi.languageDestroy).toHaveBeenCalledWith('fra')
-    expect(store.languages).toHaveLength(1)
-    expect(store.languages[0].id).toBe('eng')
-  })
-
-  it('should handle setDefaultLanguage success', async () => {
-    const store = useLanguageStore()
-    store.languages = [...mockLanguages]
-    store.currentLanguage = mockLanguages[1] // 'fra' language
-
-    const updatedLanguage = { ...mockLanguages[1], is_default: true }
-
-    mockLanguageApi.languageSetDefault.mockResolvedValue({
-      data: { data: updatedLanguage },
+      expect(mockLanguageApi.languageDestroy).toHaveBeenCalledWith('fra')
+      expect(store.languages).toHaveLength(1)
+      expect(store.languages[0].id).toBe('eng')
     })
 
-    const result = await store.setDefaultLanguage('fra', true)
+    it('should handle setDefaultLanguage success and update all languages in cache', async () => {
+      const store = useLanguageStore()
+      store.languages = [...mockLanguages]
+      store.currentLanguage = mockLanguages[1] // 'fra' language
 
-    expect(mockLanguageApi.languageSetDefault).toHaveBeenCalledWith('fra', { is_default: true })
+      const updatedLanguage = { ...mockLanguages[1], is_default: true }
 
-    // Check that the target language is now default
-    expect(store.languages.find(lang => lang.id === 'fra')?.is_default).toBe(true)
+      mockLanguageApi.languageSetDefault.mockResolvedValue({
+        data: { data: updatedLanguage },
+      })
 
-    // Check that other languages are no longer default
-    expect(store.languages.find(lang => lang.id === 'eng')?.is_default).toBe(false)
+      const result = await store.setDefaultLanguage('fra', true)
 
-    // Check that current language is updated if it matches
-    expect(store.currentLanguage?.is_default).toBe(true)
+      expect(mockLanguageApi.languageSetDefault).toHaveBeenCalledWith('fra', { is_default: true })
 
-    expect(result).toEqual(updatedLanguage)
-  })
+      // Check that the target language is now default
+      expect(store.languages.find(lang => lang.id === 'fra')?.is_default).toBe(true)
 
-  it('should handle setDefaultLanguage error', async () => {
-    const store = useLanguageStore()
-    const errorMessage = 'Failed to set default'
+      // Check that other languages are no longer default
+      expect(store.languages.find(lang => lang.id === 'eng')?.is_default).toBe(false)
 
-    mockLanguageApi.languageSetDefault.mockRejectedValue(new Error(errorMessage))
+      // Check that current language is updated if it matches
+      expect(store.currentLanguage?.is_default).toBe(true)
 
-    await expect(store.setDefaultLanguage('fra', true)).rejects.toThrow(errorMessage)
-    expect(store.error).toBe('Failed to set default language')
-  })
-
-  it('should handle getDefaultLanguage success', async () => {
-    const store = useLanguageStore()
-    const defaultLanguage = mockLanguages[0] // English is the default
-
-    mockLanguageApi.languageGetDefault.mockResolvedValue({
-      data: { data: defaultLanguage },
+      expect(result).toEqual(updatedLanguage)
     })
 
-    // Initially empty languages array
-    store.languages = []
+    it('should handle setDefaultLanguage error', async () => {
+      const store = useLanguageStore()
+      const errorMessage = 'Failed to set default'
 
-    const result = await store.getDefaultLanguage()
+      mockLanguageApi.languageSetDefault.mockRejectedValue(new Error(errorMessage))
 
-    expect(mockLanguageApi.languageGetDefault).toHaveBeenCalled()
-    expect(result).toEqual(defaultLanguage)
-    expect(store.languages).toHaveLength(1)
-    expect(store.languages[0]).toEqual(defaultLanguage)
-    expect(store.loading).toBe(false)
-    expect(store.error).toBeNull()
+      await expect(store.setDefaultLanguage('fra', true)).rejects.toThrow(errorMessage)
+      expect(store.error).toBe('Failed to set default language')
+    })
   })
 
-  it('should handle getDefaultLanguage error', async () => {
-    const store = useLanguageStore()
-    const errorMessage = 'Failed to get default'
+  describe('getDefaultLanguage', () => {
+    it('should handle getDefaultLanguage success and update cache', async () => {
+      const store = useLanguageStore()
+      const defaultLanguage = mockLanguages[0] // English is the default
 
-    mockLanguageApi.languageGetDefault.mockRejectedValue(new Error(errorMessage))
+      mockLanguageApi.languageGetDefault.mockResolvedValue({
+        data: { data: defaultLanguage },
+      })
 
-    await expect(store.getDefaultLanguage()).rejects.toThrow(errorMessage)
-    expect(store.error).toBe('Failed to get default language')
+      // Set isLoaded to true to allow cache update
+      store.languages = []
+      // @ts-expect-error - accessing internal state for testing
+      store.isLoaded = true
+
+      const result = await store.getDefaultLanguage()
+
+      expect(mockLanguageApi.languageGetDefault).toHaveBeenCalled()
+      expect(result).toEqual(defaultLanguage)
+      expect(store.languages).toHaveLength(1)
+      expect(store.languages[0]).toEqual(defaultLanguage)
+      expect(store.loading).toBe(false)
+      expect(store.error).toBeNull()
+    })
+
+    it('should handle getDefaultLanguage error', async () => {
+      const store = useLanguageStore()
+      const errorMessage = 'Failed to get default'
+
+      mockLanguageApi.languageGetDefault.mockRejectedValue(new Error(errorMessage))
+
+      await expect(store.getDefaultLanguage()).rejects.toThrow(errorMessage)
+      expect(store.error).toBe('Failed to get default language')
+    })
   })
 })

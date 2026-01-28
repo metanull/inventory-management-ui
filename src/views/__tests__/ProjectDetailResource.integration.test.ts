@@ -170,7 +170,9 @@ describe('ProjectDetail Resource Integration Tests', () => {
       languages: mockLanguages,
       defaultLanguage: mockLanguages[0], // English as default
       loading: false,
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
+      isLoaded: true,
+      ensureLoaded: vi.fn().mockResolvedValue(mockLanguages),
+      refresh: vi.fn().mockResolvedValue(mockLanguages),
     } as ReturnType<typeof useLanguageStore>
 
     // Mock store implementations
@@ -471,9 +473,9 @@ describe('ProjectDetail Resource Integration Tests', () => {
     })
 
     it('should load all languages for project selection', async () => {
-      await mockLanguageStore.fetchLanguages()
+      await mockLanguageStore.ensureLoaded()
 
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
       expect(mockLanguageStore.languages).toHaveLength(3)
       expect(mockLanguageStore.languages[0].is_default).toBe(true)
     })

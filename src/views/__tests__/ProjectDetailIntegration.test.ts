@@ -122,7 +122,9 @@ describe('ProjectDetail Integration Tests', () => {
     mockLanguageStore = {
       languages: [],
       loading: false,
-      fetchLanguages: vi.fn(),
+      isLoaded: true,
+      ensureLoaded: vi.fn(),
+      refresh: vi.fn(),
       defaultLanguage: null,
     }
 
@@ -210,7 +212,7 @@ describe('ProjectDetail Integration Tests', () => {
 
     it('should load contexts and languages on mount', async () => {
       mockContextStore.fetchContexts.mockResolvedValue([])
-      mockLanguageStore.fetchLanguages.mockResolvedValue([])
+      mockLanguageStore.ensureLoaded.mockResolvedValue([])
 
       router.push('/projects/new')
       await router.isReady()
@@ -225,7 +227,7 @@ describe('ProjectDetail Integration Tests', () => {
 
       // Verify contexts and languages are loaded
       expect(mockContextStore.fetchContexts).toHaveBeenCalled()
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
     })
   })
 

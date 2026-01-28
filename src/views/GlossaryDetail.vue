@@ -223,7 +223,8 @@
   // Resource data
   const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
   const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
-  const languages = computed(() => languageStore.allLanguages)
+  // Languages from the store (Reference Data - cached, always complete list)
+  const languages = computed(() => languageStore.languages)
 
   const glossaryEntryLanguages = computed(() => {
     if (glossaryEntry.value && glossaryEntry.value.spellings) {
@@ -232,7 +233,9 @@
       let available = languages.sort((a, b) => a.localeCompare(b))
       let list = []
       for (let i = 0; i < available.length; i++) {
-        const lang = languageStore.allLanguages.find(l => l.id === available[i])
+        // Using languageStore.languages - Reference Data Pattern
+        // The full list is always available after ensureLoaded()
+        const lang = languageStore.languages.find(l => l.id === available[i])
         if (lang) {
           list.push({ id: lang.id, internal_name: lang.internal_name })
         }
@@ -554,8 +557,12 @@
       await fetchGlossaryEntry()
     }
     // Load languages for spelling selection
+    // Using ensureLoaded() - Reference Data Pattern:
+    // - Returns immediately if languages are already cached
+    // - Fetches all languages if not yet loaded
+    // - Used here because we need ALL languages for the dropdown
     try {
-      await languageStore.fetchAllLanguages()
+      await languageStore.ensureLoaded()
     } catch {
       // swallow - errorStore will display via the language store error handling
     }

@@ -1,5 +1,10 @@
 <template>
-  <!-- Unified Language Detail View -->
+  <!--
+    Detail view works with the Language store (Reference Data):
+    - fetchLanguage(id) gets details and updates the cached list
+    - mutations (create/update/delete) update the cache in-place
+    - after create, the new item appears immediately in the list
+  -->
   <DetailView
     :store-loading="languageStore.loading"
     :resource="mode === 'create' ? null : language"
@@ -81,6 +86,7 @@
 </template>
 
 <script setup lang="ts">
+  // Mutations (create/update/delete) update the store cache, so the list view reflects changes immediately.
   import { ref, computed, onMounted, watch } from 'vue'
   import {
     useRoute,

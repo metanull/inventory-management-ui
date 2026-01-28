@@ -385,13 +385,13 @@ class ProjectDetailLogic {
 
     if (isCreateRoute) {
       this.projectStore.clearCurrentProject()
-      await Promise.all([this.contextStore.fetchContexts(), this.languageStore.fetchLanguages()])
+      await Promise.all([this.contextStore.fetchContexts(), this.languageStore.ensureLoaded()])
       this.enterCreateMode()
     } else if (projectId) {
       await Promise.all([
         this.fetchProject(projectId),
         this.contextStore.fetchContexts(),
-        this.languageStore.fetchLanguages(),
+        this.languageStore.ensureLoaded(),
       ])
 
       if (editMode && this.project) {
@@ -438,7 +438,9 @@ describe('ProjectDetail Component Business Logic', () => {
     mockLanguageStore = {
       languages: mockLanguages,
       defaultLanguage: mockLanguages[0],
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
+      isLoaded: true,
+      ensureLoaded: vi.fn().mockResolvedValue(mockLanguages),
+      refresh: vi.fn().mockResolvedValue(mockLanguages),
     } as ReturnType<typeof useLanguageStore>
 
     mockLoadingStore = {
@@ -930,7 +932,7 @@ describe('ProjectDetail Component Business Logic', () => {
 
       expect(mockProjectStore.fetchProject).toHaveBeenCalledWith('123')
       expect(mockContextStore.fetchContexts).toHaveBeenCalled()
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
       expect(projectDetailLogic.mode).toBe('view')
     })
 
@@ -954,7 +956,7 @@ describe('ProjectDetail Component Business Logic', () => {
 
       expect(mockProjectStore.clearCurrentProject).toHaveBeenCalled()
       expect(mockContextStore.fetchContexts).toHaveBeenCalled()
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
       expect(projectDetailLogic.mode).toBe('create')
     })
 

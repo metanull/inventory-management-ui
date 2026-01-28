@@ -19,18 +19,20 @@ import type { Router } from 'vue-router'
 
 // Component interface types for proper typing
 interface LanguagesComponentInstance {
-  languages: LanguageResource[]
+  allLanguages: LanguageResource[]
   filteredLanguages: LanguageResource[]
-  defaultLanguages: LanguageResource[]
+  paginatedLanguages: LanguageResource[]
   filterMode: string
   searchQuery: string
   sortKey: string
   sortDirection: string
+  currentPage: number
+  perPage: number
   openLanguageDetail: (id: string) => void
   updateLanguageStatus: (language: LanguageResource, field: string, value: boolean) => Promise<void>
   handleDeleteLanguage: (language: LanguageResource) => Promise<void>
   handleSort: (field: string) => void
-  fetchLanguages: () => Promise<void>
+  handleRefresh: () => Promise<void>
 }
 
 // Mock console.error to avoid noise in test output
@@ -113,7 +115,9 @@ describe('Language Integration Tests', () => {
       currentLanguage: null,
       loading: false,
       error: null,
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
+      isLoaded: true,
+      ensureLoaded: vi.fn().mockResolvedValue(mockLanguages),
+      refresh: vi.fn().mockResolvedValue(mockLanguages),
       getLanguageById: vi.fn(),
       createLanguage: vi.fn(),
       updateLanguage: vi.fn(),
@@ -149,7 +153,7 @@ describe('Language Integration Tests', () => {
       await flushPromises()
 
       expect(wrapper.exists()).toBe(true)
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
     })
 
     it('should display languages from store', async () => {
@@ -163,8 +167,8 @@ describe('Language Integration Tests', () => {
 
       // Check that language data is accessible through component
       const vm = wrapper.vm as unknown as LanguagesComponentInstance
-      expect(vm.languages).toHaveLength(3)
-      expect(vm.languages[0].internal_name).toBe('English')
+      expect(vm.allLanguages).toHaveLength(3)
+      expect(vm.allLanguages[0].internal_name).toBe('English')
     })
 
     it('should handle empty language list', async () => {
@@ -180,7 +184,7 @@ describe('Language Integration Tests', () => {
       await flushPromises()
 
       const vm = wrapper.vm as unknown as LanguagesComponentInstance
-      expect(vm.languages).toHaveLength(0)
+      expect(vm.allLanguages).toHaveLength(0)
     })
   })
 
@@ -364,7 +368,8 @@ describe('Language Integration Tests', () => {
       await flushPromises()
 
       const vm = wrapper.vm as unknown as LanguagesComponentInstance
-      const defaultLanguages = vm.languages.filter((lang: LanguageResource) => lang.is_default)
+      // Use allLanguages instead of languages to match the component's exposed property
+      const defaultLanguages = vm.allLanguages.filter((lang: LanguageResource) => lang.is_default)
 
       expect(defaultLanguages).toHaveLength(1)
       expect(defaultLanguages[0].internal_name).toBe('English')
@@ -394,7 +399,8 @@ describe('Language Integration Tests', () => {
       await flushPromises()
 
       const vm = wrapper.vm as unknown as LanguagesComponentInstance
-      const defaultLanguages = vm.languages.filter((lang: LanguageResource) => lang.is_default)
+      // Use allLanguages instead of languages to match the component's exposed property
+      const defaultLanguages = vm.allLanguages.filter((lang: LanguageResource) => lang.is_default)
 
       expect(defaultLanguages).toHaveLength(2)
       expect(defaultLanguages.map((lang: LanguageResource) => lang.internal_name)).toContain(
@@ -409,7 +415,7 @@ describe('Language Integration Tests', () => {
   describe('Error Handling Integration', () => {
     it('should handle fetch error gracefully', async () => {
       const error = new Error('Network error')
-      mockLanguageStore.fetchLanguages = vi.fn().mockRejectedValue(error)
+      mockLanguageStore.ensureLoaded = vi.fn().mockRejectedValue(error)
 
       const wrapper = mount(Languages, {
         global: {
@@ -419,7 +425,7 @@ describe('Language Integration Tests', () => {
 
       await flushPromises()
 
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
       // Component should still mount even if fetch fails
       expect(wrapper.exists()).toBe(true)
     })

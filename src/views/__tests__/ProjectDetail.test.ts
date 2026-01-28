@@ -75,7 +75,9 @@ const mockContextStore = {
 const mockLanguageStore = {
   languages: [],
   loading: false,
-  fetchLanguages: vi.fn(),
+  isLoaded: true,
+  ensureLoaded: vi.fn(),
+  refresh: vi.fn(),
   defaultLanguage: null,
 }
 
@@ -234,7 +236,7 @@ describe('ProjectDetail Component', () => {
   describe('Data Loading', () => {
     it('should load contexts and languages on mount', async () => {
       mockContextStore.fetchContexts.mockResolvedValue([])
-      mockLanguageStore.fetchLanguages.mockResolvedValue([])
+      mockLanguageStore.ensureLoaded.mockResolvedValue([])
 
       router.push('/projects/new')
       await router.isReady()
@@ -248,7 +250,7 @@ describe('ProjectDetail Component', () => {
       await flushPromises()
 
       expect(mockContextStore.fetchContexts).toHaveBeenCalled()
-      expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
     })
 
     it('should handle project fetch errors gracefully', async () => {

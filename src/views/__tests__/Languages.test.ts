@@ -10,6 +10,13 @@ import { createMockLanguage } from '@/__tests__/test-utils'
 import type { LanguageResource } from '@metanull/inventory-app-api-client'
 import type { Router } from 'vue-router'
 
+/**
+ * Languages.vue Tests - Reference Data Pattern
+ *
+ * These tests verify the client-side filtering, sorting, and pagination
+ * that works with the Reference Data pattern (fully cached languages).
+ */
+
 // Mock console.error to avoid noise in test output
 vi.mock('console', () => ({
   error: vi.fn(),
@@ -34,14 +41,17 @@ afterAll(() => {
 
 // Component interface for proper typing
 interface LanguagesComponentInstance {
-  languages: LanguageResource[]
+  allLanguages: LanguageResource[]
   filteredLanguages: LanguageResource[]
+  paginatedLanguages: LanguageResource[]
   searchQuery: string
   sortDirection: string
   sortKey: string
+  currentPage: number
+  perPage: number
   openLanguageDetail: (id: string) => void
   handleSort: (field: string) => void
-  fetchLanguages: () => Promise<void>
+  handleRefresh: () => Promise<void>
 }
 
 // Mock the stores
@@ -96,19 +106,24 @@ describe('Languages.vue', () => {
       ],
     })
 
-    // Setup store mocks
+    // Setup store mocks - Reference Data Pattern
+    // The store now has ensureLoaded() instead of fetchLanguages()
     mockLanguageStore = {
       languages: mockLanguages,
       currentLanguage: null,
       loading: false,
       error: null,
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
-      getLanguageById: vi.fn(),
+      isLoaded: true,
+      ensureLoaded: vi.fn().mockResolvedValue(mockLanguages),
+      refresh: vi.fn().mockResolvedValue(mockLanguages),
+      fetchLanguage: vi.fn(),
       createLanguage: vi.fn(),
       updateLanguage: vi.fn(),
       deleteLanguage: vi.fn(),
+      setDefaultLanguage: vi.fn(),
+      defaultLanguage: mockLanguages.find(lang => lang.is_default),
       defaultLanguages: mockLanguages.filter(lang => lang.is_default),
-    } as ReturnType<typeof useLanguageStore>
+    } as unknown as ReturnType<typeof useLanguageStore>
 
     mockLoadingStore = {
       show: vi.fn(),
@@ -151,7 +166,7 @@ describe('Languages.vue', () => {
 
       await wrapper.vm.$nextTick()
 
-      expect((wrapper.vm as unknown as LanguagesComponentInstance).languages.length).toBe(3)
+      expect((wrapper.vm as unknown as LanguagesComponentInstance).allLanguages.length).toBe(3)
     })
   })
 
@@ -188,6 +203,23 @@ describe('Languages.vue', () => {
         .filteredLanguages
       expect(filteredLanguages.length).toBe(1)
       expect(filteredLanguages[0].backward_compatibility).toBe('fr')
+    })
+
+    it('should filter languages by ID', async () => {
+      const wrapper = mount(Languages, {
+        global: {
+          plugins: [createPinia(), router],
+        },
+      })
+
+      await wrapper.vm.$nextTick()
+      ;(wrapper.vm as unknown as LanguagesComponentInstance).searchQuery = 'deu'
+      await wrapper.vm.$nextTick()
+
+      const filteredLanguages = (wrapper.vm as unknown as LanguagesComponentInstance)
+        .filteredLanguages
+      expect(filteredLanguages.length).toBe(1)
+      expect(filteredLanguages[0].id).toBe('deu')
     })
   })
 })

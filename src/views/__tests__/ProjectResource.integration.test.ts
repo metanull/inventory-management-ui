@@ -158,7 +158,9 @@ describe('Project Resource Integration Tests', () => {
     const mockLanguageStoreImplementation = {
       languages: mockLanguages,
       defaultLanguage: mockLanguages[0],
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
+      isLoaded: true,
+      ensureLoaded: vi.fn().mockResolvedValue(mockLanguages),
+      refresh: vi.fn().mockResolvedValue(mockLanguages),
     }
 
     // Mock store implementations
@@ -260,10 +262,11 @@ describe('Project Resource Integration Tests', () => {
   describe('Cross-store Dependencies', () => {
     it('should coordinate between Project, Context, and Language stores for form operations', async () => {
       // Load all dependencies (simulating ProjectDetail.vue initialization)
+      // Using ensureLoaded() for languages - Reference Data Pattern
       await Promise.all([
         projectStore.fetchProject('1'),
         contextStore.fetchContexts(),
-        languageStore.fetchLanguages(),
+        languageStore.ensureLoaded(),
       ])
 
       // Verify all stores have data

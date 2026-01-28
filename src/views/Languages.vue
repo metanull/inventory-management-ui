@@ -5,18 +5,12 @@
     add-button-route="/languages/new"
     add-button-label="Add Language"
     color="purple"
-    :is-empty="filteredLanguages.length === 0"
+    :is-empty="paginatedLanguages.length === 0"
     empty-title="No languages found"
-    :empty-message="
-      filterMode === 'all'
-        ? 'Get started by creating a new language.'
-        : filterMode === 'default'
-          ? 'No default languages found. Mark a language as default to make it the fallback choice.'
-          : `No ${filterMode} languages found.`
-    "
-    :show-empty-add-button="filterMode === 'all'"
+    :empty-message="emptyMessage"
+    :show-empty-add-button="filterMode === 'all' && searchQuery.length === 0"
     empty-add-button-label="New Language"
-    @retry="fetchLanguages"
+    @retry="handleRefresh"
   >
     <!-- Icon -->
     <template #icon>
@@ -27,14 +21,14 @@
       <FilterButton
         label="All Languages"
         :is-active="filterMode === 'all'"
-        :count="languages.length"
+        :count="allLanguages.length"
         variant="primary"
         @click="filterMode = 'all'"
       />
       <FilterButton
         label="Default"
         :is-active="filterMode === 'default'"
-        :count="defaultLanguages.length"
+        :count="defaultLanguagesCount"
         variant="success"
         @click="filterMode = 'default'"
       />
@@ -42,7 +36,7 @@
 
     <!-- Search Slot -->
     <template #search>
-      <SearchControl v-model="searchQuery" placeholder="Search languages..." />
+      <SearchControl v-model="searchQuery" placeholder="Search by name, ID, or legacy ID..." />
     </template>
 
     <!-- Languages Table -->
@@ -79,7 +73,7 @@
 
     <template #rows>
       <TableRow
-        v-for="language in filteredLanguages"
+        v-for="language in paginatedLanguages"
         :key="language.id"
         class="cursor-pointer hover:bg-purple-50 transition"
         @click="openLanguageDetail(language.id)"
@@ -119,20 +113,23 @@
       </TableRow>
     </template>
   </ListView>
-  <PageNavigation
-    v-if="links && meta"
-    v-model:per-page="currentPerPage"
-    :links="links"
-    :meta="meta"
-    @change-page-number="handlePageChange"
-    @per-page-change="handlePerPageChange"
-    @change-page="handleUrlChange"
+
+  <!-- Client-Side Pagination Controls -->
+  <ClientPagination
+    v-if="filteredLanguages.length > 0"
+    v-model:current-page="currentPage"
+    v-model:per-page="perPage"
+    :total-items="filteredLanguages.length"
   />
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, watch, onMounted } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
+  /**
+   * Reference Data Pattern: Languages are loaded once via ensureLoaded() and cached.
+   * All filtering, sorting, and pagination happens client-side on the cached array.
+   */
+  import { ref, computed, onMounted, watch } from 'vue'
+  import { useRouter } from 'vue-router'
   import { useLanguageStore } from '@/stores/language'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
@@ -149,11 +146,10 @@
   import TableCell from '@/components/format/table/TableCell.vue'
   import Toggle from '@/components/format/Toggle.vue'
   import InternalName from '@/components/format/InternalName.vue'
-  import PageNavigation from '@/components/format/PageNavigation.vue'
+  import ClientPagination from '@/components/format/ClientPagination.vue'
   import { LanguageIcon } from '@heroicons/vue/24/solid'
   import SearchControl from '@/components/layout/list/SearchControl.vue'
 
-  const route = useRoute()
   const router = useRouter()
 
   const languageStore = useLanguageStore()
@@ -161,64 +157,70 @@
   const errorStore = useErrorDisplayStore()
   const deleteStore = useDeleteConfirmationStore()
 
-  const languages = computed(() => languageStore.languages)
-  const defaultLanguages = computed(() => languageStore.defaultLanguages)
-  const links = computed(() => languageStore.pageLinks)
-  const meta = computed(() => languageStore.pageMeta)
-  const currentPage = computed(() => Number(route.query.page) || 1)
-  const currentPerPage = computed(() => Number(route.query.perPage) || 10)
+  // All languages from the store (Reference Data - cached)
+  const allLanguages = computed(() => languageStore.languages)
 
-  // Filter state - default to 'all'
+  const defaultLanguagesCount = computed(
+    () => languageStore.languages.filter(l => l.is_default).length
+  )
+
   const filterMode = ref<'all' | 'default'>('all')
-
-  // Sorting state
-  const sortKey = ref<string>('internal_name')
-  const sortDirection = ref<'asc' | 'desc'>('asc')
-
-  // Search state
   const searchQuery = ref<string>('')
+  const sortKey = ref<'internal_name' | 'is_default' | 'created_at'>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
+  const currentPage = ref(1)
+  const perPage = ref(10)
 
-  // Handle sort event from TableHeader
-  function handleSort(key: string) {
-    if (sortKey.value === key) {
-      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    } else {
-      sortKey.value = key
-      sortDirection.value = 'asc'
-    }
-  }
-
-  // Computed filtered and sorted languages
+  // Client-side filtering on cached data
   const filteredLanguages = computed(() => {
-    let list: LanguageResource[]
-    switch (filterMode.value) {
-      case 'default':
-        list = defaultLanguages.value
-        break
-      default:
-        list = languages.value
+    let list = allLanguages.value
+
+    // Filter by mode (all vs default)
+    if (filterMode.value === 'default') {
+      list = list.filter(lang => lang.is_default)
     }
-    // Search filter
+
+    // Filter by search query (ID, name, or legacy ID)
     const query = searchQuery.value.trim().toLowerCase()
     if (query.length > 0) {
       list = list.filter(language => {
+        const id = language.id?.toLowerCase() ?? ''
         const name = language.internal_name?.toLowerCase() ?? ''
-        const compat = language.backward_compatibility?.toLowerCase() ?? ''
-        return name.includes(query) || compat.includes(query)
+        const legacyId = language.backward_compatibility?.toLowerCase() ?? ''
+        return id.includes(query) || name.includes(query) || legacyId.includes(query)
       })
     }
-    // Simple sorting logic
-    return [...list].sort((a, b) => {
-      const key = sortKey.value
+
+    return list
+  })
+
+  // Client-side sorting
+  const sortedLanguages = computed(() => {
+    const list = [...filteredLanguages.value]
+
+    return list.sort((a, b) => {
       let valA: unknown
       let valB: unknown
-      if (key === 'internal_name') {
-        valA = a.internal_name ?? ''
-        valB = b.internal_name ?? ''
-      } else {
-        valA = (a as any)[key]
-        valB = (b as any)[key]
+
+      switch (sortKey.value) {
+        case 'internal_name':
+          valA = a.internal_name ?? ''
+          valB = b.internal_name ?? ''
+          break
+        case 'is_default':
+          // Sort booleans: true first when ascending
+          valA = a.is_default ? 1 : 0
+          valB = b.is_default ? 1 : 0
+          break
+        case 'created_at':
+          valA = a.created_at ?? ''
+          valB = b.created_at ?? ''
+          break
+        default:
+          valA = (a as Record<string, unknown>)[sortKey.value]
+          valB = (b as Record<string, unknown>)[sortKey.value]
       }
+
       if (valA == null && valB == null) return 0
       if (valA == null) return 1
       if (valB == null) return -1
@@ -228,34 +230,56 @@
     })
   })
 
-  // Fetch languages on mount
+  // Client-side pagination
+  const paginatedLanguages = computed(() => {
+    const start = (currentPage.value - 1) * perPage.value
+    const end = start + perPage.value
+    return sortedLanguages.value.slice(start, end)
+  })
+
+  const emptyMessage = computed(() => {
+    if (searchQuery.value.trim().length > 0) {
+      return `No languages found matching "${searchQuery.value}".`
+    }
+    if (filterMode.value === 'default') {
+      return 'No default languages found. Mark a language as default to make it the fallback choice.'
+    }
+    return 'Get started by creating a new language.'
+  })
+
+  // Reset to page 1 when filters change
+  watch([searchQuery, filterMode], () => {
+    currentPage.value = 1
+  })
+
+  // Load all languages on mount using ensureLoaded() (returns cached data if available)
   onMounted(async () => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (languages.value && languages.value.length > 0) {
-      usedCache = true
-    } else {
+    if (!languageStore.isLoaded) {
       loadingStore.show()
     }
+
     try {
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
+      await languageStore.ensureLoaded()
     } catch {
-      errorStore.addMessage('error', 'Failed to fetch languages. Please try again.')
+      errorStore.addMessage('error', 'Failed to load languages. Please try again.')
     } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
+      loadingStore.hide()
     }
   })
 
-  // Open LanguageDetail for clicked language
+  function handleSort(key: 'internal_name' | 'is_default' | 'created_at') {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
+    }
+  }
+
   function openLanguageDetail(languageId: string | number) {
     router.push(`/languages/${languageId}`)
   }
 
-  // Update language status
   const updateLanguageStatus = async (
     language: LanguageResource,
     field: string,
@@ -271,17 +295,17 @@
         )
       }
     } catch {
-      errorStore.addMessage('error', `Failed to update language status. Please try again.`)
+      errorStore.addMessage('error', 'Failed to update language status. Please try again.')
     } finally {
       loadingStore.hide()
     }
   }
 
-  // Fetch languages function for retry
-  const fetchLanguages = async (page = languageStore.pageMeta?.current_page || 1) => {
+  // Force refresh from API (bypasses cache)
+  const handleRefresh = async () => {
     try {
       loadingStore.show()
-      await languageStore.fetchLanguages(page)
+      await languageStore.refresh()
       errorStore.addMessage('info', 'Languages refreshed successfully.')
     } catch {
       errorStore.addMessage('error', 'Failed to refresh languages. Please try again.')
@@ -290,7 +314,6 @@
     }
   }
 
-  // Delete language with confirmation
   const handleDeleteLanguage = async (languageToDelete: LanguageResource) => {
     const result = await deleteStore.trigger(
       'Delete Language',
@@ -310,42 +333,21 @@
     }
   }
 
-  const handlePageChange = (page: number) => {
-    router.push({ query: { ...route.query, page } })
-  }
-
-  const handlePerPageChange = (perPage: number) => {
-    router.push({ query: { ...route.query, page: 1, perPage } })
-  }
-
-  const handleUrlChange = (url: string | null) => {
-    if (!url) return
-    const urlParams = new URL(url, window.location.origin).searchParams
-    const page = urlParams.get('page')
-    if (page) handlePageChange(Number(page))
-  }
-
-  watch(
-    () => [route.query.page, route.query.perPage],
-    () => {
-      languageStore.fetchLanguages(currentPage.value, currentPerPage.value)
-    },
-    { immediate: true }
-  )
-
-  // Expose properties for testing
   defineExpose({
-    languages,
+    allLanguages,
     filteredLanguages,
-    defaultLanguages,
+    sortedLanguages,
+    paginatedLanguages,
     filterMode,
     searchQuery,
     sortKey,
     sortDirection,
+    currentPage,
+    perPage,
     openLanguageDetail,
     updateLanguageStatus,
     handleDeleteLanguage,
     handleSort,
-    fetchLanguages,
+    handleRefresh,
   })
 </script>

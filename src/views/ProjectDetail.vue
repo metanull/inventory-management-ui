@@ -483,15 +483,18 @@
         // Clear current project to avoid showing stale data from previously viewed projects
         projectStore.clearCurrentProject()
 
-        // For create mode, only fetch dropdown options
-        await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])
+        // For create mode, fetch dropdown options
+        // Using ensureLoaded() for languages - Reference Data Pattern:
+        // - Returns immediately if cached, fetches all if not
+        await Promise.all([contextStore.fetchContexts(), languageStore.ensureLoaded()])
         enterCreateMode()
       } else if (projectId) {
         // For view/edit mode, fetch project data and dropdown options
+        // Languages use ensureLoaded() - will use cache if available
         await Promise.all([
           fetchProject(),
           contextStore.fetchContexts(),
-          languageStore.fetchLanguages(),
+          languageStore.ensureLoaded(),
         ])
 
         // Check if we should start in edit mode from query parameter

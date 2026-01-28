@@ -211,7 +211,9 @@ describe('Project Management Integration Tests', () => {
     mockLanguageStore = {
       languages: mockLanguages,
       defaultLanguage: mockLanguages[0],
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
+      isLoaded: true,
+      ensureLoaded: vi.fn().mockResolvedValue(mockLanguages),
+      refresh: vi.fn().mockResolvedValue(mockLanguages),
     } as ReturnType<typeof useLanguageStore>
 
     mockLoadingStore = {
@@ -285,8 +287,8 @@ describe('Project Management Integration Tests', () => {
       // Just verify the mocks were called properly - the exact function names may differ
       // expect(mockProjectStore.clearCurrentProject).toHaveBeenCalled()
       // expect(mockContextStore.fetchContexts).toHaveBeenCalled()
-      // Note: The fetchLanguages method might not be called in some cases
-      // expect(mockLanguageStore.fetchLanguages).toHaveBeenCalled()
+      // Note: The ensureLoaded method might not be called in some cases
+      // expect(mockLanguageStore.ensureLoaded).toHaveBeenCalled()
 
       // 3. Fill in form data
       ;(detailWrapper.vm as unknown as ProjectDetailComponentInstance).editForm.internal_name =
