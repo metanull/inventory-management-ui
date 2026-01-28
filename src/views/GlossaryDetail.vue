@@ -112,16 +112,30 @@
           </DescriptionDetail>
         </DescriptionRow>
 
-        <DescriptionRow variant="white" v-if="glossaryEntry && glossaryEntry.translations && currentLanguage.id">
+        <DescriptionRow
+          variant="white"
+          v-if="glossaryEntry && glossaryEntry.translations && currentLanguage.id"
+        >
           <DescriptionTerm>Definition</DescriptionTerm>
           <DescriptionDetail>
             <div v-if="mode === 'view' && translationMode === 'view' && currentLanguageTranslation">
               <DisplayText>{{ currentLanguageTranslation.definition }}</DisplayText>
             </div>
-            <div v-else-if="mode === 'view' && translationMode === 'view' && !currentLanguageTranslation">
-              <DisplayText>{{ currentLanguage.internal_name }} definition not yet entered. Click "Edit" to add a definition.</DisplayText>
+            <div
+              v-else-if="
+                mode === 'view' && translationMode === 'view' && !currentLanguageTranslation
+              "
+            >
+              <DisplayText
+                >{{ currentLanguage.internal_name }} definition not yet entered. Click "Edit" to add
+                a definition.</DisplayText
+              >
             </div>
-            <div v-else-if="mode === 'edit' && translationMode === 'view' && !currentLanguageTranslation">
+            <div
+              v-else-if="
+                mode === 'edit' && translationMode === 'view' && !currentLanguageTranslation
+              "
+            >
               <FormInput
                 v-model="createTranslationForm.definition"
                 type="text"
@@ -130,16 +144,20 @@
               />
               <SaveButton class="mr-2" @click="saveGlossaryTranslation"></SaveButton>
             </div>
-            <div v-else-if="mode === 'edit' && translationMode === 'view' && currentLanguageTranslation">
+            <div
+              v-else-if="
+                mode === 'edit' && translationMode === 'view' && currentLanguageTranslation
+              "
+            >
               <DisplayText>{{ currentLanguageTranslation.definition }}</DisplayText>
-              <EditButton
-                @click="handleEditGlossaryTranslation(currentLanguageTranslation)"
-              />
-              <DeleteButton
-                @click="handleDeleteGlossaryTranslation(currentLanguageTranslation)"
-              />
+              <EditButton @click="handleEditGlossaryTranslation(currentLanguageTranslation)" />
+              <DeleteButton @click="handleDeleteGlossaryTranslation(currentLanguageTranslation)" />
             </div>
-            <div v-else-if="mode === 'edit' && translationMode === 'edit' && currentLanguageTranslation">
+            <div
+              v-else-if="
+                mode === 'edit' && translationMode === 'edit' && currentLanguageTranslation
+              "
+            >
               <FormInput
                 v-model="editTranslationForm.definition"
                 type="text"
@@ -276,28 +294,32 @@
   // Resource data
   const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
   const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
-  const glossaryTranslationEntry = computed(() => glossaryTranslationStore.currentGlossaryTranslationEntry)
+  const glossaryTranslationEntry = computed(
+    () => glossaryTranslationStore.currentGlossaryTranslationEntry
+  )
   const languages = computed(() => languageStore.allLanguages)
 
   const glossaryEntryLanguages = computed(() => {
-    const entry = glossaryEntry.value;
-    if (!entry) return [];
+    const entry = glossaryEntry.value
+    if (!entry) return []
 
-    const spellingIds = entry.spellings?.map(s => s.language_id) || [];
-    const translationIds = entry.translations?.map(t => t.language_id) || [];
+    const spellingIds = entry.spellings?.map(s => s.language_id) || []
+    const translationIds = entry.translations?.map(t => t.language_id) || []
 
-    const uniqueIds = Array.from(new Set([...spellingIds, ...translationIds]));
+    const uniqueIds = Array.from(new Set([...spellingIds, ...translationIds]))
 
-    const list: LanguageSelection[] = [];
+    const list: LanguageSelection[] = []
 
-    uniqueIds.sort((a, b) => a.localeCompare(b)).forEach(id => {
-      const lang = languageStore.allLanguages.find(l => l.id === id);
-      if (lang) {
-        list.push({ id: lang.id, internal_name: lang.internal_name });
-      }
-    });
-    return list;
-  });
+    uniqueIds
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(id => {
+        const lang = languageStore.allLanguages.find(l => l.id === id)
+        if (lang) {
+          list.push({ id: lang.id, internal_name: lang.internal_name })
+        }
+      })
+    return list
+  })
 
   const currentLanguageSpellings = computed(() => {
     if (glossaryEntry.value && glossaryEntry.value.spellings) {
@@ -311,9 +333,11 @@
 
   const currentLanguageTranslation = computed(() => {
     if (glossaryEntry.value && glossaryEntry.value.translations) {
-      return glossaryEntry.value.translations.find(
-        translation => translation.language_id === currentLanguage.value.id
-      ) || null;
+      return (
+        glossaryEntry.value.translations.find(
+          translation => translation.language_id === currentLanguage.value.id
+        ) || null
+      )
     } else {
       return null
     }
@@ -649,7 +673,9 @@
     }
   }
 
-  const handleDeleteGlossaryTranslation = async (translationToDelete: GlossaryTranslationResource) => {
+  const handleDeleteGlossaryTranslation = async (
+    translationToDelete: GlossaryTranslationResource
+  ) => {
     const result = await deleteStore.trigger(
       'Delete Definition',
       `Are you sure you want to delete this definition? This action cannot be undone.`

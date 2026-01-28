@@ -151,7 +151,10 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
         }
 
         // Update current glossary entry if it's the same
-        if (currentGlossaryTranslationEntry.value && currentGlossaryTranslationEntry.value.id === id) {
+        if (
+          currentGlossaryTranslationEntry.value &&
+          currentGlossaryTranslationEntry.value.id === id
+        ) {
           currentGlossaryTranslationEntry.value = updatedGlossaryTranslationEntry
         }
 
@@ -182,7 +185,10 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
       )
 
       // Clear current glossary entry if it's the same
-      if (currentGlossaryTranslationEntry.value && currentGlossaryTranslationEntry.value.id === id) {
+      if (
+        currentGlossaryTranslationEntry.value &&
+        currentGlossaryTranslationEntry.value.id === id
+      ) {
         currentGlossaryTranslationEntry.value = null
       }
 
@@ -196,8 +202,12 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
     }
   }
 
-  const findGlossaryTranslationEntryById = (id: string): GlossaryTranslationResource | undefined => {
-    return glossaryTranslations.value.find(glossaryTranslationEntry => glossaryTranslationEntry.id === id)
+  const findGlossaryTranslationEntryById = (
+    id: string
+  ): GlossaryTranslationResource | undefined => {
+    return glossaryTranslations.value.find(
+      glossaryTranslationEntry => glossaryTranslationEntry.id === id
+    )
   }
 
   const clearCurrentGlossaryTranslationEntry = (): void => {
