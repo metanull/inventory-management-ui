@@ -33,7 +33,8 @@
             <DisplayText v-else>{{ glossaryEntry?.internal_name }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="white">
+
+        <DescriptionRow v-if="glossaryEntryLanguages.length > 0 || mode === 'edit'" variant="white">
           <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
             <div class="mb-4 grid grid-cols-5 gap-2">
@@ -111,6 +112,64 @@
           </DescriptionDetail>
         </DescriptionRow>
 
+        <DescriptionRow
+          v-if="glossaryEntry && glossaryEntry.translations && currentLanguage.id"
+          variant="white"
+        >
+          <DescriptionTerm>Definition</DescriptionTerm>
+          <DescriptionDetail>
+            <div v-if="mode === 'view' && translationMode === 'view' && currentLanguageTranslation">
+              <DisplayText>{{ currentLanguageTranslation.definition }}</DisplayText>
+            </div>
+            <div
+              v-else-if="
+                mode === 'view' && translationMode === 'view' && !currentLanguageTranslation
+              "
+            >
+              <DisplayText
+                >{{ currentLanguage.internal_name }} definition not yet entered. Click "Edit" to add
+                a definition.</DisplayText
+              >
+            </div>
+            <div
+              v-else-if="
+                mode === 'edit' && translationMode === 'view' && !currentLanguageTranslation
+              "
+            >
+              <FormInput
+                v-model="createTranslationForm.definition"
+                type="text"
+                :placeholder="`Enter the ${currentLanguage.internal_name} definition here.`"
+                class="mb-2"
+              />
+              <SaveButton class="mr-2" @click="saveGlossaryTranslation"></SaveButton>
+            </div>
+            <div
+              v-else-if="
+                mode === 'edit' && translationMode === 'view' && currentLanguageTranslation
+              "
+            >
+              <DisplayText>{{ currentLanguageTranslation.definition }}</DisplayText>
+              <EditButton @click="handleEditGlossaryTranslation(currentLanguageTranslation)" />
+              <DeleteButton @click="handleDeleteGlossaryTranslation(currentLanguageTranslation)" />
+            </div>
+            <div
+              v-else-if="
+                mode === 'edit' && translationMode === 'edit' && currentLanguageTranslation
+              "
+            >
+              <FormInput
+                v-model="editTranslationForm.definition"
+                type="text"
+                :placeholder="`Edit the ${currentLanguage.internal_name} definition.`"
+                class="mb-2"
+              />
+              <SaveButton class="mr-2" @click="saveGlossaryTranslation"></SaveButton>
+              <CancelButton @click="translationMode = 'view'"></CancelButton>
+            </div>
+          </DescriptionDetail>
+        </DescriptionRow>
+
         <DescriptionRow v-if="glossaryEntry?.created_at" variant="white">
           <DescriptionTerm>Creation Date</DescriptionTerm>
           <DescriptionDetail>
@@ -136,10 +195,14 @@
     UpdateGlossaryRequest,
     StoreGlossarySpellingRequest,
     UpdateGlossarySpellingRequest,
+    StoreGlossaryTranslationRequest,
+    UpdateGlossaryTranslationRequest,
   } from '@metanull/inventory-app-api-client'
   import type { GlossarySpellingResource } from '@metanull/inventory-app-api-client'
+  import type { GlossaryTranslationResource } from '@metanull/inventory-app-api-client'
   import { useGlossaryStore } from '@/stores/glossary'
   import { useGlossarySpellingStore } from '@/stores/glossarySpelling'
+  import { useGlossaryTranslationStore } from '@/stores/glossaryTranslation'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -165,6 +228,7 @@
   type Mode = 'view' | 'edit' | 'create'
   type SpellingMode = 'view' | 'edit' | 'create'
   type LanguageMode = 'view' | 'create'
+  type TranslationMode = 'view' | 'edit' | 'create'
 
   interface GlossaryFormData {
     id: string
@@ -184,10 +248,17 @@
     internal_name: string
   }
 
+  interface TranslationFormData {
+    id: string
+    language_id: string
+    definition: string
+  }
+
   const route = useRoute()
   const router = useRouter()
   const glossaryStore = useGlossaryStore()
   const glossarySpellingStore = useGlossarySpellingStore()
+  const glossaryTranslationStore = useGlossaryTranslationStore()
   const loadingStore = useLoadingOverlayStore()
   const cancelChangesStore = useCancelChangesConfirmationStore()
   const deleteConfirmationStore = useDeleteConfirmationStore()
@@ -205,7 +276,7 @@
   const mode = ref<Mode>('view')
   const spellingMode = ref<SpellingMode>('view')
   const languageMode = ref<LanguageMode>('view')
-
+  const translationMode = ref<TranslationMode>('view')
   const currentLanguage = ref<LanguageSelection>({
     id: '',
     internal_name: '',
@@ -223,24 +294,31 @@
   // Resource data
   const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
   const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
+  const glossaryTranslationEntry = computed(
+    () => glossaryTranslationStore.currentGlossaryTranslationEntry
+  )
   const languages = computed(() => languageStore.allLanguages)
 
   const glossaryEntryLanguages = computed(() => {
-    if (glossaryEntry.value && glossaryEntry.value.spellings) {
-      const ids = glossaryEntry.value.spellings.map(spelling => spelling.language_id)
-      const languages = Array.from(new Set(ids))
-      let available = languages.sort((a, b) => a.localeCompare(b))
-      let list = []
-      for (let i = 0; i < available.length; i++) {
-        const lang = languageStore.allLanguages.find(l => l.id === available[i])
+    const entry = glossaryEntry.value
+    if (!entry) return []
+
+    const spellingIds = entry.spellings?.map(s => s.language_id) || []
+    const translationIds = entry.translations?.map(t => t.language_id) || []
+
+    const uniqueIds = Array.from(new Set([...spellingIds, ...translationIds]))
+
+    const list: LanguageSelection[] = []
+
+    uniqueIds
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(id => {
+        const lang = languageStore.allLanguages.find(l => l.id === id)
         if (lang) {
           list.push({ id: lang.id, internal_name: lang.internal_name })
         }
-      }
-      return list
-    } else {
-      return []
-    }
+      })
+    return list
   })
 
   const currentLanguageSpellings = computed(() => {
@@ -250,6 +328,18 @@
       )
     } else {
       return []
+    }
+  })
+
+  const currentLanguageTranslation = computed(() => {
+    if (glossaryEntry.value && glossaryEntry.value.translations) {
+      return (
+        glossaryEntry.value.translations.find(
+          translation => translation.language_id === currentLanguage.value.id
+        ) || null
+      )
+    } else {
+      return null
     }
   })
 
@@ -272,6 +362,18 @@
     glossary_id: '',
     language_id: '',
     spelling: '',
+  })
+
+  const createTranslationForm = ref<TranslationFormData>({
+    id: '',
+    language_id: '',
+    definition: '',
+  })
+
+  const editTranslationForm = ref<TranslationFormData>({
+    id: '',
+    language_id: '',
+    definition: '',
   })
 
   // const languages = computed(() => languageStore.languages)
@@ -311,7 +413,7 @@
   const fetchGlossaryEntry = async (): Promise<void> => {
     if (mode.value === 'create') return
     if (!glossaryEntryId.value || glossaryEntryId.value === 'new') return
-    await glossaryStore.fetchGlossaryEntry(glossaryEntryId.value, 'spellings')
+    await glossaryStore.fetchGlossaryEntry(glossaryEntryId.value, 'spellings, translations')
   }
 
   // const fetchGlossarySpellingEntry = async (): Promise<void> => {
@@ -493,6 +595,98 @@
         errorStore.addMessage('info', 'Spelling deleted successfully.')
       } catch {
         errorStore.addMessage('error', 'Failed to delete spelling. Please try again.')
+      } finally {
+        await fetchGlossaryEntry()
+        loadingStore.hide()
+      }
+    }
+  }
+
+  const handleEditGlossaryTranslation = async (translationToEdit: GlossaryTranslationResource) => {
+    await glossaryTranslationStore.fetchGlossaryTranslationEntry(translationToEdit.id)
+    if (glossaryEntry.value) {
+      editTranslationForm.value = {
+        id: translationToEdit.id,
+        // glossary_id: glossaryEntry.value.id,
+        language_id: translationToEdit.language_id,
+        definition: translationToEdit.definition,
+      }
+    }
+    translationMode.value = 'edit'
+  }
+
+  const saveGlossaryTranslation = async (): Promise<void> => {
+    // if (editSpellingForm.value.language_id.trim() === "") {
+    //   errorStore.addMessage('error', 'Please select a language.')
+    //   return
+    // }
+    // if (editSpellingForm.value.spelling.trim() ==="") {
+    //   errorStore.addMessage('error', 'Please enter a spelling.')
+    //   return
+    // }
+    try {
+      loadingStore.show('Saving...')
+      // if (languageMode.value === 'create') {
+      //   if (newLanguage.value.id) {
+      //     currentLanguage.value = {
+      //       id: newLanguage.value.id,
+      //       internal_name: newLanguage.value.internal_name,
+      //     }
+      //   }
+      // }
+      if (translationMode.value === 'edit' && glossaryTranslationEntry.value) {
+        const updateData: UpdateGlossaryTranslationRequest = {
+          language_id: currentLanguage.value.id,
+          definition: editTranslationForm.value.definition,
+        }
+        const updatedGlossaryTranslationEntry =
+          await glossaryTranslationStore.updateGlossaryTranslationEntry(
+            glossaryTranslationEntry.value.id,
+            updateData
+          )
+        if (updatedGlossaryTranslationEntry) {
+          errorStore.addMessage('info', 'Glossary definition updated successfully.')
+          await fetchGlossaryEntry()
+          translationMode.value = 'view'
+        }
+      } else if (mode.value === 'edit' && glossaryEntry.value && !glossaryTranslationEntry.value) {
+        // Creating new translation entry
+        const createData: StoreGlossaryTranslationRequest = {
+          glossary_id: glossaryEntry.value.id,
+          language_id: currentLanguage.value.id,
+          definition: createTranslationForm.value.definition,
+        }
+        const newGlossaryTranslationEntry =
+          await glossaryTranslationStore.createGlossaryTranslationEntry(createData)
+        if (newGlossaryTranslationEntry) {
+          errorStore.addMessage('info', 'Glossary definition created successfully.')
+          createTranslationForm.value.definition = ''
+          translationMode.value = 'view'
+          await fetchGlossaryEntry()
+          // mode.value = 'view'
+        }
+      }
+    } catch {
+      errorStore.addMessage('error', 'Failed to save definition. Please try again.')
+    } finally {
+      loadingStore.hide()
+    }
+  }
+
+  const handleDeleteGlossaryTranslation = async (
+    translationToDelete: GlossaryTranslationResource
+  ) => {
+    const result = await deleteStore.trigger(
+      'Delete Definition',
+      `Are you sure you want to delete this definition? This action cannot be undone.`
+    )
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await glossaryTranslationStore.deleteGlossaryTranslationEntry(translationToDelete.id)
+        errorStore.addMessage('info', 'Definition deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Failed to delete definition. Please try again.')
       } finally {
         await fetchGlossaryEntry()
         loadingStore.hide()
