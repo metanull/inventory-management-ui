@@ -34,7 +34,7 @@
           </DescriptionDetail>
         </DescriptionRow>
 
-        <DescriptionRow variant="white" v-if="glossaryEntryLanguages.length > 0 || mode === 'edit'">
+        <DescriptionRow v-if="glossaryEntryLanguages.length > 0 || mode === 'edit'" variant="white">
           <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
             <div class="mb-4 grid grid-cols-5 gap-2">
@@ -113,8 +113,8 @@
         </DescriptionRow>
 
         <DescriptionRow
-          variant="white"
           v-if="glossaryEntry && glossaryEntry.translations && currentLanguage.id"
+          variant="white"
         >
           <DescriptionTerm>Definition</DescriptionTerm>
           <DescriptionDetail>
