@@ -547,10 +547,10 @@
     }
   }
 
-  const cancelNewLanguage = (): void => {
-    newLanguage.value = { id: '', internal_name: '' }
-    languageMode.value = 'view'
-  }
+  // const cancelNewLanguage = (): void => {
+  //   newLanguage.value = { id: '', internal_name: '' }
+  //   languageMode.value = 'view'
+  // }
 
   const handleEditGlossarySpelling = async (spellingToEdit: GlossarySpellingResource) => {
     await glossarySpellingStore.fetchGlossarySpellingEntry(spellingToEdit.id)
