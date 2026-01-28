@@ -34,7 +34,7 @@
           </DescriptionDetail>
         </DescriptionRow>
 
-        <DescriptionRow variant="white">
+        <DescriptionRow variant="white" v-if="glossaryEntryLanguages.length > 0 || mode === 'edit'">
           <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
             <div class="mb-4 grid grid-cols-5 gap-2">
@@ -112,7 +112,7 @@
           </DescriptionDetail>
         </DescriptionRow>
 
-        <DescriptionRow variant="white" v-if="currentLanguage.id">
+        <DescriptionRow variant="white" v-if="glossaryEntry && glossaryEntry.translations && currentLanguage.id">
           <DescriptionTerm>Definition</DescriptionTerm>
           <DescriptionDetail>
             <div v-if="mode === 'view' && translationMode === 'view' && currentLanguageTranslation">
@@ -280,22 +280,24 @@
   const languages = computed(() => languageStore.allLanguages)
 
   const glossaryEntryLanguages = computed(() => {
-    if (glossaryEntry.value && glossaryEntry.value.spellings) {
-      const ids = glossaryEntry.value.spellings.map(spelling => spelling.language_id)
-      const languages = Array.from(new Set(ids))
-      let available = languages.sort((a, b) => a.localeCompare(b))
-      let list = []
-      for (let i = 0; i < available.length; i++) {
-        const lang = languageStore.allLanguages.find(l => l.id === available[i])
-        if (lang) {
-          list.push({ id: lang.id, internal_name: lang.internal_name })
-        }
+    const entry = glossaryEntry.value;
+    if (!entry) return [];
+
+    const spellingIds = entry.spellings?.map(s => s.language_id) || [];
+    const translationIds = entry.translations?.map(t => t.language_id) || [];
+
+    const uniqueIds = Array.from(new Set([...spellingIds, ...translationIds]));
+
+    const list: LanguageSelection[] = [];
+
+    uniqueIds.sort((a, b) => a.localeCompare(b)).forEach(id => {
+      const lang = languageStore.allLanguages.find(l => l.id === id);
+      if (lang) {
+        list.push({ id: lang.id, internal_name: lang.internal_name });
       }
-      return list
-    } else {
-      return []
-    }
-  })
+    });
+    return list;
+  });
 
   const currentLanguageSpellings = computed(() => {
     if (glossaryEntry.value && glossaryEntry.value.spellings) {
