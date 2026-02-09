@@ -24,7 +24,7 @@
     </template>
     <template #information>
       <DescriptionList>
-        <DescriptionRow variant="gray">
+        <DescriptionRow>
           <DescriptionTerm>Language ID</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
@@ -37,7 +37,7 @@
             <DisplayText v-else>{{ language?.id }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="white">
+        <DescriptionRow>
           <DescriptionTerm>Internal Name</DescriptionTerm>
           <DescriptionDetail>
             <FormInput

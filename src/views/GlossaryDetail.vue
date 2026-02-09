@@ -22,7 +22,7 @@
     </template>
     <template #information>
       <DescriptionList>
-        <DescriptionRow variant="white">
+        <DescriptionRow>
           <DescriptionTerm>Glossary Reference</DescriptionTerm>
           <DescriptionDetail>
             <FormInput

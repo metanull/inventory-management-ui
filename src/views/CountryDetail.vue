@@ -22,7 +22,7 @@
     </template>
     <template #information>
       <DescriptionList>
-        <DescriptionRow variant="gray">
+        <DescriptionRow>
           <DescriptionTerm>Country ID</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
@@ -35,7 +35,7 @@
             <DisplayText v-else>{{ country?.id }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="white">
+        <DescriptionRow>
           <DescriptionTerm>Internal Name</DescriptionTerm>
           <DescriptionDetail>
             <FormInput

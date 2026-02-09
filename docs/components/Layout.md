@@ -157,7 +157,7 @@ A comprehensive detail view component for viewing, editing, and creating resourc
   
   <template #information>
     <DescriptionList>
-      <DescriptionRow variant="gray">
+      <DescriptionRow>
         <DescriptionTerm>Internal Name</DescriptionTerm>
         <DescriptionDetail>
           <FormInput
@@ -236,7 +236,7 @@ A comprehensive detail view component for displaying and editing individual reso
 >
   <template #information="{ onFieldChange }">
     <DescriptionList>
-      <DescriptionRow variant="gray">
+      <DescriptionRow>
         <DescriptionTerm>Name</DescriptionTerm>
         <DescriptionDetail>
           <FormInput

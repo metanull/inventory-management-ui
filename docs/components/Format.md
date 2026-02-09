@@ -142,7 +142,7 @@ Container component for description lists.
 **Usage:**
 ```vue
 <DescriptionList>
-  <DescriptionRow variant="gray">
+  <DescriptionRow>
     <DescriptionTerm>Label</DescriptionTerm>
     <DescriptionDetail>Value</DescriptionDetail>
   </DescriptionRow>
