@@ -12,6 +12,8 @@ import Countries from '@/views/Countries.vue'
 import CountryDetail from '@/views/CountryDetail.vue'
 import Glossary from '@/views/Glossary.vue'
 import GlossaryDetail from '@/views/GlossaryDetail.vue'
+import Items from '@/views/Items.vue'
+import ItemDetail from '@/views/ItemDetail.vue'
 import Contexts from '@/views/Contexts.vue'
 import ContextDetail from '@/views/ContextDetail.vue'
 import Projects from '@/views/Projects.vue'
@@ -46,21 +48,33 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/glossary',
-      name: 'glossary',
-      component: Glossary,
-      meta: { requiresAuth: true },
-    },
-    {
       path: '/countries/:id',
       name: 'country-detail',
       component: CountryDetail,
       meta: { requiresAuth: true },
     },
     {
+      path: '/glossary',
+      name: 'glossary',
+      component: Glossary,
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/glossary/:id',
       name: 'glossary-detail',
       component: GlossaryDetail,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/items',
+      name: 'items',
+      component: Items,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/items/:id',
+      name: 'item-detail',
+      component: ItemDetail,
       meta: { requiresAuth: true },
     },
     {
