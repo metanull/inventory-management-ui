@@ -98,6 +98,18 @@
               <GlossaryIcon />
             </template>
           </NavigationCard>
+
+          <!-- Items Management Card -->
+          <NavigationCard
+            title="Items"
+            main-color="blue"
+            button-text="Manage"
+            button-route="/items"
+          >
+            <template #icon>
+              <ItemIcon />
+            </template>
+          </NavigationCard>
         </div>
       </div>
 
@@ -170,6 +182,7 @@
     LanguageIcon,
     GlobeAltIcon as CountryIcon,
     BookOpenIcon as GlossaryIcon,
+    PuzzlePieceIcon as ItemIcon,
     CogIcon as ContextIcon,
     FolderIcon as ProjectIcon,
     CpuChipIcon as SystemIcon,
