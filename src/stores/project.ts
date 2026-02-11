@@ -11,6 +11,7 @@ import {
 } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from './auth'
 import { ErrorHandler } from '@/utils/errorHandler'
+import { type PageLinks, type PageMeta } from '@/composables/usePagination'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -19,8 +20,11 @@ declare const process: {
 
 export const useProjectStore = defineStore('project', () => {
   const projects = ref<ProjectResource[]>([])
+  const allProjects = ref<ProjectResource[]>([])
   const visibleProjects = ref<ProjectResource[]>([])
   const currentProject = ref<ProjectResource | null>(null)
+  const pageLinks = ref<PageLinks | null>(null)
+  const pageMeta = ref<PageMeta | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -62,19 +66,84 @@ export const useProjectStore = defineStore('project', () => {
     () => (id: string) => projects.value.find(project => project.id === id)
   )
 
-  // Fetch all projects
-  const fetchProjects = async () => {
+  // Fetch projects by page
+  const fetchProjects = async (
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<ProjectResource[]> => {
     loading.value = true
     error.value = null
 
     try {
       const apiClient = createApiClient()
-      const response = await apiClient.projectIndex()
-      projects.value = response.data.data || []
+      const response = await apiClient.projectIndex(page, perPage)
+
+      if (response.data && response.data.data) {
+        projects.value = response.data.data
+      } else {
+        projects.value = []
+      }
+
+      pageLinks.value = response.data?.links ?? null
+      pageMeta.value = response.data?.meta ?? null
+
+      return projects.value
     } catch (err: unknown) {
       ErrorHandler.handleError(err, 'Failed to fetch projects')
       error.value = 'Failed to fetch projects'
+      projects.value = []
       throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Fetch all projects
+  const fetchAllProjects = async (): Promise<ProjectResource[]> => {
+    loading.value = true
+    error.value = null
+
+    const fullList: ProjectResource[] = []
+    let currentPage = 1
+    let hasMorePages = true
+
+    try {
+      const apiClient = createApiClient()
+
+      while (hasMorePages) {
+        const response = await apiClient.projectIndex(currentPage, 100)
+        const data = response.data.data || []
+        const meta = response.data.meta
+
+        fullList.push(...data)
+
+        if (meta && meta.current_page < meta.last_page) {
+          currentPage++
+        } else {
+          hasMorePages = false
+        }
+      }
+
+      allProjects.value = fullList.sort((a, b) =>
+        (a.internal_name || '').localeCompare(b.internal_name || '')
+      )
+
+      pageMeta.value = {
+        current_page: 1,
+        last_page: 1,
+        // Provide a basic links array to satisfy the type
+        links: [
+          { url: null, label: 'pagination.previous', active: false },
+          { url: null, label: '1', active: true },
+          { url: null, label: 'pagination.next', active: false },
+        ],
+      }
+
+      return allProjects.value
+    } catch (err: unknown) {
+      ErrorHandler.handleError(err, 'Failed to fetch all projects')
+      error.value = 'Failed to fetch all projects'
+      return []
     } finally {
       loading.value = false
     }
@@ -296,6 +365,9 @@ export const useProjectStore = defineStore('project', () => {
   return {
     // State
     projects,
+    allProjects,
+    pageLinks,
+    pageMeta,
     visibleProjects,
     currentProject,
     loading,
@@ -308,6 +380,7 @@ export const useProjectStore = defineStore('project', () => {
 
     // Actions
     fetchProjects,
+    fetchAllProjects,
     fetchEnabledProjects,
     fetchProject,
     createProject,
