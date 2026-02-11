@@ -7,19 +7,19 @@
     </div>
     <div class="border-t border-gray-200">
       <DescriptionList>
-        <DescriptionRow variant="gray" size="small">
+        <DescriptionRow size="small">
           <DescriptionTerm variant="small-gray">ID</DescriptionTerm>
           <DescriptionDetail variant="small-gray">
             <UuidDisplay :uuid="id" format="long" />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="white" size="small">
+        <DescriptionRow size="small">
           <DescriptionTerm variant="small-gray">Created</DescriptionTerm>
           <DescriptionDetail variant="small-gray">
             <DateDisplay :date="createdAt" format="medium" show-time />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="gray" size="small">
+        <DescriptionRow size="small">
           <DescriptionTerm variant="small-gray">Last Updated</DescriptionTerm>
           <DescriptionDetail variant="small-gray">
             <DateDisplay :date="updatedAt" format="medium" show-time />

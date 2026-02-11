@@ -1,9 +1,7 @@
 <template>
-  <dl>
+  <dl class="border-t border-gray-200">
     <slot />
   </dl>
 </template>
 
-<script setup lang="ts">
-  // Simple wrapper component for description lists
-</script>
+<script setup lang="ts"></script>

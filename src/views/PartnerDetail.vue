@@ -1,38 +1,38 @@
 <template>
-  <!-- Unified Country Detail View -->
+  <!-- Unified Partner Detail View -->
   <DetailView
-    :store-loading="countryStore.loading"
-    :resource="mode === 'create' ? null : country"
+    :store-loading="partnerStore.loading"
+    :resource="mode === 'create' ? null : partner"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
     :back-link="backLink"
-    :create-title="'New Country'"
+    :create-title="'New Partner'"
     :create-subtitle="'(Creating)'"
-    information-title="Country Information"
+    information-title="Partner Information"
     :information-description="informationDescription"
-    :fetch-data="fetchCountry"
+    :fetch-data="fetchPartner"
     @edit="enterEditMode"
-    @save="saveCountry"
+    @save="savePartner"
     @cancel="cancelAction"
-    @delete="deleteCountry"
+    @delete="deletePartner"
   >
     <template #resource-icon>
-      <CountryIcon class="h-6 w-6 text-blue-600" />
+      <PartnerIcon class="h-6 w-6 text-blue-600" />
     </template>
     <template #information>
       <DescriptionList>
         <DescriptionRow>
-          <DescriptionTerm>Country ID</DescriptionTerm>
+          <DescriptionTerm>Partner ID</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
               v-if="mode === 'edit' || mode === 'create'"
               v-model="editForm.id"
               type="text"
-              placeholder="ISO country code (e.g., GBR)"
+              placeholder="ISO partner code (e.g., GBR)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ country?.id }}</DisplayText>
+            <DisplayText v-else>{{ partner?.id }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -43,11 +43,11 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ country?.internal_name }}</DisplayText>
+            <DisplayText v-else>{{ partner?.internal_name }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
-          v-if="country?.backward_compatibility || mode === 'edit' || mode === 'create'"
+          v-if="partner?.backward_compatibility || mode === 'edit' || mode === 'create'"
           variant="gray"
         >
           <DescriptionTerm>Legacy ID</DescriptionTerm>
@@ -58,19 +58,19 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ country?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>{{ partner?.backward_compatibility }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="country?.created_at" variant="white">
+        <DescriptionRow v-if="partner?.created_at" variant="white">
           <DescriptionTerm>Created</DescriptionTerm>
           <DescriptionDetail>
-            <DateDisplay :date="country.created_at" />
+            <DateDisplay :date="partner.created_at" />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="country?.updated_at" variant="gray">
+        <DescriptionRow v-if="partner?.updated_at" variant="gray">
           <DescriptionTerm>Updated</DescriptionTerm>
           <DescriptionDetail>
-            <DateDisplay :date="country.updated_at" />
+            <DateDisplay :date="partner.updated_at" />
           </DescriptionDetail>
         </DescriptionRow>
       </DescriptionList>
@@ -82,10 +82,11 @@
   import { ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import type {
-    StoreCountryRequest,
-    UpdateCountryRequest,
+    StorePartnerRequest,
+    UpdatePartnerRequest,
   } from '@metanull/inventory-app-api-client'
-  import { useCountryStore } from '@/stores/country'
+  import { StorePartnerRequestTypeEnum } from '@metanull/inventory-app-api-client'
+  import { usePartnerStore } from '@/stores/partner'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -98,28 +99,29 @@
   import FormInput from '@/components/format/FormInput.vue'
   import DisplayText from '@/components/format/DisplayText.vue'
   import DateDisplay from '@/components/format/Date.vue'
-  import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
+  import { BuildingLibraryIcon as PartnerIcon } from '@heroicons/vue/24/solid'
   import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
 
   // Types
   type Mode = 'view' | 'edit' | 'create'
 
-  interface CountryFormData {
+  interface PartnerFormData {
     id: string
     internal_name: string
+    type: string
     backward_compatibility: string
   }
 
   const route = useRoute()
   const router = useRouter()
-  const countryStore = useCountryStore()
+  const partnerStore = usePartnerStore()
   const loadingStore = useLoadingOverlayStore()
   const cancelChangesStore = useCancelChangesConfirmationStore()
   const deleteConfirmationStore = useDeleteConfirmationStore()
   const errorStore = useErrorDisplayStore()
 
   // Route params
-  const countryId = computed(() => {
+  const partnerId = computed(() => {
     const id = route.params.id
     return Array.isArray(id) ? id[0] : id
   })
@@ -128,24 +130,25 @@
   const mode = ref<Mode>('view')
 
   // Determine mode from route
-  if (countryId.value === 'new') {
+  if (partnerId.value === 'new') {
     mode.value = 'create'
   }
 
   // Resource data
-  const country = computed(() => countryStore.currentCountry)
+  const partner = computed(() => partnerStore.currentPartner)
 
   // Edit form state
-  const editForm = ref<CountryFormData>({
+  const editForm = ref<PartnerFormData>({
     id: '',
     internal_name: '',
+    type: '',
     backward_compatibility: '',
   })
 
   // Navigation
   const backLink = computed(() => ({
-    title: 'Back to Countries',
-    route: '/countries',
+    title: 'Back to Partners',
+    route: '/partners',
     icon: ArrowLeftIcon,
     color: 'blue',
   }))
@@ -153,9 +156,9 @@
   // Information description
   const informationDescription = computed(() => {
     if (mode.value === 'create') {
-      return 'Enter the country details below.'
+      return 'Enter the partner details below.'
     }
-    return 'Country details and metadata.'
+    return 'Partner details and metadata.'
   })
 
   // Unsaved changes tracking
@@ -164,58 +167,61 @@
     if (mode.value === 'create') {
       return editForm.value.internal_name.trim() !== ''
     }
-    if (!country.value) return false
+    if (!partner.value) return false
     return (
-      editForm.value.internal_name !== country.value.internal_name ||
-      editForm.value.backward_compatibility !== (country.value.backward_compatibility || '')
+      editForm.value.internal_name !== partner.value.internal_name ||
+      editForm.value.backward_compatibility !== (partner.value.backward_compatibility || '')
     )
   })
 
   // Methods
-  const fetchCountry = async (): Promise<void> => {
+  const fetchPartner = async (): Promise<void> => {
     if (mode.value === 'create') return
-    if (!countryId.value || countryId.value === 'new') return
-    await countryStore.fetchCountry(countryId.value)
+    if (!partnerId.value || partnerId.value === 'new') return
+    await partnerStore.fetchPartner(partnerId.value)
   }
 
   const enterEditMode = (): void => {
-    if (!country.value) return
+    if (!partner.value) return
     editForm.value = {
-      id: country.value.id,
-      internal_name: country.value.internal_name,
-      backward_compatibility: country.value.backward_compatibility || '',
+      id: partner.value.id,
+      internal_name: partner.value.internal_name,
+      type: partner.value.type,
+      backward_compatibility: partner.value.backward_compatibility || '',
     }
     mode.value = 'edit'
   }
 
-  const saveCountry = async (): Promise<void> => {
+  const savePartner = async (): Promise<void> => {
     try {
       loadingStore.show('Saving...')
       if (mode.value === 'create') {
-        const createData: StoreCountryRequest = {
+        const createData: StorePartnerRequest = {
           id: editForm.value.id,
           internal_name: editForm.value.internal_name,
+          type: editForm.value.type as StorePartnerRequestTypeEnum,
           backward_compatibility: editForm.value.backward_compatibility || undefined,
         }
-        const newCountry = await countryStore.createCountry(createData)
-        if (newCountry) {
-          errorStore.addMessage('info', 'Country created successfully.')
-          await router.push(`/countries/${newCountry.id}`)
+        const newPartner = await partnerStore.createPartner(createData)
+        if (newPartner) {
+          errorStore.addMessage('info', 'Partner created successfully.')
+          await router.push(`/partners/${newPartner.id}`)
           mode.value = 'view'
         }
-      } else if (mode.value === 'edit' && country.value) {
-        const updateData: UpdateCountryRequest = {
+      } else if (mode.value === 'edit' && partner.value) {
+        const updateData: UpdatePartnerRequest = {
           internal_name: editForm.value.internal_name,
+          type: editForm.value.type as StorePartnerRequestTypeEnum,
           backward_compatibility: editForm.value.backward_compatibility || undefined,
         }
-        const updatedCountry = await countryStore.updateCountry(country.value.id, updateData)
+        const updatedCountry = await partnerStore.updatePartner(partner.value.id, updateData)
         if (updatedCountry) {
-          errorStore.addMessage('info', 'Country updated successfully.')
+          errorStore.addMessage('info', 'Partner updated successfully.')
           mode.value = 'view'
         }
       }
     } catch {
-      errorStore.addMessage('error', 'Failed to save country. Please try again.')
+      errorStore.addMessage('error', 'Failed to save partner. Please try again.')
     } finally {
       loadingStore.hide()
     }
@@ -229,32 +235,32 @@
       )
       if (result === 'leave') {
         if (mode.value === 'create') {
-          router.push('/countries')
+          router.push('/partners')
         } else {
           mode.value = 'view'
         }
       }
     } else if (mode.value === 'create') {
-      router.push('/countries')
+      router.push('/partners')
     } else {
       mode.value = 'view'
     }
   }
 
-  const deleteCountry = async (): Promise<void> => {
-    if (!country.value) return
+  const deletePartner = async (): Promise<void> => {
+    if (!partner.value) return
     const result = await deleteConfirmationStore.trigger(
-      'Delete Country',
-      `Are you sure you want to delete "${country.value.internal_name}"? This action cannot be undone.`
+      'Delete Partner',
+      `Are you sure you want to delete "${partner.value.internal_name}"? This action cannot be undone.`
     )
     if (result === 'delete') {
       try {
         loadingStore.show('Deleting...')
-        await countryStore.deleteCountry(country.value.id)
-        errorStore.addMessage('info', 'Country deleted successfully.')
-        await router.push('/countries')
+        await partnerStore.deletePartner(partner.value.id)
+        errorStore.addMessage('info', 'Partner deleted successfully.')
+        await router.push('/partners')
       } catch {
-        errorStore.addMessage('error', 'Failed to delete country. Please try again.')
+        errorStore.addMessage('error', 'Failed to delete partner. Please try again.')
       } finally {
         loadingStore.hide()
       }
@@ -267,10 +273,11 @@
       editForm.value = {
         id: '',
         internal_name: '',
+        type: '',
         backward_compatibility: '',
       }
     } else {
-      await fetchCountry()
+      await fetchPartner()
     }
   })
 
@@ -283,24 +290,26 @@
         editForm.value = {
           id: '',
           internal_name: '',
+          type: '',
           backward_compatibility: '',
         }
       } else if (typeof newId === 'string') {
         mode.value = 'view'
-        await fetchCountry()
+        await fetchPartner()
       }
     }
   )
 
-  // Update edit form when country data changes
+  // Update edit form when partner data changes
   watch(
-    country,
-    newCountry => {
-      if (newCountry && mode.value === 'view') {
+    partner,
+    newPartner => {
+      if (newPartner && mode.value === 'view') {
         editForm.value = {
-          id: newCountry.id,
-          internal_name: newCountry.internal_name,
-          backward_compatibility: newCountry.backward_compatibility || '',
+          id: newPartner.id,
+          internal_name: newPartner.internal_name,
+          type: newPartner.type,
+          backward_compatibility: newPartner.backward_compatibility || '',
         }
       }
     },

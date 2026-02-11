@@ -24,7 +24,7 @@
     </template>
     <template #information>
       <DescriptionList>
-        <DescriptionRow variant="gray">
+        <DescriptionRow>
           <DescriptionTerm>Internal Name</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
@@ -50,7 +50,7 @@
             <DisplayText v-else>{{ project?.backward_compatibility }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="gray">
+        <DescriptionRow>
           <DescriptionTerm>Launch Date</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
@@ -69,7 +69,7 @@
             </template>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="white">
+        <DescriptionRow>
           <DescriptionTerm>Default Context</DescriptionTerm>
           <DescriptionDetail>
             <GenericDropdown
@@ -86,7 +86,7 @@
             </template>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow variant="gray">
+        <DescriptionRow>
           <DescriptionTerm>Default Language</DescriptionTerm>
           <DescriptionDetail>
             <GenericDropdown

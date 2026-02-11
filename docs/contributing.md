@@ -470,7 +470,7 @@ Create `src/views/ItemDetail.vue` following the pattern in `src/views/ProjectDet
     <template #information>
       <DescriptionList>
         <!-- Follow the pattern from ProjectDetail.vue -->
-        <DescriptionRow variant="gray">
+        <DescriptionRow>
           <DescriptionTerm>Internal Name</DescriptionTerm>
           <DescriptionDetail>
             <FormInput

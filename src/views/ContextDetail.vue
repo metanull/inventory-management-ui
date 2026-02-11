@@ -23,7 +23,7 @@
     </template>
     <template #information>
       <DescriptionList>
-        <DescriptionRow variant="gray">
+        <DescriptionRow>
           <DescriptionTerm>Internal Name</DescriptionTerm>
           <DescriptionDetail>
             <FormInput

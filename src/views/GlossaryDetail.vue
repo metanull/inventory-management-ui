@@ -22,7 +22,7 @@
     </template>
     <template #information>
       <DescriptionList>
-        <DescriptionRow variant="white">
+        <DescriptionRow>
           <DescriptionTerm>Glossary Reference</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
@@ -396,8 +396,6 @@
     language_id: '',
     definition: '',
   })
-
-  // const languages = computed(() => languageStore.languages)
 
   // Navigation
   const backLink = computed(() => ({
