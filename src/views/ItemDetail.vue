@@ -86,7 +86,7 @@
               placeholder="Select a partner"
               class="mb-2"
             />
-            <DisplayText v-else>{{ item?.partner }}</DisplayText>
+            <DisplayText v-else>{{ item?.partner?.internal_name }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -100,7 +100,7 @@
               placeholder="Select a project"
               class="mb-2"
             />
-            <DisplayText v-else>{{ item?.project }}</DisplayText>
+            <DisplayText v-else>{{ item?.project?.internal_name }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow v-if="item?.backward_compatibility || mode === 'edit' || mode === 'create'">
