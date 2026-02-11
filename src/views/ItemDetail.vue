@@ -103,9 +103,7 @@
             <DisplayText v-else>{{ item?.project }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow
-          v-if="item?.backward_compatibility || mode === 'edit' || mode === 'create'"
-        >
+        <DescriptionRow v-if="item?.backward_compatibility || mode === 'edit' || mode === 'create'">
           <DescriptionTerm>Legacy ID</DescriptionTerm>
           <DescriptionDetail>
             <FormInput
@@ -137,13 +135,10 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import type {
-    StoreItemRequest,
-    UpdateItemRequest,
-  } from '@metanull/inventory-app-api-client'
-  import { 
+  import type { StoreItemRequest, UpdateItemRequest } from '@metanull/inventory-app-api-client'
+  import {
     StoreItemRequestTypeEnum,
-    StorePartnerRequestTypeEnum, 
+    StorePartnerRequestTypeEnum,
   } from '@metanull/inventory-app-api-client'
   import { useItemStore } from '@/stores/item'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
@@ -207,12 +202,12 @@
 
   const types = Object.entries(StoreItemRequestTypeEnum).map(([key, value]) => ({
     id: key,
-    internal_name: value
+    internal_name: value,
   }))
 
   const partners = Object.entries(StorePartnerRequestTypeEnum).map(([key, value]) => ({
     id: key,
-    internal_name: value
+    internal_name: value,
   }))
 
   // Edit form state
@@ -258,20 +253,27 @@
   const fetchItem = async (): Promise<void> => {
     if (mode.value === 'create') return
     if (!itemId.value || itemId.value === 'new') return
-    await itemStore.fetchItem(itemId.value, "partner, project, country, collection, artists, workshops, tags, itemImages")
+    await itemStore.fetchItem(
+      itemId.value,
+      'partner, project, country, collection, artists, workshops, tags, itemImages'
+    )
   }
 
   const enterEditMode = (): void => {
     if (!item.value) return
-    const matchType = types.find(t => t.internal_name === item.value?.type);
-    const matchPartner = partners.find(p => p.internal_name === item.value?.partner?.internal_name);
-    const matchProject = projects.value.find(p => p.internal_name === item.value?.project?.internal_name);
+    const matchType = types.find(t => t.internal_name === item.value?.type)
+    const matchPartner = partners.find(p => p.internal_name === item.value?.partner?.internal_name)
+    const matchProject = projects.value.find(
+      p => p.internal_name === item.value?.project?.internal_name
+    )
     editForm.value = {
       id: item.value.id,
       internal_name: item.value.internal_name,
       type: matchType ? matchType.id : (item.value.type as StoreItemRequestTypeEnum),
-      partner_id: matchPartner ? matchPartner.id : (item.value.partner?.id as StorePartnerRequestTypeEnum),
-      project_id: matchProject ? matchProject.id : (item.value.project?.id || ''),
+      partner_id: matchPartner
+        ? matchPartner.id
+        : (item.value.partner?.id as StorePartnerRequestTypeEnum),
+      project_id: matchProject ? matchProject.id : item.value.project?.id || '',
       backward_compatibility: item.value.backward_compatibility || '',
     }
     mode.value = 'edit'
@@ -373,7 +375,7 @@
     } catch {
       // swallow - errorStore will display via the partner store error handling
     }
-    // Load projects for selection 
+    // Load projects for selection
     try {
       await projectStore.fetchAllProjects()
     } catch {

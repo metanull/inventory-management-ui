@@ -127,8 +127,7 @@
       filtered = filtered.filter(
         item =>
           item.internal_name.toLowerCase().includes(query) ||
-          (item.backward_compatibility &&
-            item.backward_compatibility.toLowerCase().includes(query))
+          (item.backward_compatibility && item.backward_compatibility.toLowerCase().includes(query))
       )
     }
 

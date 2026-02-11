@@ -1,4 +1,5 @@
-0<template>
+0
+<template>
   <ListView
     title="Partners"
     description="Manage available Partners, or add new ones."

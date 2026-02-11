@@ -106,9 +106,7 @@ export const useItemStore = defineStore('item', () => {
     }
   }
 
-  const createItem = async (
-    itemData: StoreItemRequest
-  ): Promise<ItemResource | null> => {
+  const createItem = async (itemData: StoreItemRequest): Promise<ItemResource | null> => {
     loading.value = true
     error.value = null
 

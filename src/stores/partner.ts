@@ -65,36 +65,36 @@ export const usePartnerStore = defineStore('partner', () => {
   const partnersCount = computed(() => partners.value.length)
 
   // Fetch partners by page
-    const fetchPartners = async (
-      page: number = 1,
-      perPage: number = 10
-    ): Promise<PartnerResource[]> => {
-      loading.value = true
-      error.value = null
-  
-      try {
-        const apiClient = createApiClient()
-        const response = await apiClient.partnerIndex(page, perPage)
-  
-        if (response.data && response.data.data) {
-          partners.value = response.data.data
-        } else {
-          partners.value = []
-        }
-  
-        pageLinks.value = response.data?.links ?? null
-        pageMeta.value = response.data?.meta ?? null
-  
-        return partners.value
-      } catch (err: unknown) {
-        ErrorHandler.handleError(err, 'Failed to fetch partners')
-        error.value = 'Failed to fetch partners'
+  const fetchPartners = async (
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<PartnerResource[]> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const apiClient = createApiClient()
+      const response = await apiClient.partnerIndex(page, perPage)
+
+      if (response.data && response.data.data) {
+        partners.value = response.data.data
+      } else {
         partners.value = []
-        throw err
-      } finally {
-        loading.value = false
       }
+
+      pageLinks.value = response.data?.links ?? null
+      pageMeta.value = response.data?.meta ?? null
+
+      return partners.value
+    } catch (err: unknown) {
+      ErrorHandler.handleError(err, 'Failed to fetch partners')
+      error.value = 'Failed to fetch partners'
+      partners.value = []
+      throw err
+    } finally {
+      loading.value = false
     }
+  }
 
   // Fetch all partners
   const fetchAllPartners = async (): Promise<PartnerResource[]> => {
