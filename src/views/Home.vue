@@ -110,6 +110,18 @@
               <ItemIcon />
             </template>
           </NavigationCard>
+
+          <!-- Partners Management Card -->
+          <NavigationCard
+            title="Partners"
+            main-color="blue"
+            button-text="Manage"
+            button-route="/partners"
+          >
+            <template #icon>
+              <PartnerIcon />
+            </template>
+          </NavigationCard>
         </div>
       </div>
 
@@ -183,6 +195,7 @@
     GlobeAltIcon as CountryIcon,
     BookOpenIcon as GlossaryIcon,
     PuzzlePieceIcon as ItemIcon,
+    BuildingLibraryIcon as PartnerIcon,
     CogIcon as ContextIcon,
     FolderIcon as ProjectIcon,
     CpuChipIcon as SystemIcon,

@@ -14,6 +14,8 @@ import Glossary from '@/views/Glossary.vue'
 import GlossaryDetail from '@/views/GlossaryDetail.vue'
 import Items from '@/views/Items.vue'
 import ItemDetail from '@/views/ItemDetail.vue'
+import Partners from '@/views/Partners.vue'
+import PartnerDetail from '@/views/PartnerDetail.vue'
 import Contexts from '@/views/Contexts.vue'
 import ContextDetail from '@/views/ContextDetail.vue'
 import Projects from '@/views/Projects.vue'
@@ -75,6 +77,18 @@ const router = createRouter({
       path: '/items/:id',
       name: 'item-detail',
       component: ItemDetail,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/partners',
+      name: 'partners',
+      component: Partners,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/partners/:id',
+      name: 'partner-detail',
+      component: PartnerDetail,
       meta: { requiresAuth: true },
     },
     {
