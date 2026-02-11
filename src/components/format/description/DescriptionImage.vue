@@ -13,7 +13,7 @@
 
   interface Props {
     imageUrl?: string
-    altText: string | null
+    altText?: string | null
   }
 
   const props = withDefaults(defineProps<Props>(), {

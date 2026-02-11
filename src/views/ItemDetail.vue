@@ -53,8 +53,8 @@
               <DescriptionImage
                 v-for="image in item?.itemImages"
                 :key="image.id"
-                :imageUrl="image.path"
-                :altText="image.alt_text"
+                :image-url="image.path"
+                :alt-text="image.alt_text"
               >
               </DescriptionImage>
             </div>
