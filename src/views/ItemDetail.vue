@@ -47,20 +47,20 @@
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
-          <DescriptionTerm>Type</DescriptionTerm>
+          <DescriptionTerm>Images</DescriptionTerm>
           <DescriptionDetail>
-            <FormInput
-              v-if="mode === 'edit' || mode === 'create'"
-              v-model="editForm.type"
-              type="select"
-              :options="types"
-              placeholder="Select a type"
-              class="mb-2"
-            />
-            <DisplayText v-else>{{ item?.type }}</DisplayText>
+            <div v-if="item?.itemImages">
+              <DescriptionImage
+                v-for="image in item?.itemImages"
+                :key="image.id"
+                :imageUrl="image.path"
+                :altText="image.alt_text"
+              >
+              </DescriptionImage>
+            </div>
+            <DisplayText v-else>No images available for this item.</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-
         <DescriptionRow>
           <DescriptionTerm>Type</DescriptionTerm>
           <DescriptionDetail>
@@ -75,7 +75,34 @@
             <DisplayText v-else>{{ item?.type }}</DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        
+        <DescriptionRow>
+          <DescriptionTerm>Partner</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.partner_id"
+              type="select"
+              :options="partnersList"
+              placeholder="Select a partner"
+              class="mb-2"
+            />
+            <DisplayText v-else>{{ item?.partner }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
+        <DescriptionRow>
+          <DescriptionTerm>Project</DescriptionTerm>
+          <DescriptionDetail>
+            <FormInput
+              v-if="mode === 'edit' || mode === 'create'"
+              v-model="editForm.project_id"
+              type="select"
+              :options="projects"
+              placeholder="Select a project"
+              class="mb-2"
+            />
+            <DisplayText v-else>{{ item?.project }}</DisplayText>
+          </DescriptionDetail>
+        </DescriptionRow>
         <DescriptionRow
           v-if="item?.backward_compatibility || mode === 'edit' || mode === 'create'"
         >
@@ -114,23 +141,28 @@
     StoreItemRequest,
     UpdateItemRequest,
   } from '@metanull/inventory-app-api-client'
-  import { StoreItemRequestTypeEnum } from '@metanull/inventory-app-api-client'
+  import { 
+    StoreItemRequestTypeEnum,
+    StorePartnerRequestTypeEnum, 
+  } from '@metanull/inventory-app-api-client'
   import { useItemStore } from '@/stores/item'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { usePartnerStore } from '@/stores/partner'
+  import { useProjectStore } from '@/stores/project'
   import DetailView from '@/components/layout/detail/DetailView.vue'
   import DescriptionList from '@/components/format/description/DescriptionList.vue'
   import DescriptionRow from '@/components/format/description/DescriptionRow.vue'
   import DescriptionTerm from '@/components/format/description/DescriptionTerm.vue'
   import DescriptionDetail from '@/components/format/description/DescriptionDetail.vue'
+  import DescriptionImage from '@/components/format/description/DescriptionImage.vue'
   import FormInput from '@/components/format/FormInput.vue'
   import DisplayText from '@/components/format/DisplayText.vue'
   import DateDisplay from '@/components/format/Date.vue'
   import { PuzzlePieceIcon as ItemIcon } from '@heroicons/vue/24/solid'
   import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
-import type { Store } from 'pinia'
 
   // Types
   type Mode = 'view' | 'edit' | 'create'
@@ -139,6 +171,8 @@ import type { Store } from 'pinia'
     id: string
     internal_name: string
     type: string
+    partner_id: string
+    project_id: string
     backward_compatibility: string
   }
 
@@ -149,6 +183,8 @@ import type { Store } from 'pinia'
   const cancelChangesStore = useCancelChangesConfirmationStore()
   const deleteConfirmationStore = useDeleteConfirmationStore()
   const errorStore = useErrorDisplayStore()
+  const partnerStore = usePartnerStore()
+  const projectStore = useProjectStore()
 
   // Route params
   const itemId = computed(() => {
@@ -166,8 +202,15 @@ import type { Store } from 'pinia'
 
   // Resource data
   const item = computed(() => itemStore.currentItem)
+  const partnersList = computed(() => partnerStore.allPartners)
+  const projects = computed(() => projectStore.projects)
 
   const types = Object.entries(StoreItemRequestTypeEnum).map(([key, value]) => ({
+    id: key,
+    internal_name: value
+  }))
+
+  const partners = Object.entries(StorePartnerRequestTypeEnum).map(([key, value]) => ({
     id: key,
     internal_name: value
   }))
@@ -177,6 +220,8 @@ import type { Store } from 'pinia'
     id: '',
     internal_name: '',
     type: '',
+    partner_id: '',
+    project_id: '',
     backward_compatibility: '',
   })
 
@@ -218,11 +263,15 @@ import type { Store } from 'pinia'
 
   const enterEditMode = (): void => {
     if (!item.value) return
-    const match = types.find(t => t.internal_name === item.value?.type);
+    const matchType = types.find(t => t.internal_name === item.value?.type);
+    const matchPartner = partners.find(p => p.internal_name === item.value?.partner?.internal_name);
+    const matchProject = projects.value.find(p => p.internal_name === item.value?.project?.internal_name);
     editForm.value = {
       id: item.value.id,
       internal_name: item.value.internal_name,
-      type: match ? match.id : (item.value.type as StoreItemRequestTypeEnum),
+      type: matchType ? matchType.id : (item.value.type as StoreItemRequestTypeEnum),
+      partner_id: matchPartner ? matchPartner.id : (item.value.partner?.id as StorePartnerRequestTypeEnum),
+      project_id: matchProject ? matchProject.id : (item.value.project?.id || ''),
       backward_compatibility: item.value.backward_compatibility || '',
     }
     mode.value = 'edit'
@@ -236,6 +285,8 @@ import type { Store } from 'pinia'
           id: editForm.value.id,
           internal_name: editForm.value.internal_name,
           type: editForm.value.type as StoreItemRequestTypeEnum,
+          partner_id: editForm.value.partner_id as StorePartnerRequestTypeEnum,
+          project_id: editForm.value.project_id,
           backward_compatibility: editForm.value.backward_compatibility || undefined,
         }
         const newItem = await itemStore.createItem(createData)
@@ -309,10 +360,24 @@ import type { Store } from 'pinia'
         id: '',
         internal_name: '',
         type: '',
+        partner_id: '',
+        project_id: '',
         backward_compatibility: '',
       }
     } else {
       await fetchItem()
+    }
+    // Load partners for selection
+    try {
+      await partnerStore.fetchAllPartners()
+    } catch {
+      // swallow - errorStore will display via the partner store error handling
+    }
+    // Load projects for selection 
+    try {
+      await projectStore.fetchAllProjects()
+    } catch {
+      // swallow - errorStore will display via the project store error handling
     }
   })
 
@@ -326,6 +391,8 @@ import type { Store } from 'pinia'
           id: '',
           internal_name: '',
           type: '',
+          partner_id: '',
+          project_id: '',
           backward_compatibility: '',
         }
       } else if (typeof newId === 'string') {
@@ -344,6 +411,8 @@ import type { Store } from 'pinia'
           id: newItem.id,
           internal_name: newItem.internal_name,
           type: newItem.type as StoreItemRequestTypeEnum,
+          partner_id: newItem.partner?.id as StorePartnerRequestTypeEnum,
+          project_id: newItem.project?.id || '',
           backward_compatibility: newItem.backward_compatibility || '',
         }
       }
