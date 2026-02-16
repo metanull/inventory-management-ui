@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { ContextApi, Configuration, type ContextResource } from '@metanull/inventory-app-api-client'
-import { useAuthStore } from './auth'
-import { ErrorHandler } from '@/utils/errorHandler'
+import { computed } from 'vue'
+import { ContextApi, type ContextResource } from '@metanull/inventory-app-api-client'
+import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
 
-// Type definitions for Context API requests based on OpenAPI spec
+// API Request Types
 interface ContextStoreRequest {
   internal_name: string
   backward_compatibility?: string | null
@@ -16,242 +15,142 @@ interface ContextUpdateRequest {
   backward_compatibility?: string | null
   is_default?: boolean
 }
-declare const process: {
-  env: Record<string, string | undefined>
-}
 
 export const useContextStore = defineStore('context', () => {
-  const contexts = ref<ContextResource[]>([])
-  const currentContext = ref<ContextResource | null>(null)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const state = createBaseStoreState<ContextResource>()
 
-  const authStore = useAuthStore()
+  // Mapping generic state to context-specific names
+  const { category: contexts, currentEntry: currentContext, loading, error } = state
+  const getApi = () => new ContextApi(createApiConfig())
 
-  // Create API client instance with configuration
-  const createApiClient = () => {
-    // Support both Vite (import.meta.env) and Node (process.env) for baseURL
-    let baseURL: string
-    if (
-      typeof import.meta !== 'undefined' &&
-      import.meta.env &&
-      import.meta.env.VITE_API_BASE_URL
-    ) {
-      baseURL = import.meta.env.VITE_API_BASE_URL
-    } else if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
-      baseURL = process.env.VITE_API_BASE_URL
-    } else {
-      baseURL = 'http://127.0.0.1:8000/api'
-    }
+  // Computed
+  const defaultContext = computed(() => contexts.value.find(c => c.is_default))
+  const defaultContexts = computed(() => contexts.value.filter(c => c.is_default))
+  const sortedContexts = computed(() =>
+    [...contexts.value].sort((a, b) => a.internal_name.localeCompare(b.internal_name))
+  )
 
-    const configParams: { basePath: string; accessToken?: string } = {
-      basePath: baseURL,
-    }
-
-    if (authStore.token) {
-      configParams.accessToken = authStore.token
-    }
-
-    // Create configuration for the API client
-    const configuration = new Configuration(configParams)
-
-    return new ContextApi(configuration)
-  }
-
-  const defaultContext = computed(() => contexts.value.find(context => context.is_default))
-  const defaultContexts = computed(() => contexts.value.filter(context => context.is_default))
-
-  // Fetch all contexts
+  // Actions
   const fetchContexts = async () => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const apiClient = createApiClient()
-      const response = await apiClient.contextIndex()
-      contexts.value = response.data.data || []
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, 'Failed to fetch contexts')
-      error.value = 'Failed to fetch contexts'
-      throw err
-    } finally {
-      loading.value = false
-    }
+    const res = await useApiCall(
+      'fetchContexts',
+      () => getApi().contextIndex(),
+      loading,
+      error,
+      'Failed to fetch contexts'
+    )
+    contexts.value = res?.data?.data || []
   }
 
-  // Fetch a single context by ID
   const fetchContext = async (id: string) => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const apiClient = createApiClient()
-      const response = await apiClient.contextShow(id)
-      currentContext.value = response.data.data
-      return response.data.data
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, `Failed to fetch context ${id}`)
-      error.value = 'Failed to fetch context'
-      throw err
-    } finally {
-      loading.value = false
-    }
+    state.clearCurrent()
+    const res = await useApiCall(
+      'fetchContext',
+      () => getApi().contextShow(id),
+      loading,
+      error,
+      `Failed to fetch context with ID: ${id}`
+    )
+    if (res?.data?.data) currentContext.value = res.data.data
+    return res?.data?.data
   }
 
-  // Create a new context
-  const createContext = async (contextData: ContextStoreRequest) => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const apiClient = createApiClient()
-      const response = await apiClient.contextStore(contextData)
-      const newContext = response.data.data
-
-      // Add to local contexts array
-      contexts.value.push(newContext)
-
-      return newContext
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, 'Failed to create context')
-      error.value = 'Failed to create context'
-      throw err
-    } finally {
-      loading.value = false
+  const createContext = async (data: ContextStoreRequest) => {
+    const res = await useApiCall(
+      'createContext',
+      () => getApi().contextStore(data),
+      loading,
+      error,
+      'Failed to create context'
+    )
+    if (res?.data?.data) {
+      contexts.value.push(res.data.data)
+      return res.data.data
     }
+    return null
   }
 
-  // Update an existing context
-  const updateContext = async (id: string, contextData: ContextUpdateRequest) => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const apiClient = createApiClient()
-      const response = await apiClient.contextUpdate(id, contextData)
-      const updatedContext = response.data.data
-
-      // Update in local contexts array
-      const index = contexts.value.findIndex(context => context.id === id)
-      if (index !== -1) {
-        contexts.value[index] = updatedContext
-      }
-
-      // Update current context if it matches
-      if (currentContext.value?.id === id) {
-        currentContext.value = updatedContext
-      }
-
-      return updatedContext
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, `Failed to update context ${id}`)
-      error.value = 'Failed to update context'
-      throw err
-    } finally {
-      loading.value = false
+  const updateContext = async (id: string, data: ContextUpdateRequest) => {
+    const res = await useApiCall(
+      'updateContext',
+      () => getApi().contextUpdate(id, data),
+      loading,
+      error,
+      'Failed to update context'
+    )
+    if (res?.data?.data) {
+      const updated = res.data.data
+      const idx = contexts.value.findIndex(c => c.id === id)
+      if (idx !== -1) contexts.value[idx] = updated
+      if (currentContext.value?.id === id) currentContext.value = updated
+      return updated
     }
+    return null
   }
 
-  // Delete a context
   const deleteContext = async (id: string) => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const apiClient = createApiClient()
-      await apiClient.contextDestroy(id)
-
-      // Remove from local contexts array
-      contexts.value = contexts.value.filter(context => context.id !== id)
-
-      // Clear current context if it matches
-      if (currentContext.value?.id === id) {
-        currentContext.value = null
-      }
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, `Failed to delete context ${id}`)
-      error.value = 'Failed to delete context'
-      throw err
-    } finally {
-      loading.value = false
+    const res = await useApiCall(
+      'deleteContext',
+      () => getApi().contextDestroy(id),
+      loading,
+      error,
+      'Failed to delete context'
+    )
+    if (res) {
+      contexts.value = contexts.value.filter(c => c.id !== id)
+      if (currentContext.value?.id === id) state.clearCurrent()
+      return true
     }
+    return false
   }
 
-  // Set a context as default
+  // Context-Specific Actions
   const setDefaultContext = async (id: string, isDefault: boolean) => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const apiClient = createApiClient()
-      const response = await apiClient.contextSetDefault(id, { is_default: isDefault })
-      const updatedContext = response.data.data
-
-      // Update the default status for all contexts
-      contexts.value = contexts.value.map(context => ({
-        ...context,
-        is_default: context.id === id ? isDefault : false,
+    const res = await useApiCall(
+      'setDefaultContext',
+      () => getApi().contextSetDefault(id, { is_default: isDefault }),
+      loading,
+      error,
+      'Failed to set default context'
+    )
+    if (res?.data?.data) {
+      const updated = res.data.data
+      // Sync local state: only one can be default
+      contexts.value = contexts.value.map(c => ({
+        ...c,
+        is_default: c.id === id ? isDefault : false,
       }))
-
-      // Update current context if it matches
-      if (currentContext.value?.id === id) {
-        currentContext.value = updatedContext
-      }
-
-      return updatedContext
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, `Failed to set default context ${id}`)
-      error.value = 'Failed to set default context'
-      throw err
-    } finally {
-      loading.value = false
+      if (currentContext.value?.id === id) currentContext.value = updated
+      return updated
     }
+    return null
   }
 
-  // Get the default context
   const getDefaultContext = async () => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const apiClient = createApiClient()
-      const response = await apiClient.contextGetDefault()
-      const defaultCtx = response.data.data
-
-      // Update the default context in the contexts array if it exists
-      const index = contexts.value.findIndex(context => context.id === defaultCtx.id)
-      if (index !== -1) {
-        contexts.value[index] = defaultCtx
-      } else {
-        // If the default context isn't in our contexts array, add it
-        contexts.value.push(defaultCtx)
-      }
-
+    const res = await useApiCall(
+      'getDefaultContext',
+      () => getApi().contextGetDefault(),
+      loading,
+      error,
+      'Failed to get default context'
+    )
+    if (res?.data?.data) {
+      const defaultCtx = res.data.data
+      const idx = contexts.value.findIndex(c => c.id === defaultCtx.id)
+      if (idx !== -1) contexts.value[idx] = defaultCtx
+      else contexts.value.push(defaultCtx)
       return defaultCtx
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, 'Failed to get default context')
-      error.value = 'Failed to get default context'
-      throw err
-    } finally {
-      loading.value = false
     }
-  }
-
-  const clearError = () => {
-    error.value = null
-  }
-
-  const clearCurrentContext = () => {
-    currentContext.value = null
+    return null
   }
 
   return {
+    ...state,
     contexts,
     currentContext,
-    loading,
-    error,
     defaultContext,
     defaultContexts,
+    sortedContexts,
     fetchContexts,
     fetchContext,
     createContext,
@@ -259,7 +158,7 @@ export const useContextStore = defineStore('context', () => {
     deleteContext,
     setDefaultContext,
     getDefaultContext,
-    clearError,
-    clearCurrentContext,
+    findContextById: (id: string) => contexts.value.find(c => c.id === id),
+    clearCurrentContext: state.clearCurrent,
   }
 })

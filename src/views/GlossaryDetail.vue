@@ -85,7 +85,7 @@
               />
               <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
             </div>
-            <div v-if="spellingMode === 'view' && currentLanguageSpellings.length > 0">
+            <div v-if="currentLanguageSpellings.length > 0">
               <DisplayText>
                 <ul class="mt-4 space-y-2">
                   <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
@@ -112,7 +112,7 @@
                         class="mb-2"
                       />
                       <SaveButton class="mr-2" @click="saveGlossarySpellingEntry"></SaveButton>
-                      <CancelButton @click="spellingMode = 'view'"></CancelButton>
+                      <CancelButton @click="cancel('spelling')"></CancelButton>
                     </div>
                   </li>
                 </ul>
@@ -186,7 +186,7 @@
                 class="mb-2"
               />
               <SaveButton class="mr-2" @click="saveGlossaryTranslation"></SaveButton>
-              <CancelButton @click="translationMode = 'view'"></CancelButton>
+              <CancelButton @click="cancel('translation')"></CancelButton>
             </div>
           </DescriptionDetail>
         </DescriptionRow>
@@ -250,6 +250,7 @@
   type SpellingMode = 'view' | 'edit' | 'create'
   type LanguageMode = 'view' | 'create'
   type TranslationMode = 'view' | 'edit' | 'create'
+  type Clear = 'glossary' | 'language' | 'spelling' | 'translation' | 'all'
 
   interface GlossaryFormData {
     id: string
@@ -313,7 +314,7 @@
   }
 
   // Resource data
-  const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
+  const glossaryEntry = computed(() => glossaryStore.currentEntry)
   const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
   const glossaryTranslationEntry = computed(
     () => glossaryTranslationStore.currentGlossaryTranslationEntry
@@ -760,12 +761,43 @@
     } else if (mode.value === 'create') {
       router.push('/glossary')
     } else {
-      mode.value = 'view'
-      languageMode.value = 'view'
-      spellingMode.value = 'view'
-      translationMode.value = 'view'
-      newLanguage.value = { id: '', internal_name: '' }
-      currentLanguage.value = { id: '', internal_name: '' }
+      cancel('all')
+    }
+  }
+
+  const cancel = (target: Clear) => {
+    switch (target) {
+      case 'language':
+        languageMode.value = 'view'
+        newLanguage.value = { id: '', internal_name: '' }
+        currentLanguage.value = { id: '', internal_name: '' }
+        break
+
+      case 'spelling':
+        spellingMode.value = 'view'
+        glossarySpellingStore.clearCurrentGlossarySpellingEntry()
+        break
+
+      case 'translation':
+        translationMode.value = 'view'
+        glossaryTranslationStore.clearCurrentGlossaryTranslationEntry()
+        break
+
+      case 'glossary':
+        mode.value = 'view'
+        break
+
+      case 'all':
+        mode.value = 'view'
+        languageMode.value = 'view'
+        spellingMode.value = 'view'
+        translationMode.value = 'view'
+        newLanguage.value = { id: '', internal_name: '' }
+        currentLanguage.value = { id: '', internal_name: '' }
+        break
+
+      default:
+        console.warn(`"${target}" is not a valid option to reset.`)
     }
   }
 

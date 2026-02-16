@@ -22,7 +22,8 @@
     },
     "types": [
       "vite/client",
-      "vitest/globals"
+      "vitest/globals",
+      "node"
     ],
     "strict": true,
     "noUnusedLocals": true,

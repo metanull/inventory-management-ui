@@ -116,7 +116,7 @@
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   // Computed
-  const glossary = computed(() => glossaryStore.glossary)
+  const glossary = computed(() => glossaryStore.category)
   const filteredGlossary = computed(() => {
     let filtered = [...glossary.value]
 

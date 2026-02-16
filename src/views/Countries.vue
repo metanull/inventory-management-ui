@@ -116,7 +116,7 @@
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   // Computed
-  const countries = computed(() => countryStore.countries)
+  const countries = computed(() => countryStore.category)
 
   const filteredCountries = computed(() => {
     let filtered = [...countries.value]
