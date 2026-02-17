@@ -6,13 +6,15 @@ import {
   type StoreGlossaryTranslationRequest,
   type UpdateGlossaryTranslationRequest,
 } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 export const useGlossaryTranslationStore = defineStore('glossaryTranslation', () => {
-  const state = createBaseStoreState<GlossaryTranslationResource>()
+  const state = createPaginatedStoreState<GlossaryTranslationResource>()
   const {
     category: glossaryTranslations,
     currentEntry: currentGlossaryTranslationEntry,
+    pageLinks,
+    pageMeta,
     loading,
     error,
   } = state
@@ -22,15 +24,20 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
   const getApi = () => new GlossaryTranslationApi(createApiConfig())
 
   // Actions
-  const fetchGlossaryTranslations = async () => {
+  const fetchGlossaryTranslations = async (page: number = 1, perPage: number = 10) => {
     const res = await useApiCall(
       'fetchGlossaryTranslations',
-      () => getApi().glossaryTranslationIndex(),
+      () => getApi().glossaryTranslationIndex(page, perPage),
       loading,
       error,
       'Failed to fetch glossary translations'
     )
-    glossaryTranslations.value = res?.data?.data || []
+    if (res?.data) {
+      glossaryTranslations.value = res.data.data || []
+      pageLinks.value = res.data.links || null
+      pageMeta.value = res.data.meta || null
+    }
+    return glossaryTranslations.value
   }
 
   const fetchGlossaryTranslationEntry = async (id: string) => {

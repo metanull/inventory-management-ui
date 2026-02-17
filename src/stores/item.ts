@@ -1,29 +1,34 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import {
   ItemApi,
   type ItemResource,
   type StoreItemRequest,
   type UpdateItemRequest,
 } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 export const useItemStore = defineStore('item', () => {
-  const state = createBaseStoreState<ItemResource>()
-  const { category: items, currentEntry: currentItem, loading, error } = state
+  const state = createPaginatedStoreState<ItemResource>()
+  const { category: items, currentEntry: currentItem, pageLinks, pageMeta, loading, error } = state
 
   const getApi = () => new ItemApi(createApiConfig())
 
   // Actions
-  const fetchItems = async () => {
+  const fetchItems = async (page: number = 1, perPage: number = 10) => {
     const res = await useApiCall(
       'fetchItems',
-      () => getApi().itemIndex(),
+      () => getApi().itemIndex(page, perPage),
       loading,
       error,
       'Failed to fetch items'
     )
-    items.value = res?.data?.data || []
+    if (res?.data) {
+      items.value = res.data.data || []
+      pageLinks.value = res.data.links || null
+      pageMeta.value = res.data.meta || null
+    }
+    return items.value
   }
 
   const fetchItem = async (id: string, include?: string) => {
@@ -83,13 +88,15 @@ export const useItemStore = defineStore('item', () => {
 
   return {
     ...state,
+    pageLinks,
+    pageMeta,
 
     // Computed
     sortedItems: computed(() =>
       [...items.value].sort((a, b) => a.internal_name.localeCompare(b.internal_name))
     ),
     itemsCount: computed(() => items.value.length),
-    
+
     // Actions
     fetchItems,
     fetchItem,

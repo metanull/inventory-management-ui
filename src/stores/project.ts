@@ -6,18 +6,15 @@ import {
   type StoreProjectRequest,
   type UpdateProjectRequest,
 } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
-import { type PageLinks, type PageMeta } from '@/composables/usePagination'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 export const useProjectStore = defineStore('project', () => {
-  const state = createBaseStoreState<ProjectResource>()
-  const { category: projects, currentEntry: currentProject, loading, error } = state
+  const state = createPaginatedStoreState<ProjectResource>()
+  const { category: projects, currentEntry: currentProject, pageLinks, pageMeta, loading, error } = state
 
   // Project-specific state
   const allProjects = ref<ProjectResource[]>([])
   const visibleProjects = ref<ProjectResource[]>([])
-  const pageLinks = ref<PageLinks | null>(null)
-  const pageMeta = ref<PageMeta | null>(null)
 
   const getApi = () => new ProjectApi(createApiConfig())
 

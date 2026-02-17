@@ -6,7 +6,7 @@ import {
   type StoreGlossaryRequest,
   type UpdateGlossaryRequest,
 } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 // Declare process for Node.js environments
 declare const process: {
@@ -14,19 +14,24 @@ declare const process: {
 }
 
 export const useGlossaryStore = defineStore('glossary', () => {
-  const state = createBaseStoreState<GlossaryResource>()
-  const { category: glossary, currentEntry: currentGlossaryEntry, loading, error } = state
+  const state = createPaginatedStoreState<GlossaryResource>()
+  const { category: glossary, currentEntry: currentGlossaryEntry, pageLinks, pageMeta, loading, error } = state
   const getApi = () => new GlossaryApi(createApiConfig())
 
-  const fetchGlossary = async () => {
+  const fetchGlossary = async (page: number = 1, perPage: number = 10) => {
     const res = await useApiCall(
       'fetchGlossary',
-      () => getApi().glossaryIndex(),
+      () => getApi().glossaryIndex(page, perPage),
       loading,
       error,
       'Failed to fetch glossary'
     )
-    glossary.value = res?.data?.data || []
+    if (res?.data) {
+      glossary.value = res.data.data || []
+      pageLinks.value = res.data.links || null
+      pageMeta.value = res.data.meta || null
+    }
+    return glossary.value
   }
 
   const fetchGlossaryEntry = async (id: string, include?: string) => {

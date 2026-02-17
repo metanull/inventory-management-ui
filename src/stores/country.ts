@@ -6,23 +6,28 @@ import {
   type StoreCountryRequest,
   type UpdateCountryRequest,
 } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 export const useCountryStore = defineStore('country', () => {
-  const state = createBaseStoreState<CountryResource>()
-  const { category: countries, currentEntry: currentCountry, loading, error } = state
+  const state = createPaginatedStoreState<CountryResource>()
+  const { category: countries, currentEntry: currentCountry, pageLinks, pageMeta, loading, error } = state
   const getApi = () => new CountryApi(createApiConfig())
 
   // Actions
-  const fetchCountries = async () => {
+  const fetchCountries = async (page: number = 1, perPage: number = 10) => {
     const res = await useApiCall(
       'fetchCountries',
-      () => getApi().countryIndex(),
+      () => getApi().countryIndex(page, perPage),
       loading,
       error,
       'Failed to fetch countries'
     )
-    countries.value = res?.data?.data || []
+    if (res?.data) {
+      countries.value = res.data.data || []
+      pageLinks.value = res.data.links || null
+      pageMeta.value = res.data.meta || null
+    }
+    return countries.value
   }
 
   const fetchCountry = async (id: string) => {

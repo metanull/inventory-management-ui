@@ -43,13 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     // Clear local state
-    await useApiCall(
-      'logout',
-      () => getApi().tokenWipe(),
-      loading,
-      error,
-      'Logout error'
-    )
+    await useApiCall('logout', () => getApi().tokenWipe(), loading, error, 'Logout error')
 
     token.value = null
     localStorage.removeItem('auth_token')
@@ -62,6 +56,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     login,
     logout,
-    clearError: () => { error.value = null }
+    clearError: () => {
+      error.value = null
+    },
   }
 })

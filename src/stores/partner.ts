@@ -6,17 +6,14 @@ import {
   type StorePartnerRequest,
   type UpdatePartnerRequest,
 } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
-import { type PageLinks, type PageMeta } from '@/composables/usePagination'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 export const usePartnerStore = defineStore('partner', () => {
-  const state = createBaseStoreState<PartnerResource>()
-  const { category: partners, currentEntry: currentPartner, loading, error } = state
+  const state = createPaginatedStoreState<PartnerResource>()
+  const { category: partners, currentEntry: currentPartner, pageLinks, pageMeta, loading, error } = state
 
   // Additional Partner-specific state
   const allPartners = ref<PartnerResource[]>([])
-  const pageLinks = ref<PageLinks | null>(null)
-  const pageMeta = ref<PageMeta | null>(null)
 
   const getApi = () => new PartnerApi(createApiConfig())
 
@@ -28,7 +25,10 @@ export const usePartnerStore = defineStore('partner', () => {
   const partnersCount = computed(() => partners.value.length)
 
   // Actions
-  const fetchPartners = async (page: number = 1, perPage: number = 10): Promise<PartnerResource[]> => {
+  const fetchPartners = async (
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<PartnerResource[]> => {
     const res = await useApiCall(
       'fetchPartners',
       () => getApi().partnerIndex(page, perPage),
@@ -107,7 +107,10 @@ export const usePartnerStore = defineStore('partner', () => {
     return res?.data?.data || null
   }
 
-  const updatePartner = async (id: string, data: UpdatePartnerRequest): Promise<PartnerResource | null> => {
+  const updatePartner = async (
+    id: string,
+    data: UpdatePartnerRequest
+  ): Promise<PartnerResource | null> => {
     const res = await useApiCall(
       'updatePartner',
       () => getApi().partnerUpdate(id, data),

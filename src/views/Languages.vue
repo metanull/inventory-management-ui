@@ -7,22 +7,21 @@
     color="purple"
     :is-empty="filteredLanguages.length === 0"
     empty-title="No languages found"
-    :empty-message="
-      filterMode === 'all'
-        ? 'Get started by creating a new language.'
-        : filterMode === 'default'
-          ? 'No default languages found. Mark a language as default to make it the fallback choice.'
-          : `No ${filterMode} languages found.`
-    "
+    :empty-message="emptyMessage"
     :show-empty-add-button="filterMode === 'all'"
     empty-add-button-label="New Language"
     @retry="fetchLanguages"
+    :links="links"
+    :meta="meta"
+    :per-page="currentPerPage"
+    @change-page-number="handlePageChange"
+    @per-page-change="handlePerPageChange"
+    @change-page="handleUrlChange"
   >
-    <!-- Icon -->
     <template #icon>
       <LanguageIcon />
     </template>
-    <!-- Filter Buttons -->
+
     <template #filters>
       <FilterButton
         label="All Languages"
@@ -40,12 +39,10 @@
       />
     </template>
 
-    <!-- Search Slot -->
     <template #search>
       <SearchControl v-model="searchQuery" placeholder="Search languages..." />
     </template>
 
-    <!-- Languages Table -->
     <template #headers>
       <TableRow>
         <TableHeader
@@ -82,7 +79,7 @@
         v-for="language in filteredLanguages"
         :key="language.id"
         class="cursor-pointer hover:bg-purple-50 transition"
-        @click="openLanguageDetail(language.id)"
+        @click="router.push(`/languages/${language.id}`)"
       >
         <TableCell>
           <InternalName
@@ -119,66 +116,65 @@
       </TableRow>
     </template>
   </ListView>
-  <PageNavigation
-    v-if="links && meta"
-    v-model:per-page="currentPerPage"
-    :links="links"
-    :meta="meta"
-    @change-page-number="handlePageChange"
-    @per-page-change="handlePerPageChange"
-    @change-page="handleUrlChange"
-  />
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, watch, onMounted } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
+  import { ref, computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { storeToRefs } from 'pinia'
+
+  // Stores
   import { useLanguageStore } from '@/stores/language'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
-  import type { LanguageResource } from '@metanull/inventory-app-api-client'
+
+  // Composables
+  import { useRoutePagination } from '@/composables/useRoutePagination'
+
+  // Components
+  import ListView from '@/components/layout/list/ListView.vue'
+  import FilterButton from '@/components/layout/list/FilterButton.vue'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
+  import TableHeader from '@/components/format/table/TableHeader.vue'
+  import TableRow from '@/components/format/table/TableRow.vue'
+  import TableCell from '@/components/format/table/TableCell.vue'
   import ViewButton from '@/components/layout/list/ViewButton.vue'
   import EditButton from '@/components/layout/list/EditButton.vue'
   import DeleteButton from '@/components/layout/list/DeleteButton.vue'
   import DateDisplay from '@/components/format/Date.vue'
-  import FilterButton from '@/components/layout/list/FilterButton.vue'
-  import ListView from '@/components/layout/list/ListView.vue'
-  import TableHeader from '@/components/format/table/TableHeader.vue'
-  import TableRow from '@/components/format/table/TableRow.vue'
-  import TableCell from '@/components/format/table/TableCell.vue'
   import Toggle from '@/components/format/Toggle.vue'
   import InternalName from '@/components/format/InternalName.vue'
-  import PageNavigation from '@/components/format/PageNavigation.vue'
   import { LanguageIcon } from '@heroicons/vue/24/solid'
-  import SearchControl from '@/components/layout/list/SearchControl.vue'
 
-  const route = useRoute()
   const router = useRouter()
-
   const languageStore = useLanguageStore()
   const loadingStore = useLoadingOverlayStore()
   const errorStore = useErrorDisplayStore()
   const deleteStore = useDeleteConfirmationStore()
 
-  const languages = computed(() => languageStore.category)
-  const defaultLanguages = computed(() => languageStore.defaultLanguages)
-  const links = computed(() => languageStore.pageLinks)
-  const meta = computed(() => languageStore.pageMeta)
-  const currentPage = computed(() => Number(route.query.page) || 1)
-  const currentPerPage = computed(() => Number(route.query.perPage) || 10)
+  const {
+    category: languages,
+    defaultLanguages,
+    pageLinks: links,
+    pageMeta: meta,
+  } = storeToRefs(languageStore)
 
-  // Filter state - default to 'all'
+  const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
+    languageStore.fetchLanguages
+  )
+
   const filterMode = ref<'all' | 'default'>('all')
-
-  // Sorting state
   const sortKey = ref<string>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
-
-  // Search state
   const searchQuery = ref<string>('')
 
-  // Handle sort event from TableHeader
+  const emptyMessage = computed(() => {
+    if (filterMode.value === 'all') return 'Get started by creating a new language.'
+    if (filterMode.value === 'default') return 'No default languages found.'
+    return `No ${filterMode.value} languages found.`
+  })
+
   function handleSort(key: string) {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
@@ -188,164 +184,57 @@
     }
   }
 
-  // Computed filtered and sorted languages
   const filteredLanguages = computed(() => {
-    let list: LanguageResource[]
-    switch (filterMode.value) {
-      case 'default':
-        list = defaultLanguages.value
-        break
-      default:
-        list = languages.value
-    }
-    // Search filter
+    let list = filterMode.value === 'default' ? defaultLanguages.value : languages.value
+
     const query = searchQuery.value.trim().toLowerCase()
-    if (query.length > 0) {
-      list = list.filter(language => {
-        const name = language.internal_name?.toLowerCase() ?? ''
-        const compat = language.backward_compatibility?.toLowerCase() ?? ''
-        return name.includes(query) || compat.includes(query)
-      })
+    if (query) {
+      list = list.filter(
+        l =>
+          l.internal_name?.toLowerCase().includes(query) ||
+          l.backward_compatibility?.toLowerCase().includes(query)
+      )
     }
-    // Simple sorting logic
-    return [...list].sort((a, b) => {
-      const key = sortKey.value
-      let valA: unknown
-      let valB: unknown
-      if (key === 'internal_name') {
-        valA = a.internal_name ?? ''
-        valB = b.internal_name ?? ''
-      } else {
-        valA = (a as any)[key]
-        valB = (b as any)[key]
-      }
-      if (valA == null && valB == null) return 0
-      if (valA == null) return 1
-      if (valB == null) return -1
-      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
-      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
-      return 0
+
+    return [...list].sort((a: any, b: any) => {
+      const valA = a[sortKey.value] ?? ''
+      const valB = b[sortKey.value] ?? ''
+      const modifier = sortDirection.value === 'asc' ? 1 : -1
+      return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
     })
   })
 
-  // Fetch languages on mount
-  onMounted(async () => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (languages.value && languages.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch languages. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
-  })
-
-  // Open LanguageDetail for clicked language
-  function openLanguageDetail(languageId: string | number) {
-    router.push(`/languages/${languageId}`)
-  }
-
-  // Update language status
-  const updateLanguageStatus = async (
-    language: LanguageResource,
-    field: string,
-    value: boolean
-  ) => {
+  const updateLanguageStatus = async (language: any, field: string, value: boolean) => {
     try {
       loadingStore.show('Updating...')
       if (field === 'is_default') {
         await languageStore.setDefaultLanguage(language.id, value)
-        errorStore.addMessage(
-          'info',
-          `Language ${value ? 'set as default' : 'removed from default'} successfully.`
-        )
+        errorStore.addMessage('info', 'Status updated.')
       }
     } catch {
-      errorStore.addMessage('error', `Failed to update language status. Please try again.`)
+      errorStore.addMessage('error', 'Update failed.')
     } finally {
       loadingStore.hide()
     }
   }
 
-  // Fetch languages function for retry
-  const fetchLanguages = async (page = languageStore.pageMeta?.current_page || 1) => {
-    try {
-      loadingStore.show()
-      await languageStore.fetchLanguages(page)
-      errorStore.addMessage('info', 'Languages refreshed successfully.')
-    } catch {
-      errorStore.addMessage('error', 'Failed to refresh languages. Please try again.')
-    } finally {
-      loadingStore.hide()
-    }
-  }
-
-  // Delete language with confirmation
-  const handleDeleteLanguage = async (languageToDelete: LanguageResource) => {
+  const handleDeleteLanguage = async (language: any) => {
     const result = await deleteStore.trigger(
       'Delete Language',
-      `Are you sure you want to delete "${languageToDelete.internal_name}"? This action cannot be undone.`
+      `Delete "${language.internal_name}"?`
     )
-
     if (result === 'delete') {
       try {
         loadingStore.show('Deleting...')
-        await languageStore.deleteLanguage(languageToDelete.id)
-        errorStore.addMessage('info', 'Language deleted successfully.')
+        await languageStore.deleteLanguage(language.id)
+        errorStore.addMessage('info', 'Deleted successfully.')
       } catch {
-        errorStore.addMessage('error', 'Failed to delete language. Please try again.')
+        errorStore.addMessage('error', 'Delete failed.')
       } finally {
         loadingStore.hide()
       }
     }
   }
 
-  const handlePageChange = (page: number) => {
-    router.push({ query: { ...route.query, page } })
-  }
-
-  const handlePerPageChange = (perPage: number) => {
-    router.push({ query: { ...route.query, page: 1, perPage } })
-  }
-
-  const handleUrlChange = (url: string | null) => {
-    if (!url) return
-    const urlParams = new URL(url, window.location.origin).searchParams
-    const page = urlParams.get('page')
-    if (page) handlePageChange(Number(page))
-  }
-
-  watch(
-    () => [route.query.page, route.query.perPage],
-    () => {
-      languageStore.fetchLanguages(currentPage.value, currentPerPage.value)
-    },
-    { immediate: true }
-  )
-
-  // Expose properties for testing
-  defineExpose({
-    languages,
-    filteredLanguages,
-    defaultLanguages,
-    filterMode,
-    searchQuery,
-    sortKey,
-    sortDirection,
-    openLanguageDetail,
-    updateLanguageStatus,
-    handleDeleteLanguage,
-    handleSort,
-    fetchLanguages,
-  })
+  const fetchLanguages = () => languageStore.fetchLanguages(meta.value?.current_page || 1)
 </script>

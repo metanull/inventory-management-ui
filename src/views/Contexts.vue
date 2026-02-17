@@ -7,22 +7,21 @@
     color="green"
     :is-empty="filteredContexts.length === 0"
     empty-title="No contexts found"
-    :empty-message="
-      filterMode === 'all'
-        ? 'Get started by creating a new context.'
-        : filterMode === 'default'
-          ? 'No default context found. Please set a context as default.'
-          : `No ${filterMode} contexts found.`
-    "
+    :empty-message="emptyMessage"
     :show-empty-add-button="filterMode === 'all'"
     empty-add-button-label="New Context"
     @retry="fetchContexts"
+    :links="links"
+    :meta="meta"
+    :per-page="currentPerPage"
+    @change-page-number="handlePageChange"
+    @per-page-change="handlePerPageChange"
+    @change-page="handleUrlChange"
   >
-    <!-- Icon -->
     <template #icon>
       <ContextIcon />
     </template>
-    <!-- Filter Buttons -->
+
     <template #filters>
       <FilterButton
         label="All Contexts"
@@ -40,12 +39,10 @@
       />
     </template>
 
-    <!-- Search Slot -->
     <template #search>
       <SearchControl v-model="searchQuery" placeholder="Search contexts..." />
     </template>
 
-    <!-- Contexts Table -->
     <template #headers>
       <TableRow>
         <TableHeader
@@ -82,7 +79,7 @@
         v-for="context in filteredContexts"
         :key="context.id"
         class="cursor-pointer hover:bg-green-50 transition"
-        @click="openContextDetail(context.id)"
+        @click="router.push(`/contexts/${context.id}`)"
       >
         <TableCell>
           <InternalName
@@ -107,13 +104,13 @@
           </div>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay :date="context.created_at" />
+          <DateDisplay :date="context.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
           <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/contexts/${context.id}`)" />
-            <EditButton @click="router.push(`/contexts/${context.id}?mode=edit`)" />
-            <DeleteButton @click="handleDelete(context.id)" />
+            <EditButton @click="router.push(`/contexts/${context.id}?edit=true`)" />
+            <DeleteButton @click="handleDelete(context)" />
           </div>
         </TableCell>
       </TableRow>
@@ -122,176 +119,123 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { useContextStore } from '@/stores/context'
-  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-  import { useErrorDisplayStore } from '@/stores/errorDisplay'
-  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
-  import ViewButton from '@/components/layout/list/ViewButton.vue'
-  import EditButton from '@/components/layout/list/EditButton.vue'
-  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
-  import DateDisplay from '@/components/format/Date.vue'
-  import FilterButton from '@/components/layout/list/FilterButton.vue'
-  import ListView from '@/components/layout/list/ListView.vue'
-  import TableHeader from '@/components/format/table/TableHeader.vue'
-  import TableRow from '@/components/format/table/TableRow.vue'
-  import TableCell from '@/components/format/table/TableCell.vue'
-  import Toggle from '@/components/format/Toggle.vue'
-  import InternalName from '@/components/format/InternalName.vue'
-  import { CogIcon as ContextIcon } from '@heroicons/vue/24/solid'
-  import SearchControl from '@/components/layout/list/SearchControl.vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
-  const router = useRouter()
+// Stores
+import { useContextStore } from '@/stores/context'
+import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+import { useErrorDisplayStore } from '@/stores/errorDisplay'
+import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
 
-  const contextStore = useContextStore()
-  const loadingStore = useLoadingOverlayStore()
-  const errorStore = useErrorDisplayStore()
-  const deleteStore = useDeleteConfirmationStore()
+// Composables
+import { useRoutePagination } from '@/composables/useRoutePagination'
 
-  // Reactive state
-  const filterMode = ref<'all' | 'default'>('all')
-  const searchQuery = ref('')
-  const sortKey = ref<string>('internal_name')
-  const sortDirection = ref<'asc' | 'desc'>('asc')
+// Components
+import ListView from '@/components/layout/list/ListView.vue'
+import FilterButton from '@/components/layout/list/FilterButton.vue'
+import SearchControl from '@/components/layout/list/SearchControl.vue'
+import TableHeader from '@/components/format/table/TableHeader.vue'
+import TableRow from '@/components/format/table/TableRow.vue'
+import TableCell from '@/components/format/table/TableCell.vue'
+import ViewButton from '@/components/layout/list/ViewButton.vue'
+import EditButton from '@/components/layout/list/EditButton.vue'
+import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+import DateDisplay from '@/components/format/Date.vue'
+import Toggle from '@/components/format/Toggle.vue'
+import InternalName from '@/components/format/InternalName.vue'
+import { CogIcon as ContextIcon } from '@heroicons/vue/24/solid'
 
-  // Computed properties for sorting and filtering
-  const contexts = computed(() => contextStore.contexts || [])
+const router = useRouter()
+const contextStore = useContextStore()
+const loadingStore = useLoadingOverlayStore()
+const errorStore = useErrorDisplayStore()
+const deleteStore = useDeleteConfirmationStore()
 
-  const defaultContexts = computed(() => contexts.value.filter(context => context.is_default))
+const {
+  contexts,
+  defaultContexts,
+  pageLinks: links,
+  pageMeta: meta,
+} = storeToRefs(contextStore)
 
-  const filteredContexts = computed(() => {
-    let filtered = contexts.value
+const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
+  contextStore.fetchContexts
+)
 
-    // Apply filter mode
-    if (filterMode.value === 'default') {
-      filtered = filtered.filter(context => context.is_default)
-    }
+// Reactive state
+const filterMode = ref<'all' | 'default'>('all')
+const sortKey = ref<string>('internal_name')
+const sortDirection = ref<'asc' | 'desc'>('asc')
+const searchQuery = ref<string>('')
 
-    // Apply search
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.toLowerCase()
-      filtered = filtered.filter(
-        context =>
-          context.internal_name.toLowerCase().includes(query) ||
-          (context.backward_compatibility &&
-            context.backward_compatibility.toLowerCase().includes(query))
-      )
-    }
+const emptyMessage = computed(() => {
+  if (filterMode.value === 'all') return 'Get started by creating a new context.'
+  if (filterMode.value === 'default') return 'No default context found.'
+  return `No ${filterMode.value} contexts found.`
+})
 
-    // Apply sorting
-    return filtered.sort((a, b) => {
-      let aValue: unknown = a[sortKey.value as keyof typeof a]
-      let bValue: unknown = b[sortKey.value as keyof typeof b]
-
-      // Handle different data types
-      if (sortKey.value === 'created_at') {
-        aValue = new Date(aValue as string).getTime()
-        bValue = new Date(bValue as string).getTime()
-      } else if (typeof aValue === 'boolean') {
-        aValue = aValue ? 1 : 0
-        bValue = bValue ? 1 : 0
-      } else if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase()
-        bValue = (bValue as string).toLowerCase()
-      }
-
-      if ((aValue as number) < (bValue as number)) return sortDirection.value === 'asc' ? -1 : 1
-      if ((aValue as number) > (bValue as number)) return sortDirection.value === 'asc' ? 1 : -1
-      return 0
-    })
-  })
-
-  // Sort handler
-  const handleSort = (key: string) => {
-    if (sortKey.value === key) {
-      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    } else {
-      sortKey.value = key
-      sortDirection.value = 'asc'
-    }
+function handleSort(key: string) {
+  if (sortKey.value === key) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortDirection.value = 'asc'
   }
+}
 
-  // Navigation handler
-  const openContextDetail = (contextId: string) => {
-    router.push(`/contexts/${contextId}`)
-  }
+const filteredContexts = computed(() => {
+  let list = filterMode.value === 'default' ? defaultContexts.value : contexts.value
 
-  // Toggle default status
-  const updateContextStatus = async (context: any, field: string, value: boolean) => {
-    if (field === 'is_default') {
-      try {
-        loadingStore.show('Updating...')
-        await contextStore.setDefaultContext(context.id, value)
-        errorStore.addMessage(
-          'info',
-          `Context ${value ? 'set as' : 'removed as'} default successfully.`
-        )
-      } catch {
-        errorStore.addMessage('error', 'Failed to update context default status. Please try again.')
-      } finally {
-        loadingStore.hide()
-      }
-    }
-  }
-
-  // Delete handler
-  const handleDelete = async (contextId: string) => {
-    const context = contexts.value.find(c => c.id === contextId)
-    if (!context) return
-
-    const result = await deleteStore.trigger(
-      'Delete Context',
-      `Are you sure you want to delete "${context.internal_name}"? This action cannot be undone.`
+  const query = searchQuery.value.trim().toLowerCase()
+  if (query) {
+    list = list.filter(
+      c =>
+        c.internal_name?.toLowerCase().includes(query) ||
+        c.backward_compatibility?.toLowerCase().includes(query)
     )
-
-    if (result === 'delete') {
-      try {
-        loadingStore.show('Deleting...')
-        await contextStore.deleteContext(contextId)
-        errorStore.addMessage('info', 'Context deleted successfully.')
-      } catch {
-        errorStore.addMessage('error', 'Failed to delete context. Please try again.')
-      } finally {
-        loadingStore.hide()
-      }
-    }
   }
 
-  // Fetch contexts function for retry
-  const fetchContexts = async () => {
+  return [...list].sort((a: any, b: any) => {
+    const valA = a[sortKey.value] ?? ''
+    const valB = b[sortKey.value] ?? ''
+    const modifier = sortDirection.value === 'asc' ? 1 : -1
+    return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
+  })
+})
+
+const updateContextStatus = async (context: any, field: string, value: boolean) => {
+  try {
+    loadingStore.show('Updating...')
+    if (field === 'is_default') {
+      await contextStore.setDefaultContext(context.id, value)
+      errorStore.addMessage('info', 'Status updated.')
+    }
+  } catch {
+    errorStore.addMessage('error', 'Update failed.')
+  } finally {
+    loadingStore.hide()
+  }
+}
+
+const handleDelete = async (context: any) => {
+  const result = await deleteStore.trigger(
+    'Delete Context',
+    `Delete "${context.internal_name}"?`
+  )
+  if (result === 'delete') {
     try {
-      loadingStore.show()
-      await contextStore.fetchContexts()
-      errorStore.addMessage('info', 'Contexts refreshed successfully.')
+      loadingStore.show('Deleting...')
+      await contextStore.deleteContext(context.id)
+      errorStore.addMessage('info', 'Deleted successfully.')
     } catch {
-      errorStore.addMessage('error', 'Failed to refresh contexts. Please try again.')
+      errorStore.addMessage('error', 'Delete failed.')
     } finally {
       loadingStore.hide()
     }
   }
+}
 
-  // Fetch contexts on mount
-  onMounted(async () => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (contexts.value && contexts.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      // Always refresh in background
-      await contextStore.fetchContexts()
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch contexts. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
-  })
+const fetchContexts = () => contextStore.fetchContexts(meta.value?.current_page || 1)
 </script>

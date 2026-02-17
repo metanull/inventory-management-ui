@@ -2,6 +2,7 @@ import { Configuration } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from '@/stores/auth'
 import { ErrorHandler } from '@/utils/errorHandler'
 import { ref } from 'vue'
+import { type PageLinks, type PageMeta } from '@/composables/usePagination'
 
 export const getBaseUrl = (): string => {
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) {
@@ -55,4 +56,12 @@ export function createBaseStoreState<T extends { id: string }>() {
   }
 
   return { category, currentEntry, loading, error, clearError, clearCurrent }
+}
+
+export function createPaginatedStoreState<T extends { id: string }>() {
+  return {
+    ...createBaseStoreState<T>(),
+    pageLinks: ref<PageLinks | null>(null),
+    pageMeta: ref<PageMeta | null>(null),
+  }
 }

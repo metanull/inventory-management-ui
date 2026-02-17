@@ -7,26 +7,25 @@
     color="blue"
     :is-empty="filteredItems.length === 0"
     empty-title="No items found"
-    :empty-message="
-      searchQuery.length > 0
-        ? `No items match your search: '${searchQuery}'`
-        : 'Get started by creating a new item.'
-    "
+    :empty-message="emptyMessage"
     :show-empty-add-button="searchQuery.length === 0"
     empty-add-button-label="New Item"
     @retry="fetchItems"
+    :links="links"
+    :meta="meta"
+    :per-page="currentPerPage"
+    @change-page-number="handlePageChange"
+    @per-page-change="handlePerPageChange"
+    @change-page="handleUrlChange"
   >
-    <!-- Icon -->
     <template #icon>
       <ItemIcon />
     </template>
 
-    <!-- Search Slot -->
     <template #search>
       <SearchControl v-model="searchQuery" placeholder="Search items..." />
     </template>
 
-    <!-- Items Table Headers -->
     <template #headers>
       <TableRow>
         <TableHeader
@@ -50,13 +49,12 @@
       </TableRow>
     </template>
 
-    <!-- Items Table Rows -->
     <template #rows>
       <TableRow
         v-for="item in filteredItems"
         :key="item.id"
         class="cursor-pointer hover:bg-blue-50 transition"
-        @click="openItemDetail(item.id)"
+        @click="router.push(`/items/${item.id}`)"
       >
         <TableCell>
           <InternalName
@@ -70,7 +68,7 @@
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay :date="item.created_at" />
+          <DateDisplay :date="item.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
           <div class="flex space-x-2" @click.stop>
@@ -85,151 +83,105 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  import type { ItemResource } from '@metanull/inventory-app-api-client'
-  import { useItemStore } from '@/stores/item'
-  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-  import { useErrorDisplayStore } from '@/stores/errorDisplay'
-  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
-  import ListView from '@/components/layout/list/ListView.vue'
-  import TableRow from '@/components/format/table/TableRow.vue'
-  import TableHeader from '@/components/format/table/TableHeader.vue'
-  import TableCell from '@/components/format/table/TableCell.vue'
-  import SearchControl from '@/components/layout/list/SearchControl.vue'
-  import InternalName from '@/components/format/InternalName.vue'
-  import DateDisplay from '@/components/format/Date.vue'
-  import ViewButton from '@/components/layout/list/ViewButton.vue'
-  import EditButton from '@/components/layout/list/EditButton.vue'
-  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
-  import { PuzzlePieceIcon as ItemIcon } from '@heroicons/vue/24/solid'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
-  const router = useRouter()
-  const itemStore = useItemStore()
-  const loadingStore = useLoadingOverlayStore()
-  const errorStore = useErrorDisplayStore()
-  const deleteStore = useDeleteConfirmationStore()
+// Stores
+import { useItemStore } from '@/stores/item'
+import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+import { useErrorDisplayStore } from '@/stores/errorDisplay'
+import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
 
-  // State
-  const searchQuery = ref('')
-  const sortKey = ref<keyof ItemResource>('internal_name')
-  const sortDirection = ref<'asc' | 'desc'>('asc')
+// Composables
+import { useRoutePagination } from '@/composables/useRoutePagination'
 
-  // Computed
-  const items = computed(() => itemStore.category)
+// Components
+import ListView from '@/components/layout/list/ListView.vue'
+import TableRow from '@/components/format/table/TableRow.vue'
+import TableHeader from '@/components/format/table/TableHeader.vue'
+import TableCell from '@/components/format/table/TableCell.vue'
+import SearchControl from '@/components/layout/list/SearchControl.vue'
+import InternalName from '@/components/format/InternalName.vue'
+import DateDisplay from '@/components/format/Date.vue'
+import ViewButton from '@/components/layout/list/ViewButton.vue'
+import EditButton from '@/components/layout/list/EditButton.vue'
+import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+import { PuzzlePieceIcon as ItemIcon } from '@heroicons/vue/24/solid'
 
-  const filteredItems = computed(() => {
-    let filtered = [...items.value]
+const router = useRouter()
+const itemStore = useItemStore()
+const loadingStore = useLoadingOverlayStore()
+const errorStore = useErrorDisplayStore()
+const deleteStore = useDeleteConfirmationStore()
 
-    // Apply search filter
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.toLowerCase().trim()
-      filtered = filtered.filter(
-        item =>
-          item.internal_name.toLowerCase().includes(query) ||
-          (item.backward_compatibility && item.backward_compatibility.toLowerCase().includes(query))
-      )
-    }
+const {
+  category: items,
+  pageLinks: links,
+  pageMeta: meta,
+} = storeToRefs(itemStore)
 
-    // Apply sorting - inline logic like Projects.vue
-    return [...filtered].sort((a, b) => {
-      const key = sortKey.value
-      let valA: unknown
-      let valB: unknown
-      if (key === 'internal_name') {
-        valA = a.internal_name ?? ''
-        valB = b.internal_name ?? ''
-      } else {
-        valA = (a as any)[key]
-        valB = (b as any)[key]
-      }
-      if (valA == null && valB == null) return 0
-      if (valA == null) return 1
-      if (valB == null) return -1
-      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
-      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
-      return 0
-    })
-  })
+const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
+  itemStore.fetchItems
+)
 
-  // Methods
-  const handleSort = (key: keyof ItemResource): void => {
-    if (sortKey.value === key) {
-      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    } else {
-      sortKey.value = key
-      sortDirection.value = 'asc'
-    }
+const searchQuery = ref('')
+const sortKey = ref<string>('internal_name')
+const sortDirection = ref<'asc' | 'desc'>('asc')
+
+const emptyMessage = computed(() => {
+  if (searchQuery.value.trim().length > 0) {
+    return `No items match your search: '${searchQuery.value}'`
   }
+  return 'Get started by creating a new item.'
+})
 
-  const openItemDetail = (id: string): void => {
-    router.push(`/items/${id}`)
+function handleSort(key: string) {
+  if (sortKey.value === key) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortDirection.value = 'asc'
   }
+}
 
-  const fetchItems = async (): Promise<void> => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (items.value && items.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      // Always refresh in background
-      await itemStore.fetchItems()
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch items. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
-  }
+const filteredItems = computed(() => {
+  let list = [...items.value]
 
-  // Delete item with confirmation
-  const handleDeleteItem = async (itemToDelete: ItemResource) => {
-    const result = await deleteStore.trigger(
-      'Delete Item',
-      `Are you sure you want to delete "${itemToDelete.internal_name}"? This action cannot be undone.`
+  const query = searchQuery.value.trim().toLowerCase()
+  if (query) {
+    list = list.filter(
+      item =>
+        item.internal_name?.toLowerCase().includes(query) ||
+        item.backward_compatibility?.toLowerCase().includes(query)
     )
-
-    if (result === 'delete') {
-      try {
-        loadingStore.show('Deleting...')
-        await itemStore.deleteItem(itemToDelete.id)
-        errorStore.addMessage('info', 'Item deleted successfully.')
-      } catch {
-        errorStore.addMessage('error', 'Failed to delete item. Please try again.')
-      } finally {
-        loadingStore.hide()
-      }
-    }
   }
 
-  // Lifecycle
-  onMounted(async () => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (items.value && items.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      // Always refresh in background
-      await itemStore.fetchItems()
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch items. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
+  return list.sort((a: any, b: any) => {
+    const valA = a[sortKey.value] ?? ''
+    const valB = b[sortKey.value] ?? ''
+    const modifier = sortDirection.value === 'asc' ? 1 : -1
+    return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
   })
+})
+
+const handleDeleteItem = async (item: any) => {
+  const result = await deleteStore.trigger(
+    'Delete Item',
+    `Delete "${item.internal_name}"?`
+  )
+  if (result === 'delete') {
+    try {
+      loadingStore.show('Deleting...')
+      await itemStore.deleteItem(item.id)
+      errorStore.addMessage('info', 'Deleted successfully.')
+    } catch {
+      errorStore.addMessage('error', 'Delete failed.')
+    } finally {
+      loadingStore.hide()
+    }
+  }
+}
+
+const fetchItems = () => itemStore.fetchItems(meta.value?.current_page || 1)
 </script>

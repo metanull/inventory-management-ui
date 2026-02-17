@@ -1,4 +1,3 @@
-0
 <template>
   <ListView
     title="Partners"
@@ -8,26 +7,25 @@
     color="blue"
     :is-empty="filteredPartners.length === 0"
     empty-title="No partners found"
-    :empty-message="
-      searchQuery.length > 0
-        ? `No partners match your search: '${searchQuery}'`
-        : 'Get started by creating a new partner.'
-    "
+    :empty-message="emptyMessage"
     :show-empty-add-button="searchQuery.length === 0"
     empty-add-button-label="New Partner"
     @retry="fetchPartners"
+    :links="links"
+    :meta="meta"
+    :per-page="currentPerPage"
+    @change-page-number="handlePageChange"
+    @per-page-change="handlePerPageChange"
+    @change-page="handleUrlChange"
   >
-    <!-- Icon -->
     <template #icon>
       <PartnerIcon />
     </template>
 
-    <!-- Search Slot -->
     <template #search>
       <SearchControl v-model="searchQuery" placeholder="Search partners..." />
     </template>
 
-    <!-- Partners Table Headers -->
     <template #headers>
       <TableRow>
         <TableHeader
@@ -51,13 +49,12 @@
       </TableRow>
     </template>
 
-    <!-- Partners Table Rows -->
     <template #rows>
       <TableRow
         v-for="partner in filteredPartners"
         :key="partner.id"
         class="cursor-pointer hover:bg-blue-50 transition"
-        @click="openPartnerDetail(partner.id)"
+        @click="router.push(`/partners/${partner.id}`)"
       >
         <TableCell>
           <InternalName
@@ -71,7 +68,7 @@
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay :date="partner.created_at" />
+          <DateDisplay :date="partner.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
           <div class="flex space-x-2" @click.stop>
@@ -86,152 +83,105 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  import type { PartnerResource } from '@metanull/inventory-app-api-client'
-  import { usePartnerStore } from '@/stores/partner'
-  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-  import { useErrorDisplayStore } from '@/stores/errorDisplay'
-  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
-  import ListView from '@/components/layout/list/ListView.vue'
-  import TableRow from '@/components/format/table/TableRow.vue'
-  import TableHeader from '@/components/format/table/TableHeader.vue'
-  import TableCell from '@/components/format/table/TableCell.vue'
-  import SearchControl from '@/components/layout/list/SearchControl.vue'
-  import InternalName from '@/components/format/InternalName.vue'
-  import DateDisplay from '@/components/format/Date.vue'
-  import ViewButton from '@/components/layout/list/ViewButton.vue'
-  import EditButton from '@/components/layout/list/EditButton.vue'
-  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
-  import { BuildingLibraryIcon as PartnerIcon } from '@heroicons/vue/24/solid'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
-  const router = useRouter()
-  const partnerStore = usePartnerStore()
-  const loadingStore = useLoadingOverlayStore()
-  const errorStore = useErrorDisplayStore()
-  const deleteStore = useDeleteConfirmationStore()
+// Stores
+import { usePartnerStore } from '@/stores/partner'
+import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+import { useErrorDisplayStore } from '@/stores/errorDisplay'
+import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
 
-  // State
-  const searchQuery = ref('')
-  const sortKey = ref<keyof PartnerResource>('internal_name')
-  const sortDirection = ref<'asc' | 'desc'>('asc')
+// Composables
+import { useRoutePagination } from '@/composables/useRoutePagination'
 
-  // Computed
-  const partners = computed(() => partnerStore.category)
+// Components
+import ListView from '@/components/layout/list/ListView.vue'
+import TableRow from '@/components/format/table/TableRow.vue'
+import TableHeader from '@/components/format/table/TableHeader.vue'
+import TableCell from '@/components/format/table/TableCell.vue'
+import SearchControl from '@/components/layout/list/SearchControl.vue'
+import InternalName from '@/components/format/InternalName.vue'
+import DateDisplay from '@/components/format/Date.vue'
+import ViewButton from '@/components/layout/list/ViewButton.vue'
+import EditButton from '@/components/layout/list/EditButton.vue'
+import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+import { BuildingLibraryIcon as PartnerIcon } from '@heroicons/vue/24/solid'
 
-  const filteredPartners = computed(() => {
-    let filtered = [...partners.value]
+const router = useRouter()
+const partnerStore = usePartnerStore()
+const loadingStore = useLoadingOverlayStore()
+const errorStore = useErrorDisplayStore()
+const deleteStore = useDeleteConfirmationStore()
 
-    // Apply search filter
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.toLowerCase().trim()
-      filtered = filtered.filter(
-        partner =>
-          partner.internal_name.toLowerCase().includes(query) ||
-          (partner.backward_compatibility &&
-            partner.backward_compatibility.toLowerCase().includes(query))
-      )
-    }
+const {
+  category: partners,
+  pageLinks: links,
+  pageMeta: meta,
+} = storeToRefs(partnerStore)
 
-    // Apply sorting - inline logic like Projects.vue
-    return [...filtered].sort((a, b) => {
-      const key = sortKey.value
-      let valA: unknown
-      let valB: unknown
-      if (key === 'internal_name') {
-        valA = a.internal_name ?? ''
-        valB = b.internal_name ?? ''
-      } else {
-        valA = (a as any)[key]
-        valB = (b as any)[key]
-      }
-      if (valA == null && valB == null) return 0
-      if (valA == null) return 1
-      if (valB == null) return -1
-      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
-      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
-      return 0
-    })
-  })
+const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
+  partnerStore.fetchPartners
+)
 
-  // Methods
-  const handleSort = (key: keyof PartnerResource): void => {
-    if (sortKey.value === key) {
-      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    } else {
-      sortKey.value = key
-      sortDirection.value = 'asc'
-    }
+const searchQuery = ref('')
+const sortKey = ref<string>('internal_name')
+const sortDirection = ref<'asc' | 'desc'>('asc')
+
+const emptyMessage = computed(() => {
+  if (searchQuery.value.trim().length > 0) {
+    return `No partners match your search: '${searchQuery.value}'`
   }
+  return 'Get started by creating a new partner.'
+})
 
-  const openPartnerDetail = (id: string): void => {
-    router.push(`/partners/${id}`)
+function handleSort(key: string) {
+  if (sortKey.value === key) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortDirection.value = 'asc'
   }
+}
 
-  const fetchPartners = async (): Promise<void> => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (partners.value && partners.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      // Always refresh in background
-      await partnerStore.fetchPartners()
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch partners. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
-  }
+const filteredPartners = computed(() => {
+  let list = [...partners.value]
 
-  // Delete partner with confirmation
-  const handleDeletePartner = async (partnerToDelete: PartnerResource) => {
-    const result = await deleteStore.trigger(
-      'Delete Partner',
-      `Are you sure you want to delete "${partnerToDelete.internal_name}"? This action cannot be undone.`
+  const query = searchQuery.value.trim().toLowerCase()
+  if (query) {
+    list = list.filter(
+      p =>
+        p.internal_name?.toLowerCase().includes(query) ||
+        p.backward_compatibility?.toLowerCase().includes(query)
     )
-
-    if (result === 'delete') {
-      try {
-        loadingStore.show('Deleting...')
-        await partnerStore.deletePartner(partnerToDelete.id)
-        errorStore.addMessage('info', 'Partner deleted successfully.')
-      } catch {
-        errorStore.addMessage('error', 'Failed to delete partner. Please try again.')
-      } finally {
-        loadingStore.hide()
-      }
-    }
   }
 
-  // Lifecycle
-  onMounted(async () => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (partners.value && partners.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      // Always refresh in background
-      await partnerStore.fetchPartners()
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch partners. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
+  return list.sort((a: any, b: any) => {
+    const valA = a[sortKey.value] ?? ''
+    const valB = b[sortKey.value] ?? ''
+    const modifier = sortDirection.value === 'asc' ? 1 : -1
+    return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
   })
+})
+
+const handleDeletePartner = async (partner: any) => {
+  const result = await deleteStore.trigger(
+    'Delete Partner',
+    `Delete "${partner.internal_name}"?`
+  )
+  if (result === 'delete') {
+    try {
+      loadingStore.show('Deleting...')
+      await partnerStore.deletePartner(partner.id)
+      errorStore.addMessage('info', 'Deleted successfully.')
+    } catch {
+      errorStore.addMessage('error', 'Delete failed.')
+    } finally {
+      loadingStore.hide()
+    }
+  }
+}
+
+const fetchPartners = () => partnerStore.fetchPartners(meta.value?.current_page || 1)
 </script>

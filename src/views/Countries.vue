@@ -7,26 +7,25 @@
     color="blue"
     :is-empty="filteredCountries.length === 0"
     empty-title="No countries found"
-    :empty-message="
-      searchQuery.length > 0
-        ? `No countries match your search: '${searchQuery}'`
-        : 'Get started by creating a new country.'
-    "
+    :empty-message="emptyMessage"
     :show-empty-add-button="searchQuery.length === 0"
     empty-add-button-label="New Country"
     @retry="fetchCountries"
+    :links="links"
+    :meta="meta"
+    :per-page="currentPerPage"
+    @change-page-number="handlePageChange"
+    @per-page-change="handlePerPageChange"
+    @change-page="handleUrlChange"
   >
-    <!-- Icon -->
     <template #icon>
       <CountryIcon />
     </template>
 
-    <!-- Search Slot -->
     <template #search>
       <SearchControl v-model="searchQuery" placeholder="Search countries..." />
     </template>
 
-    <!-- Countries Table Headers -->
     <template #headers>
       <TableRow>
         <TableHeader
@@ -50,13 +49,12 @@
       </TableRow>
     </template>
 
-    <!-- Countries Table Rows -->
     <template #rows>
       <TableRow
         v-for="country in filteredCountries"
         :key="country.id"
         class="cursor-pointer hover:bg-blue-50 transition"
-        @click="openCountryDetail(country.id)"
+        @click="router.push(`/countries/${country.id}`)"
       >
         <TableCell>
           <InternalName
@@ -70,7 +68,7 @@
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay :date="country.created_at" />
+          <DateDisplay :date="country.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
           <div class="flex space-x-2" @click.stop>
@@ -85,152 +83,106 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  import type { CountryResource } from '@metanull/inventory-app-api-client'
-  import { useCountryStore } from '@/stores/country'
-  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-  import { useErrorDisplayStore } from '@/stores/errorDisplay'
-  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
-  import ListView from '@/components/layout/list/ListView.vue'
-  import TableRow from '@/components/format/table/TableRow.vue'
-  import TableHeader from '@/components/format/table/TableHeader.vue'
-  import TableCell from '@/components/format/table/TableCell.vue'
-  import SearchControl from '@/components/layout/list/SearchControl.vue'
-  import InternalName from '@/components/format/InternalName.vue'
-  import DateDisplay from '@/components/format/Date.vue'
-  import ViewButton from '@/components/layout/list/ViewButton.vue'
-  import EditButton from '@/components/layout/list/EditButton.vue'
-  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
-  import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
-  const router = useRouter()
-  const countryStore = useCountryStore()
-  const loadingStore = useLoadingOverlayStore()
-  const errorStore = useErrorDisplayStore()
-  const deleteStore = useDeleteConfirmationStore()
+// Stores
+import { useCountryStore } from '@/stores/country'
+import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+import { useErrorDisplayStore } from '@/stores/errorDisplay'
+import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
 
-  // State
-  const searchQuery = ref('')
-  const sortKey = ref<keyof CountryResource>('internal_name')
-  const sortDirection = ref<'asc' | 'desc'>('asc')
+// Composables
+import { useRoutePagination } from '@/composables/useRoutePagination'
 
-  // Computed
-  const countries = computed(() => countryStore.category)
+// Components
+import ListView from '@/components/layout/list/ListView.vue'
+import TableRow from '@/components/format/table/TableRow.vue'
+import TableHeader from '@/components/format/table/TableHeader.vue'
+import TableCell from '@/components/format/table/TableCell.vue'
+import SearchControl from '@/components/layout/list/SearchControl.vue'
+import InternalName from '@/components/format/InternalName.vue'
+import DateDisplay from '@/components/format/Date.vue'
+import ViewButton from '@/components/layout/list/ViewButton.vue'
+import EditButton from '@/components/layout/list/EditButton.vue'
+import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+import { GlobeAltIcon as CountryIcon } from '@heroicons/vue/24/solid'
 
-  const filteredCountries = computed(() => {
-    let filtered = [...countries.value]
+const router = useRouter()
+const countryStore = useCountryStore()
+const loadingStore = useLoadingOverlayStore()
+const errorStore = useErrorDisplayStore()
+const deleteStore = useDeleteConfirmationStore()
 
-    // Apply search filter
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.toLowerCase().trim()
-      filtered = filtered.filter(
-        country =>
-          country.internal_name.toLowerCase().includes(query) ||
-          (country.backward_compatibility &&
-            country.backward_compatibility.toLowerCase().includes(query))
-      )
-    }
+const {
+  category: countries,
+  pageLinks: links,
+  pageMeta: meta,
+} = storeToRefs(countryStore)
 
-    // Apply sorting - inline logic like Projects.vue
-    return [...filtered].sort((a, b) => {
-      const key = sortKey.value
-      let valA: unknown
-      let valB: unknown
-      if (key === 'internal_name') {
-        valA = a.internal_name ?? ''
-        valB = b.internal_name ?? ''
-      } else {
-        valA = (a as any)[key]
-        valB = (b as any)[key]
-      }
-      if (valA == null && valB == null) return 0
-      if (valA == null) return 1
-      if (valB == null) return -1
-      if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
-      if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
-      return 0
-    })
-  })
+const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
+  countryStore.fetchCountries
+)
 
-  // Methods
-  const handleSort = (key: keyof CountryResource): void => {
-    if (sortKey.value === key) {
-      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    } else {
-      sortKey.value = key
-      sortDirection.value = 'asc'
-    }
+// State
+const searchQuery = ref('')
+const sortKey = ref<string>('internal_name')
+const sortDirection = ref<'asc' | 'desc'>('asc')
+
+const emptyMessage = computed(() => {
+  if (searchQuery.value.trim().length > 0) {
+    return `No countries match your search: '${searchQuery.value}'`
   }
+  return 'Get started by creating a new country.'
+})
 
-  const openCountryDetail = (id: string): void => {
-    router.push(`/countries/${id}`)
+function handleSort(key: string) {
+  if (sortKey.value === key) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortDirection.value = 'asc'
   }
+}
 
-  const fetchCountries = async (): Promise<void> => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (countries.value && countries.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      // Always refresh in background
-      await countryStore.fetchCountries()
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
-  }
+const filteredCountries = computed(() => {
+  let list = [...countries.value]
 
-  // Delete country with confirmation
-  const handleDeleteCountry = async (countryToDelete: CountryResource) => {
-    const result = await deleteStore.trigger(
-      'Delete Country',
-      `Are you sure you want to delete "${countryToDelete.internal_name}"? This action cannot be undone.`
+  const query = searchQuery.value.trim().toLowerCase()
+  if (query) {
+    list = list.filter(
+      c =>
+        c.internal_name?.toLowerCase().includes(query) ||
+        c.backward_compatibility?.toLowerCase().includes(query)
     )
-
-    if (result === 'delete') {
-      try {
-        loadingStore.show('Deleting...')
-        await countryStore.deleteCountry(countryToDelete.id)
-        errorStore.addMessage('info', 'Country deleted successfully.')
-      } catch {
-        errorStore.addMessage('error', 'Failed to delete country. Please try again.')
-      } finally {
-        loadingStore.hide()
-      }
-    }
   }
 
-  // Lifecycle
-  onMounted(async () => {
-    let usedCache = false
-    // If cache exists, display immediately and refresh in background
-    if (countries.value && countries.value.length > 0) {
-      usedCache = true
-    } else {
-      loadingStore.show()
-    }
-    try {
-      // Always refresh in background
-      await countryStore.fetchCountries()
-      if (usedCache) {
-        errorStore.addMessage('info', 'List refreshed')
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to fetch countries. Please try again.')
-    } finally {
-      if (!usedCache) {
-        loadingStore.hide()
-      }
-    }
+  return list.sort((a: any, b: any) => {
+    const valA = a[sortKey.value] ?? ''
+    const valB = b[sortKey.value] ?? ''
+    const modifier = sortDirection.value === 'asc' ? 1 : -1
+    return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
   })
+})
+
+const handleDeleteCountry = async (country: any) => {
+  const result = await deleteStore.trigger(
+    'Delete Country',
+    `Delete "${country.internal_name}"?`
+  )
+  if (result === 'delete') {
+    try {
+      loadingStore.show('Deleting...')
+      await countryStore.deleteCountry(country.id)
+      errorStore.addMessage('info', 'Deleted successfully.')
+    } catch {
+      errorStore.addMessage('error', 'Delete failed.')
+    } finally {
+      loadingStore.hide()
+    }
+  }
+}
+
+const fetchCountries = () => countryStore.fetchCountries(meta.value?.current_page || 1)
 </script>

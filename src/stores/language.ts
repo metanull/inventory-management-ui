@@ -6,17 +6,21 @@ import {
   type StoreLanguageRequest,
   type UpdateLanguageRequest,
 } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
-import { type PageLinks, type PageMeta } from '@/composables/usePagination'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 export const useLanguageStore = defineStore('language', () => {
-  const state = createBaseStoreState<LanguageResource>()
-  const { category: languages, currentEntry: currentLanguage, loading, error } = state
+  const state = createPaginatedStoreState<LanguageResource>()
+  const {
+    category: languages,
+    currentEntry: currentLanguage,
+    pageLinks,
+    pageMeta,
+    loading,
+    error,
+  } = state
 
   // Additional Language-specific state
   const allLanguages = ref<LanguageResource[]>([])
-  const pageLinks = ref<PageLinks | null>(null)
-  const pageMeta = ref<PageMeta | null>(null)
 
   const getApi = () => new LanguageApi(createApiConfig())
 

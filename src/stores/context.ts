@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { ContextApi, type ContextResource } from '@metanull/inventory-app-api-client'
-import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 interface ContextStoreRequest {
   internal_name: string
@@ -16,10 +16,10 @@ interface ContextUpdateRequest {
 }
 
 export const useContextStore = defineStore('context', () => {
-  const state = createBaseStoreState<ContextResource>()
+  const state = createPaginatedStoreState<ContextResource>()
 
   // Mapping generic state to context-specific names
-  const { category: contexts, currentEntry: currentContext, loading, error } = state
+  const { category: contexts, currentEntry: currentContext, pageLinks, pageMeta, loading, error } = state
   const getApi = () => new ContextApi(createApiConfig())
 
   // Computed
@@ -30,15 +30,20 @@ export const useContextStore = defineStore('context', () => {
   )
 
   // Actions
-  const fetchContexts = async () => {
+  const fetchContexts = async (page: number = 1, perPage: number = 10) => {
     const res = await useApiCall(
       'fetchContexts',
-      () => getApi().contextIndex(),
+      () => getApi().contextIndex(page, perPage),
       loading,
       error,
       'Failed to fetch contexts'
     )
-    contexts.value = res?.data?.data || []
+    if (res?.data) {
+      contexts.value = res.data.data || []
+      pageLinks.value = res.data.links || null
+      pageMeta.value = res.data.meta || null
+    }
+    return contexts.value
   }
 
   const fetchContext = async (id: string) => {
