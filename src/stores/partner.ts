@@ -10,7 +10,14 @@ import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/
 
 export const usePartnerStore = defineStore('partner', () => {
   const state = createPaginatedStoreState<PartnerResource>()
-  const { category: partners, currentEntry: currentPartner, pageLinks, pageMeta, loading, error } = state
+  const {
+    category: partners,
+    currentEntry: currentPartner,
+    pageLinks,
+    pageMeta,
+    loading,
+    error,
+  } = state
 
   // Additional Partner-specific state
   const allPartners = ref<PartnerResource[]>([])

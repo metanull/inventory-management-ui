@@ -10,7 +10,14 @@ import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/
 
 export const useCountryStore = defineStore('country', () => {
   const state = createPaginatedStoreState<CountryResource>()
-  const { category: countries, currentEntry: currentCountry, pageLinks, pageMeta, loading, error } = state
+  const {
+    category: countries,
+    currentEntry: currentCountry,
+    pageLinks,
+    pageMeta,
+    loading,
+    error,
+  } = state
   const getApi = () => new CountryApi(createApiConfig())
 
   // Actions

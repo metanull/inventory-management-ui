@@ -169,140 +169,143 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
+  import { ref, computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { storeToRefs } from 'pinia'
 
-// Stores
-import { useProjectStore } from '@/stores/project'
-import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-import { useErrorDisplayStore } from '@/stores/errorDisplay'
-import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
+  // Stores
+  import { useProjectStore } from '@/stores/project'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
 
-// Composables
-import { useRoutePagination } from '@/composables/useRoutePagination'
+  // Composables
+  import { useRoutePagination } from '@/composables/useRoutePagination'
 
-// Components
-import ListView from '@/components/layout/list/ListView.vue'
-import TableRow from '@/components/format/table/TableRow.vue'
-import TableHeader from '@/components/format/table/TableHeader.vue'
-import TableCell from '@/components/format/table/TableCell.vue'
-import SearchControl from '@/components/layout/list/SearchControl.vue'
-import InternalName from '@/components/format/InternalName.vue'
-import DateDisplay from '@/components/format/Date.vue'
-import Toggle from '@/components/format/Toggle.vue'
-import DisplayText from '@/components/format/DisplayText.vue'
-import FilterButton from '@/components/layout/list/FilterButton.vue'
-import ViewButton from '@/components/layout/list/ViewButton.vue'
-import EditButton from '@/components/layout/list/EditButton.vue'
-import DeleteButton from '@/components/layout/list/DeleteButton.vue'
-import { FolderIcon as ProjectIcon } from '@heroicons/vue/24/solid'
+  // Components
+  import ListView from '@/components/layout/list/ListView.vue'
+  import TableRow from '@/components/format/table/TableRow.vue'
+  import TableHeader from '@/components/format/table/TableHeader.vue'
+  import TableCell from '@/components/format/table/TableCell.vue'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
+  import InternalName from '@/components/format/InternalName.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import Toggle from '@/components/format/Toggle.vue'
+  import DisplayText from '@/components/format/DisplayText.vue'
+  import FilterButton from '@/components/layout/list/FilterButton.vue'
+  import ViewButton from '@/components/layout/list/ViewButton.vue'
+  import EditButton from '@/components/layout/list/EditButton.vue'
+  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+  import { FolderIcon as ProjectIcon } from '@heroicons/vue/24/solid'
 
-const router = useRouter()
-const projectStore = useProjectStore()
-const loadingStore = useLoadingOverlayStore()
-const errorStore = useErrorDisplayStore()
-const deleteStore = useDeleteConfirmationStore()
+  const router = useRouter()
+  const projectStore = useProjectStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
 
-const {
-  category: projects,
-  visibleProjects,
-  enabledProjects,
-  launchedProjects,
-  pageLinks: links,
-  pageMeta: meta,
-} = storeToRefs(projectStore)
+  const {
+    category: projects,
+    visibleProjects,
+    enabledProjects,
+    launchedProjects,
+    pageLinks: links,
+    pageMeta: meta,
+  } = storeToRefs(projectStore)
 
-const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
-  projectStore.fetchProjects
-)
+  const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } =
+    useRoutePagination(projectStore.fetchProjects)
 
-const searchQuery = ref('')
-const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('all')
-const sortKey = ref<string>('internal_name')
-const sortDirection = ref<'asc' | 'desc'>('asc')
+  const searchQuery = ref('')
+  const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('all')
+  const sortKey = ref<string>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
 
-const emptyMessage = computed(() => {
-  if (searchQuery.value.trim().length > 0) {
-    return `No projects match your search: '${searchQuery.value}'`
-  }
-  if (filterMode.value === 'visible') {
-    return 'No visible projects found. Projects are visible when they are enabled, launched, and the launch date has passed.'
-  }
-  if (filterMode.value !== 'all') {
-    return `No ${filterMode.value} projects found.`
-  }
-  return 'Get started by creating a new project.'
-})
-
-function handleSort(key: string) {
-  if (sortKey.value === key) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortKey.value = key
-    sortDirection.value = 'asc'
-  }
-}
-
-const filteredProjects = computed(() => {
-  let list: any[]
-  switch (filterMode.value) {
-    case 'visible': list = visibleProjects.value; break
-    case 'enabled': list = enabledProjects.value; break
-    case 'launched': list = launchedProjects.value; break
-    default: list = projects.value
-  }
-
-  const query = searchQuery.value.trim().toLowerCase()
-  if (query) {
-    list = list.filter(
-      p =>
-        p.internal_name?.toLowerCase().includes(query) ||
-        p.backward_compatibility?.toLowerCase().includes(query)
-    )
-  }
-
-  return [...list].sort((a: any, b: any) => {
-    const valA = a[sortKey.value] ?? ''
-    const valB = b[sortKey.value] ?? ''
-    const modifier = sortDirection.value === 'asc' ? 1 : -1
-    return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
-  })
-})
-
-const updateProjectStatus = async (project: any, field: string, value: boolean) => {
-  try {
-    loadingStore.show('Updating...')
-    if (field === 'is_enabled') {
-      await projectStore.setProjectEnabled(project.id, value)
-    } else if (field === 'is_launched') {
-      await projectStore.setProjectLaunched(project.id, value)
+  const emptyMessage = computed(() => {
+    if (searchQuery.value.trim().length > 0) {
+      return `No projects match your search: '${searchQuery.value}'`
     }
-    errorStore.addMessage('info', 'Status updated.')
-  } catch {
-    errorStore.addMessage('error', 'Update failed.')
-  } finally {
-    loadingStore.hide()
-  }
-}
+    if (filterMode.value === 'visible') {
+      return 'No visible projects found. Projects are visible when they are enabled, launched, and the launch date has passed.'
+    }
+    if (filterMode.value !== 'all') {
+      return `No ${filterMode.value} projects found.`
+    }
+    return 'Get started by creating a new project.'
+  })
 
-const handleDeleteProject = async (project: any) => {
-  const result = await deleteStore.trigger(
-    'Delete Project',
-    `Delete "${project.internal_name}"?`
-  )
-  if (result === 'delete') {
+  function handleSort(key: string) {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
+    }
+  }
+
+  const filteredProjects = computed(() => {
+    let list: any[]
+    switch (filterMode.value) {
+      case 'visible':
+        list = visibleProjects.value
+        break
+      case 'enabled':
+        list = enabledProjects.value
+        break
+      case 'launched':
+        list = launchedProjects.value
+        break
+      default:
+        list = projects.value
+    }
+
+    const query = searchQuery.value.trim().toLowerCase()
+    if (query) {
+      list = list.filter(
+        p =>
+          p.internal_name?.toLowerCase().includes(query) ||
+          p.backward_compatibility?.toLowerCase().includes(query)
+      )
+    }
+
+    return [...list].sort((a: any, b: any) => {
+      const valA = a[sortKey.value] ?? ''
+      const valB = b[sortKey.value] ?? ''
+      const modifier = sortDirection.value === 'asc' ? 1 : -1
+      return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
+    })
+  })
+
+  const updateProjectStatus = async (project: any, field: string, value: boolean) => {
     try {
-      loadingStore.show('Deleting...')
-      await projectStore.deleteProject(project.id)
-      errorStore.addMessage('info', 'Deleted successfully.')
+      loadingStore.show('Updating...')
+      if (field === 'is_enabled') {
+        await projectStore.setProjectEnabled(project.id, value)
+      } else if (field === 'is_launched') {
+        await projectStore.setProjectLaunched(project.id, value)
+      }
+      errorStore.addMessage('info', 'Status updated.')
     } catch {
-      errorStore.addMessage('error', 'Delete failed.')
+      errorStore.addMessage('error', 'Update failed.')
     } finally {
       loadingStore.hide()
     }
   }
-}
 
-const fetchProjects = () => projectStore.fetchProjects(meta.value?.current_page || 1)
+  const handleDeleteProject = async (project: any) => {
+    const result = await deleteStore.trigger('Delete Project', `Delete "${project.internal_name}"?`)
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await projectStore.deleteProject(project.id)
+        errorStore.addMessage('info', 'Deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Delete failed.')
+      } finally {
+        loadingStore.hide()
+      }
+    }
+  }
+
+  const fetchProjects = () => projectStore.fetchProjects(meta.value?.current_page || 1)
 </script>

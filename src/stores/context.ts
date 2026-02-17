@@ -19,7 +19,14 @@ export const useContextStore = defineStore('context', () => {
   const state = createPaginatedStoreState<ContextResource>()
 
   // Mapping generic state to context-specific names
-  const { category: contexts, currentEntry: currentContext, pageLinks, pageMeta, loading, error } = state
+  const {
+    category: contexts,
+    currentEntry: currentContext,
+    pageLinks,
+    pageMeta,
+    loading,
+    error,
+  } = state
   const getApi = () => new ContextApi(createApiConfig())
 
   // Computed

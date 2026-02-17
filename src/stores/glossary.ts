@@ -15,7 +15,14 @@ declare const process: {
 
 export const useGlossaryStore = defineStore('glossary', () => {
   const state = createPaginatedStoreState<GlossaryResource>()
-  const { category: glossary, currentEntry: currentGlossaryEntry, pageLinks, pageMeta, loading, error } = state
+  const {
+    category: glossary,
+    currentEntry: currentGlossaryEntry,
+    pageLinks,
+    pageMeta,
+    loading,
+    error,
+  } = state
   const getApi = () => new GlossaryApi(createApiConfig())
 
   const fetchGlossary = async (page: number = 1, perPage: number = 10) => {

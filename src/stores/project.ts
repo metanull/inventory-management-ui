@@ -10,7 +10,14 @@ import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/
 
 export const useProjectStore = defineStore('project', () => {
   const state = createPaginatedStoreState<ProjectResource>()
-  const { category: projects, currentEntry: currentProject, pageLinks, pageMeta, loading, error } = state
+  const {
+    category: projects,
+    currentEntry: currentProject,
+    pageLinks,
+    pageMeta,
+    loading,
+    error,
+  } = state
 
   // Project-specific state
   const allProjects = ref<ProjectResource[]>([])

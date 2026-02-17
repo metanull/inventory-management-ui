@@ -160,9 +160,8 @@
     pageMeta: meta,
   } = storeToRefs(languageStore)
 
-  const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
-    languageStore.fetchLanguages
-  )
+  const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } =
+    useRoutePagination(languageStore.fetchLanguages)
 
   const filterMode = ref<'all' | 'default'>('all')
   const sortKey = ref<string>('internal_name')

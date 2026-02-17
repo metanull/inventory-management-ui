@@ -83,105 +83,100 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
+  import { ref, computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { storeToRefs } from 'pinia'
 
-// Stores
-import { useGlossaryStore } from '@/stores/glossary'
-import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-import { useErrorDisplayStore } from '@/stores/errorDisplay'
-import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
+  // Stores
+  import { useGlossaryStore } from '@/stores/glossary'
+  import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
+  import { useErrorDisplayStore } from '@/stores/errorDisplay'
+  import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
 
-// Composables
-import { useRoutePagination } from '@/composables/useRoutePagination'
+  // Composables
+  import { useRoutePagination } from '@/composables/useRoutePagination'
 
-// Components
-import ListView from '@/components/layout/list/ListView.vue'
-import TableRow from '@/components/format/table/TableRow.vue'
-import TableHeader from '@/components/format/table/TableHeader.vue'
-import TableCell from '@/components/format/table/TableCell.vue'
-import SearchControl from '@/components/layout/list/SearchControl.vue'
-import InternalName from '@/components/format/InternalName.vue'
-import DateDisplay from '@/components/format/Date.vue'
-import ViewButton from '@/components/layout/list/ViewButton.vue'
-import EditButton from '@/components/layout/list/EditButton.vue'
-import DeleteButton from '@/components/layout/list/DeleteButton.vue'
-import { BookOpenIcon } from '@heroicons/vue/24/solid'
+  // Components
+  import ListView from '@/components/layout/list/ListView.vue'
+  import TableRow from '@/components/format/table/TableRow.vue'
+  import TableHeader from '@/components/format/table/TableHeader.vue'
+  import TableCell from '@/components/format/table/TableCell.vue'
+  import SearchControl from '@/components/layout/list/SearchControl.vue'
+  import InternalName from '@/components/format/InternalName.vue'
+  import DateDisplay from '@/components/format/Date.vue'
+  import ViewButton from '@/components/layout/list/ViewButton.vue'
+  import EditButton from '@/components/layout/list/EditButton.vue'
+  import DeleteButton from '@/components/layout/list/DeleteButton.vue'
+  import { BookOpenIcon } from '@heroicons/vue/24/solid'
 
-const router = useRouter()
-const glossaryStore = useGlossaryStore()
-const loadingStore = useLoadingOverlayStore()
-const errorStore = useErrorDisplayStore()
-const deleteStore = useDeleteConfirmationStore()
+  const router = useRouter()
+  const glossaryStore = useGlossaryStore()
+  const loadingStore = useLoadingOverlayStore()
+  const errorStore = useErrorDisplayStore()
+  const deleteStore = useDeleteConfirmationStore()
 
-const {
-  category: glossary,
-  pageLinks: links,
-  pageMeta: meta,
-} = storeToRefs(glossaryStore)
+  const { category: glossary, pageLinks: links, pageMeta: meta } = storeToRefs(glossaryStore)
 
-const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } = useRoutePagination(
-  glossaryStore.fetchGlossary
-)
+  const { currentPerPage, handlePageChange, handlePerPageChange, handleUrlChange } =
+    useRoutePagination(glossaryStore.fetchGlossary)
 
-const searchQuery = ref('')
-const sortKey = ref<string>('internal_name')
-const sortDirection = ref<'asc' | 'desc'>('asc')
+  const searchQuery = ref('')
+  const sortKey = ref<string>('internal_name')
+  const sortDirection = ref<'asc' | 'desc'>('asc')
 
-const emptyMessage = computed(() => {
-  if (searchQuery.value.trim().length > 0) {
-    return `No glossary entries match your search: '${searchQuery.value}'`
-  }
-  return 'Get started by creating a new glossary entry.'
-})
-
-function handleSort(key: string) {
-  if (sortKey.value === key) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortKey.value = key
-    sortDirection.value = 'asc'
-  }
-}
-
-const filteredGlossary = computed(() => {
-  let list = [...glossary.value]
-
-  const query = searchQuery.value.trim().toLowerCase()
-  if (query) {
-    list = list.filter(
-      entry =>
-        entry.internal_name?.toLowerCase().includes(query) ||
-        entry.backward_compatibility?.toLowerCase().includes(query)
-    )
-  }
-
-  return list.sort((a: any, b: any) => {
-    const valA = a[sortKey.value] ?? ''
-    const valB = b[sortKey.value] ?? ''
-    const modifier = sortDirection.value === 'asc' ? 1 : -1
-    return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
+  const emptyMessage = computed(() => {
+    if (searchQuery.value.trim().length > 0) {
+      return `No glossary entries match your search: '${searchQuery.value}'`
+    }
+    return 'Get started by creating a new glossary entry.'
   })
-})
 
-const handleDeleteGlossary = async (entry: any) => {
-  const result = await deleteStore.trigger(
-    'Delete Glossary Entry',
-    `Delete "${entry.internal_name}"?`
-  )
-  if (result === 'delete') {
-    try {
-      loadingStore.show('Deleting...')
-      await glossaryStore.deleteGlossaryEntry(entry.id)
-      errorStore.addMessage('info', 'Deleted successfully.')
-    } catch {
-      errorStore.addMessage('error', 'Delete failed.')
-    } finally {
-      loadingStore.hide()
+  function handleSort(key: string) {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortKey.value = key
+      sortDirection.value = 'asc'
     }
   }
-}
 
-const fetchGlossary = () => glossaryStore.fetchGlossary(meta.value?.current_page || 1)
+  const filteredGlossary = computed(() => {
+    let list = [...glossary.value]
+
+    const query = searchQuery.value.trim().toLowerCase()
+    if (query) {
+      list = list.filter(
+        entry =>
+          entry.internal_name?.toLowerCase().includes(query) ||
+          entry.backward_compatibility?.toLowerCase().includes(query)
+      )
+    }
+
+    return list.sort((a: any, b: any) => {
+      const valA = a[sortKey.value] ?? ''
+      const valB = b[sortKey.value] ?? ''
+      const modifier = sortDirection.value === 'asc' ? 1 : -1
+      return valA < valB ? -1 * modifier : valA > valB ? 1 * modifier : 0
+    })
+  })
+
+  const handleDeleteGlossary = async (entry: any) => {
+    const result = await deleteStore.trigger(
+      'Delete Glossary Entry',
+      `Delete "${entry.internal_name}"?`
+    )
+    if (result === 'delete') {
+      try {
+        loadingStore.show('Deleting...')
+        await glossaryStore.deleteGlossaryEntry(entry.id)
+        errorStore.addMessage('info', 'Deleted successfully.')
+      } catch {
+        errorStore.addMessage('error', 'Delete failed.')
+      } finally {
+        loadingStore.hide()
+      }
+    }
+  }
+
+  const fetchGlossary = () => glossaryStore.fetchGlossary(meta.value?.current_page || 1)
 </script>
