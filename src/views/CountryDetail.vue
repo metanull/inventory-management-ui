@@ -133,7 +133,7 @@
   }
 
   // Resource data
-  const country = computed(() => countryStore.currentCountry)
+  const country = computed(() => countryStore.currentEntry)
 
   // Edit form state
   const editForm = ref<CountryFormData>({

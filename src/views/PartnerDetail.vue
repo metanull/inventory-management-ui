@@ -135,7 +135,7 @@
   }
 
   // Resource data
-  const partner = computed(() => partnerStore.currentPartner)
+  const partner = computed(() => partnerStore.currentEntry)
 
   // Edit form state
   const editForm = ref<PartnerFormData>({

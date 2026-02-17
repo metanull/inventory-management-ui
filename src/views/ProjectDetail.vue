@@ -170,11 +170,11 @@
   const mode = ref<Mode>('view')
 
   // Computed properties
-  const project = computed(() => projectStore.currentProject)
+  const project = computed(() => projectStore.currentEntry)
 
   // Dropdown options
   const contexts = computed(() => contextStore.contexts)
-  const languages = computed(() => languageStore.languages)
+  const languages = computed(() => languageStore.category)
   const defaultContext = computed(() => contextStore.defaultContext)
   const defaultLanguage = computed(() => languageStore.defaultLanguage)
 
@@ -368,7 +368,9 @@
         errorStore.addMessage('info', 'Project created successfully.')
 
         // Load the new project and enter view mode
-        await projectStore.fetchProject(newProject.id)
+        if (newProject) {
+          await projectStore.fetchProject(newProject.id)
+        }
         enterViewMode()
       } else if (mode.value === 'edit' && project.value) {
         // Update existing project
@@ -481,7 +483,7 @@
     try {
       if (isCreateRoute) {
         // Clear current project to avoid showing stale data from previously viewed projects
-        projectStore.clearCurrentProject()
+        projectStore.clearCurrent()
 
         // For create mode, only fetch dropdown options
         await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])

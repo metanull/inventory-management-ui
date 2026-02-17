@@ -1,230 +1,101 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import {
   ItemApi,
-  Configuration,
   type ItemResource,
   type StoreItemRequest,
   type UpdateItemRequest,
 } from '@metanull/inventory-app-api-client'
-import { useAuthStore } from './auth'
-import { ErrorHandler } from '@/utils/errorHandler'
-
-// Declare process for Node.js environments
-declare const process: {
-  env: Record<string, string | undefined>
-}
+import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
 
 export const useItemStore = defineStore('item', () => {
-  const items = ref<ItemResource[]>([])
-  const currentItem = ref<ItemResource | null>(null)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const state = createBaseStoreState<ItemResource>()
+  const { category: items, currentEntry: currentItem, loading, error } = state
 
-  const authStore = useAuthStore()
-
-  // Create API client instance with configuration
-  const createApiClient = () => {
-    // Support both Vite (import.meta.env) and Node (process.env) for baseURL
-    let baseURL: string
-    if (
-      typeof import.meta !== 'undefined' &&
-      import.meta.env &&
-      import.meta.env.VITE_API_BASE_URL
-    ) {
-      baseURL = import.meta.env.VITE_API_BASE_URL
-    } else if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
-      baseURL = process.env.VITE_API_BASE_URL
-    } else {
-      baseURL = 'http://127.0.0.1:8000/api'
-    }
-
-    const configParams: { basePath: string; accessToken?: string } = {
-      basePath: baseURL,
-    }
-
-    if (authStore.token) {
-      configParams.accessToken = authStore.token
-    }
-
-    // Create configuration for the API client
-    const configuration = new Configuration(configParams)
-
-    return new ItemApi(configuration)
-  }
-
-  // Computed properties
-  const sortedItems = computed(() => {
-    return [...items.value].sort((a, b) => a.internal_name.localeCompare(b.internal_name))
-  })
-
-  const itemsCount = computed(() => items.value.length)
+  const getApi = () => new ItemApi(createApiConfig())
 
   // Actions
-  const fetchItems = async (): Promise<void> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const api = createApiClient()
-      const response = await api.itemIndex()
-
-      if (response.data && response.data.data) {
-        items.value = response.data.data
-      } else {
-        items.value = []
-      }
-    } catch (err) {
-      error.value = 'Failed to fetch items'
-      ErrorHandler.handleError(err, 'fetchItems')
-      items.value = []
-    } finally {
-      loading.value = false
-    }
+  const fetchItems = async () => {
+    const res = await useApiCall(
+      'fetchItems',
+      () => getApi().itemIndex(),
+      loading,
+      error,
+      'Failed to fetch items'
+    )
+    items.value = res?.data?.data || []
   }
 
-  const fetchItem = async (id: string, include?: string): Promise<void> => {
-    loading.value = true
-    error.value = null
-    currentItem.value = null
-
-    try {
-      const api = createApiClient()
-      const response = await api.itemShow(id, include)
-
-      if (response.data && response.data.data) {
-        currentItem.value = response.data.data
-      } else {
-        throw new Error('Item not found')
-      }
-    } catch (err) {
-      error.value = `Failed to fetch item with ID: ${id}`
-      ErrorHandler.handleError(err, 'fetchItem')
-      currentItem.value = null
-    } finally {
-      loading.value = false
-    }
+  const fetchItem = async (id: string, include?: string) => {
+    state.clearCurrent()
+    const res = await useApiCall(
+      'fetchItem',
+      () => getApi().itemShow(id, include),
+      loading,
+      error,
+      `Failed to fetch item with ID: ${id}`
+    )
+    if (res?.data?.data) currentItem.value = res.data.data
   }
 
-  const createItem = async (itemData: StoreItemRequest): Promise<ItemResource | null> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const api = createApiClient()
-      const response = await api.itemStore(itemData)
-
-      if (response.data && response.data.data) {
-        const newItem = response.data.data
-        items.value.push(newItem)
-        return newItem
-      } else {
-        throw new Error('Failed to create item')
-      }
-    } catch (err) {
-      error.value = 'Failed to create item'
-      ErrorHandler.handleError(err, 'createItem')
-      return null
-    } finally {
-      loading.value = false
-    }
+  const createItem = async (data: StoreItemRequest) => {
+    const res = await useApiCall(
+      'createItem',
+      () => getApi().itemStore(data),
+      loading,
+      error,
+      'Failed to create item'
+    )
+    if (res?.data?.data) items.value.push(res.data.data)
+    return res?.data?.data || null
   }
 
-  const updateItem = async (
-    id: string,
-    itemData: UpdateItemRequest
-  ): Promise<ItemResource | null> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const api = createApiClient()
-      const response = await api.itemUpdate(id, itemData)
-
-      if (response.data && response.data.data) {
-        const updatedItem = response.data.data
-
-        // Update in items list
-        const index = items.value.findIndex(item => item.id === id)
-        if (index !== -1) {
-          items.value[index] = updatedItem
-        }
-
-        // Update current item if it's the same
-        if (currentItem.value && currentItem.value.id === id) {
-          currentItem.value = updatedItem
-        }
-
-        return updatedItem
-      } else {
-        throw new Error('Failed to update item')
-      }
-    } catch (err) {
-      error.value = 'Failed to update item'
-      ErrorHandler.handleError(err, 'updateItem')
-      return null
-    } finally {
-      loading.value = false
+  const updateItem = async (id: string, data: UpdateItemRequest) => {
+    const res = await useApiCall(
+      'updateItem',
+      () => getApi().itemUpdate(id, data),
+      loading,
+      error,
+      'Failed to update item'
+    )
+    if (res?.data?.data) {
+      const idx = items.value.findIndex(item => item.id === id)
+      if (idx !== -1) items.value[idx] = res.data.data
+      if (currentItem.value?.id === id) currentItem.value = res.data.data
     }
+    return res?.data?.data || null
   }
 
-  const deleteItem = async (id: string): Promise<boolean> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const api = createApiClient()
-      await api.itemDestroy(id)
-
-      // Remove from items list
+  const deleteItem = async (id: string) => {
+    const res = await useApiCall(
+      'deleteItem',
+      () => getApi().itemDestroy(id),
+      loading,
+      error,
+      'Failed to delete item'
+    )
+    if (res) {
       items.value = items.value.filter(item => item.id !== id)
-
-      // Clear current item if it's the same
-      if (currentItem.value && currentItem.value.id === id) {
-        currentItem.value = null
-      }
-
-      return true
-    } catch (err) {
-      error.value = 'Failed to delete item'
-      ErrorHandler.handleError(err, 'deleteItem')
-      return false
-    } finally {
-      loading.value = false
+      if (currentItem.value?.id === id) state.clearCurrent()
     }
-  }
-
-  const findItemById = (id: string): ItemResource | undefined => {
-    return items.value.find(item => item.id === id)
-  }
-
-  const clearCurrentItem = (): void => {
-    currentItem.value = null
-  }
-
-  const clearError = (): void => {
-    error.value = null
+    return !!res
   }
 
   return {
-    // State
-    items,
-    currentItem,
-    loading,
-    error,
+    ...state,
 
     // Computed
-    sortedItems,
-    itemsCount,
-
+    sortedItems: computed(() =>
+      [...items.value].sort((a, b) => a.internal_name.localeCompare(b.internal_name))
+    ),
+    itemsCount: computed(() => items.value.length),
+    
     // Actions
     fetchItems,
     fetchItem,
     createItem,
     updateItem,
     deleteItem,
-    findItemById,
-    clearCurrentItem,
-    clearError,
+    findItemById: (id: string) => items.value.find(item => item.id === id),
   }
 })

@@ -117,7 +117,7 @@
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   // Computed
-  const partners = computed(() => partnerStore.partners)
+  const partners = computed(() => partnerStore.category)
 
   const filteredPartners = computed(() => {
     let filtered = [...partners.value]

@@ -76,6 +76,7 @@
               v-if="
                 mode === 'edit' && spellingMode === 'view' && (currentLanguage.id || newLanguage.id)
               "
+              class="mb-4"
             >
               <FormInput
                 v-model="createSpellingForm.spelling"
@@ -87,7 +88,7 @@
             </div>
             <div v-if="currentLanguageSpellings.length > 0">
               <DisplayText>
-                <ul class="mt-4 space-y-2">
+                <ul class="space-y-2">
                   <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
                     <div v-if="spellingMode === 'view'">
                       {{ spelling.spelling }}
@@ -315,10 +316,8 @@
 
   // Resource data
   const glossaryEntry = computed(() => glossaryStore.currentEntry)
-  const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
-  const glossaryTranslationEntry = computed(
-    () => glossaryTranslationStore.currentGlossaryTranslationEntry
-  )
+  const glossarySpellingEntry = computed(() => glossarySpellingStore.currentEntry)
+  const glossaryTranslationEntry = computed(() => glossaryTranslationStore.currentEntry)
   const languages = computed(() => languageStore.allLanguages)
 
   const glossaryEntryLanguages = computed(() => {
@@ -775,12 +774,12 @@
 
       case 'spelling':
         spellingMode.value = 'view'
-        glossarySpellingStore.clearCurrentGlossarySpellingEntry()
+        glossarySpellingStore.clearCurrent()
         break
 
       case 'translation':
         translationMode.value = 'view'
-        glossaryTranslationStore.clearCurrentGlossaryTranslationEntry()
+        glossaryTranslationStore.clearCurrent()
         break
 
       case 'glossary':

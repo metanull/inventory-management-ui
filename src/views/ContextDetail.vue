@@ -226,23 +226,27 @@
     try {
       loadingOverlayStore.show(mode.value === 'create' ? 'Creating...' : 'Saving...')
 
-      let savedContext: ContextResource
+      let savedContext: ContextResource | null = null
       if (mode.value === 'create') {
         const createData = {
           internal_name: editForm.value.internal_name,
           backward_compatibility: editForm.value.backward_compatibility || null,
         }
         savedContext = await contextStore.createContext(createData)
-        router.push(`/contexts/${savedContext.id}`)
-        errorDisplayStore.addMessage('info', 'Context created successfully.')
+        if (savedContext) {
+          router.push(`/contexts/${savedContext.id}`)
+          errorDisplayStore.addMessage('info', 'Context created successfully.')
+        }
       } else {
         const updateData = {
           internal_name: editForm.value.internal_name,
           backward_compatibility: editForm.value.backward_compatibility || null,
         }
         savedContext = await contextStore.updateContext(contextId.value, updateData)
-        exitEditMode()
-        errorDisplayStore.addMessage('info', 'Context updated successfully.')
+        if (savedContext) {
+          exitEditMode()
+          errorDisplayStore.addMessage('info', 'Context updated successfully.')
+        }
       }
     } catch {
       errorDisplayStore.addMessage(

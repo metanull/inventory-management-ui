@@ -202,7 +202,7 @@
   const errorStore = useErrorDisplayStore()
   const deleteStore = useDeleteConfirmationStore()
 
-  const projects = computed(() => projectStore.projects)
+  const projects = computed(() => projectStore.category)
   const visibleProjects = computed(() => projectStore.visibleProjects)
   const enabledProjects = computed(() => projectStore.enabledProjects)
   const launchedProjects = computed(() => projectStore.launchedProjects)

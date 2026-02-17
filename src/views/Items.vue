@@ -116,7 +116,7 @@
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   // Computed
-  const items = computed(() => itemStore.items)
+  const items = computed(() => itemStore.category)
 
   const filteredItems = computed(() => {
     let filtered = [...items.value]

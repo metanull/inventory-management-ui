@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { ContextApi, type ContextResource } from '@metanull/inventory-app-api-client'
 import { createApiConfig, useApiCall, createBaseStoreState } from '@/utils/storeFunctions'
 
-// API Request Types
 interface ContextStoreRequest {
   internal_name: string
   backward_compatibility?: string | null

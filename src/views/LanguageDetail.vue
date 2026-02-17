@@ -131,7 +131,7 @@
   const mode = ref<Mode>('view')
 
   // Computed properties
-  const language = computed(() => languageStore.currentLanguage)
+  const language = computed(() => languageStore.currentEntry)
 
   // Information description based on mode
   const informationDescription = computed(() => {
@@ -290,7 +290,9 @@
         errorStore.addMessage('info', 'Language created successfully.')
 
         // Load the new language and enter view mode
-        await languageStore.fetchLanguage(newLanguage.id)
+        if (newLanguage) {
+          await languageStore.fetchLanguage(newLanguage.id)
+        }
         enterViewMode()
       } else if (mode.value === 'edit' && language.value) {
         // Update existing language - doesn't need ID in payload
@@ -390,7 +392,7 @@
     try {
       if (isCreateRoute) {
         // Clear current language to avoid showing stale data from previously viewed languages
-        languageStore.clearCurrentLanguage()
+        languageStore.clearCurrent()
 
         enterCreateMode()
       } else if (languageId) {

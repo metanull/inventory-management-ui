@@ -196,7 +196,7 @@
   }
 
   // Resource data
-  const item = computed(() => itemStore.currentItem)
+  const item = computed(() => itemStore.currentEntry)
   const partnersList = computed(() => partnerStore.allPartners)
   const projects = computed(() => projectStore.projects)
 

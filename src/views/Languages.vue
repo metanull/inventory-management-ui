@@ -161,7 +161,7 @@
   const errorStore = useErrorDisplayStore()
   const deleteStore = useDeleteConfirmationStore()
 
-  const languages = computed(() => languageStore.languages)
+  const languages = computed(() => languageStore.category)
   const defaultLanguages = computed(() => languageStore.defaultLanguages)
   const links = computed(() => languageStore.pageLinks)
   const meta = computed(() => languageStore.pageMeta)
