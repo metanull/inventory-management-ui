@@ -164,3 +164,5 @@ export const usePartnerStore = defineStore('partner', () => {
     findPartnerById: (id: string) => partners.value.find(p => p.id === id),
   }
 })
+
+export type { PartnerResource }

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import {
   ItemApi,
   type ItemResource,
@@ -106,3 +106,5 @@ export const useItemStore = defineStore('item', () => {
     findItemById: (id: string) => items.value.find(item => item.id === id),
   }
 })
+
+export type { ItemResource }

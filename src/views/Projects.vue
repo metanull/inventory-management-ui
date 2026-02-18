@@ -54,10 +54,7 @@
     </template>
 
     <template #search>
-      <SearchControl
-        v-model="searchQuery"
-        placeholder="Search projects..."
-      />
+      <SearchControl v-model="searchQuery" placeholder="Search projects..." />
     </template>
 
     <template #headers>
@@ -101,10 +98,7 @@
         >
           Created
         </TableHeader>
-        <TableHeader
-          class="hidden sm:table-cell"
-          variant="actions"
-        >
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -157,25 +151,13 @@
             format="short"
             variant="small-dark"
           />
-          <DisplayText
-            v-else
-            variant="gray"
-          >
-            Not scheduled
-          </DisplayText>
+          <DisplayText v-else variant="gray"> Not scheduled </DisplayText>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay
-            :date="project.created_at"
-            format="short"
-            variant="small-dark"
-          />
+          <DateDisplay :date="project.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div
-            class="flex space-x-2"
-            @click.stop
-          >
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/projects/${project.id}`)" />
             <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
             <DeleteButton @click="handleDeleteProject(project)" />
@@ -192,7 +174,7 @@
   import { storeToRefs } from 'pinia'
 
   // Stores
-  import { useProjectStore } from '@/stores/project'
+  import { useProjectStore, type ProjectResource } from '@/stores/project'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -236,7 +218,7 @@
 
   const searchQuery = ref('')
   const filterMode = ref<'visible' | 'all' | 'enabled' | 'launched'>('all')
-  const sortKey = ref<string>('internal_name')
+  const sortKey = ref<keyof ProjectResource>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   const emptyMessage = computed(() => {
@@ -252,7 +234,7 @@
     return 'Get started by creating a new project.'
   })
 
-  function handleSort(key: string) {
+  function handleSort(key: keyof ProjectResource) {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
     } else {
@@ -262,7 +244,7 @@
   }
 
   const filteredProjects = computed(() => {
-    let list: any[]
+    let list: ProjectResource[]
     switch (filterMode.value) {
       case 'visible':
         list = visibleProjects.value
@@ -286,7 +268,7 @@
       )
     }
 
-    return [...list].sort((a: any, b: any) => {
+    return [...list].sort((a: ProjectResource, b: ProjectResource) => {
       const valA = a[sortKey.value] ?? ''
       const valB = b[sortKey.value] ?? ''
       const modifier = sortDirection.value === 'asc' ? 1 : -1
@@ -294,7 +276,7 @@
     })
   })
 
-  const updateProjectStatus = async (project: any, field: string, value: boolean) => {
+  const updateProjectStatus = async (project: ProjectResource, field: string, value: boolean) => {
     try {
       loadingStore.show('Updating...')
       if (field === 'is_enabled') {
@@ -310,7 +292,7 @@
     }
   }
 
-  const handleDeleteProject = async (project: any) => {
+  const handleDeleteProject = async (project: ProjectResource) => {
     const result = await deleteStore.trigger('Delete Project', `Delete "${project.internal_name}"?`)
     if (result === 'delete') {
       try {

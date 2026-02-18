@@ -61,9 +61,7 @@
                 :alt-text="image.alt_text"
               />
             </div>
-            <DisplayText v-else>
-              No images available for this item.
-            </DisplayText>
+            <DisplayText v-else> No images available for this item. </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>

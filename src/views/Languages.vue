@@ -40,10 +40,7 @@
     </template>
 
     <template #search>
-      <SearchControl
-        v-model="searchQuery"
-        placeholder="Search languages..."
-      />
+      <SearchControl v-model="searchQuery" placeholder="Search languages..." />
     </template>
 
     <template #headers>
@@ -71,10 +68,7 @@
         >
           Created
         </TableHeader>
-        <TableHeader
-          class="hidden sm:table-cell"
-          variant="actions"
-        >
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -110,17 +104,10 @@
           </div>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay
-            :date="language.created_at"
-            format="short"
-            variant="small-dark"
-          />
+          <DateDisplay :date="language.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div
-            class="flex space-x-2"
-            @click.stop
-          >
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/languages/${language.id}`)" />
             <EditButton @click="router.push(`/languages/${language.id}?edit=true`)" />
             <DeleteButton @click="handleDeleteLanguage(language)" />
@@ -137,7 +124,7 @@
   import { storeToRefs } from 'pinia'
 
   // Stores
-  import { useLanguageStore } from '@/stores/language'
+  import { useLanguageStore, type LanguageResource } from '@/stores/language'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -177,7 +164,7 @@
     useRoutePagination(languageStore.fetchLanguages)
 
   const filterMode = ref<'all' | 'default'>('all')
-  const sortKey = ref<string>('internal_name')
+  const sortKey = ref<keyof LanguageResource>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
   const searchQuery = ref<string>('')
 
@@ -187,7 +174,7 @@
     return `No ${filterMode.value} languages found.`
   })
 
-  function handleSort(key: string) {
+  function handleSort(key: keyof LanguageResource) {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
     } else {
@@ -208,7 +195,7 @@
       )
     }
 
-    return [...list].sort((a: any, b: any) => {
+    return [...list].sort((a: LanguageResource, b: LanguageResource) => {
       const valA = a[sortKey.value] ?? ''
       const valB = b[sortKey.value] ?? ''
       const modifier = sortDirection.value === 'asc' ? 1 : -1
@@ -216,7 +203,11 @@
     })
   })
 
-  const updateLanguageStatus = async (language: any, field: string, value: boolean) => {
+  const updateLanguageStatus = async (
+    language: LanguageResource,
+    field: string,
+    value: boolean
+  ) => {
     try {
       loadingStore.show('Updating...')
       if (field === 'is_default') {
@@ -230,7 +221,7 @@
     }
   }
 
-  const handleDeleteLanguage = async (language: any) => {
+  const handleDeleteLanguage = async (language: LanguageResource) => {
     const result = await deleteStore.trigger(
       'Delete Language',
       `Delete "${language.internal_name}"?`

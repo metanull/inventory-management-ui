@@ -105,3 +105,5 @@ export const useCountryStore = defineStore('country', () => {
     findCountryById: (id: string) => countries.value.find(c => c.id === id),
   }
 })
+
+export type { CountryResource }

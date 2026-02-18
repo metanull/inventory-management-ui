@@ -23,10 +23,7 @@
     </template>
 
     <template #search>
-      <SearchControl
-        v-model="searchQuery"
-        placeholder="Search glossary..."
-      />
+      <SearchControl v-model="searchQuery" placeholder="Search glossary..." />
     </template>
 
     <template #headers>
@@ -46,10 +43,7 @@
         >
           Created
         </TableHeader>
-        <TableHeader
-          class="hidden sm:table-cell"
-          variant="actions"
-        >
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -74,17 +68,10 @@
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay
-            :date="glossaryEntry.created_at"
-            format="short"
-            variant="small-dark"
-          />
+          <DateDisplay :date="glossaryEntry.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div
-            class="flex space-x-2"
-            @click.stop
-          >
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/glossary/${glossaryEntry.id}`)" />
             <EditButton @click="router.push(`/glossary/${glossaryEntry.id}?edit=true`)" />
             <DeleteButton @click="handleDeleteGlossary(glossaryEntry)" />
@@ -101,7 +88,7 @@
   import { storeToRefs } from 'pinia'
 
   // Stores
-  import { useGlossaryStore } from '@/stores/glossary'
+  import { useGlossaryStore, type GlossaryResource } from '@/stores/glossary'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -134,7 +121,7 @@
     useRoutePagination(glossaryStore.fetchGlossary)
 
   const searchQuery = ref('')
-  const sortKey = ref<string>('internal_name')
+  const sortKey = ref<keyof GlossaryResource>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   const emptyMessage = computed(() => {
@@ -144,7 +131,7 @@
     return 'Get started by creating a new glossary entry.'
   })
 
-  function handleSort(key: string) {
+  function handleSort(key: keyof GlossaryResource) {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
     } else {
@@ -165,7 +152,7 @@
       )
     }
 
-    return list.sort((a: any, b: any) => {
+    return list.sort((a: GlossaryResource, b: GlossaryResource) => {
       const valA = a[sortKey.value] ?? ''
       const valB = b[sortKey.value] ?? ''
       const modifier = sortDirection.value === 'asc' ? 1 : -1
@@ -173,7 +160,7 @@
     })
   })
 
-  const handleDeleteGlossary = async (entry: any) => {
+  const handleDeleteGlossary = async (entry: GlossaryResource) => {
     const result = await deleteStore.trigger(
       'Delete Glossary Entry',
       `Delete "${entry.internal_name}"?`

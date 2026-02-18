@@ -1,9 +1,6 @@
 <template>
   <!-- Compact mode: Only show the Toggle without Card wrapper -->
-  <div
-    v-if="compact"
-    class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
-  >
+  <div v-if="compact" class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
     <Toggle
       :title="toggleTitle"
       :status-text="statusText"
@@ -21,12 +18,7 @@
   </div>
 
   <!-- Standard mode: Show Card with title, description, and Toggle -->
-  <Card
-    v-else
-    :title="title"
-    :description="description"
-    :main-color="mainColor"
-  >
+  <Card v-else :title="title" :description="description" :main-color="mainColor">
     <template #icon>
       <slot name="icon" />
     </template>
@@ -52,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+  import { type Component } from 'vue'
   import Card from './Card.vue'
   import Toggle from '@/components/format/Toggle.vue'
 
@@ -69,8 +62,8 @@
     inactiveIconBackgroundClass: string
     activeIconClass: string
     inactiveIconClass: string
-    activeIconComponent: any
-    inactiveIconComponent: any
+    activeIconComponent: Component
+    inactiveIconComponent: Component
   }>()
 
   defineEmits<{

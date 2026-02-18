@@ -40,10 +40,7 @@
     </template>
 
     <template #search>
-      <SearchControl
-        v-model="searchQuery"
-        placeholder="Search contexts..."
-      />
+      <SearchControl v-model="searchQuery" placeholder="Search contexts..." />
     </template>
 
     <template #headers>
@@ -71,10 +68,7 @@
         >
           Created
         </TableHeader>
-        <TableHeader
-          class="hidden sm:table-cell"
-          variant="actions"
-        >
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -110,17 +104,10 @@
           </div>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay
-            :date="context.created_at"
-            format="short"
-            variant="small-dark"
-          />
+          <DateDisplay :date="context.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div
-            class="flex space-x-2"
-            @click.stop
-          >
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/contexts/${context.id}`)" />
             <EditButton @click="router.push(`/contexts/${context.id}?edit=true`)" />
             <DeleteButton @click="handleDelete(context)" />
@@ -137,7 +124,7 @@
   import { storeToRefs } from 'pinia'
 
   // Stores
-  import { useContextStore } from '@/stores/context'
+  import { useContextStore, type ContextResource } from '@/stores/context'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -173,7 +160,7 @@
 
   // Reactive state
   const filterMode = ref<'all' | 'default'>('all')
-  const sortKey = ref<string>('internal_name')
+  const sortKey = ref<keyof ContextResource>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
   const searchQuery = ref<string>('')
 
@@ -183,7 +170,7 @@
     return `No ${filterMode.value} contexts found.`
   })
 
-  function handleSort(key: string) {
+  function handleSort(key: keyof ContextResource) {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
     } else {
@@ -204,7 +191,7 @@
       )
     }
 
-    return [...list].sort((a: any, b: any) => {
+    return [...list].sort((a: ContextResource, b: ContextResource) => {
       const valA = a[sortKey.value] ?? ''
       const valB = b[sortKey.value] ?? ''
       const modifier = sortDirection.value === 'asc' ? 1 : -1
@@ -212,7 +199,7 @@
     })
   })
 
-  const updateContextStatus = async (context: any, field: string, value: boolean) => {
+  const updateContextStatus = async (context: ContextResource, field: string, value: boolean) => {
     try {
       loadingStore.show('Updating...')
       if (field === 'is_default') {
@@ -226,7 +213,7 @@
     }
   }
 
-  const handleDelete = async (context: any) => {
+  const handleDelete = async (context: ContextResource) => {
     const result = await deleteStore.trigger('Delete Context', `Delete "${context.internal_name}"?`)
     if (result === 'delete') {
       try {

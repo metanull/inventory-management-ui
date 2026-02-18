@@ -7,10 +7,7 @@
   >
     <div class="flex items-center">
       <slot />
-      <span
-        v-if="sortable"
-        class="ml-2"
-      >
+      <span v-if="sortable" class="ml-2">
         <ChevronUpIcon
           v-if="sortDirection && sortDirection === 'asc'"
           class="h-4 w-4 text-blue-500"
@@ -19,10 +16,7 @@
           v-else-if="sortDirection && sortDirection === 'desc'"
           class="h-4 w-4 text-blue-500"
         />
-        <ChevronUpDownIcon
-          v-else
-          class="h-4 w-4 text-blue-500"
-        />
+        <ChevronUpDownIcon v-else class="h-4 w-4 text-blue-500" />
       </span>
     </div>
   </th>

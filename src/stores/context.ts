@@ -173,3 +173,5 @@ export const useContextStore = defineStore('context', () => {
     clearCurrentContext: state.clearCurrent,
   }
 })
+
+export type { ContextResource }

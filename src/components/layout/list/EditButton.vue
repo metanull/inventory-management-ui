@@ -8,12 +8,7 @@
     :disabled="disabled"
     @click="!disabled && $emit('click')"
   >
-    <svg
-      class="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         stroke-linecap="round"
         stroke-linejoin="round"

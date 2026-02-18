@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import {
   GlossaryApi,
   type GlossaryResource,
@@ -7,11 +7,6 @@ import {
   type UpdateGlossaryRequest,
 } from '@metanull/inventory-app-api-client'
 import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
-
-// Declare process for Node.js environments
-declare const process: {
-  env: Record<string, string | undefined>
-}
 
 export const useGlossaryStore = defineStore('glossary', () => {
   const state = createPaginatedStoreState<GlossaryResource>()
@@ -121,3 +116,5 @@ export const useGlossaryStore = defineStore('glossary', () => {
     },
   }
 })
+
+export type { GlossaryResource }

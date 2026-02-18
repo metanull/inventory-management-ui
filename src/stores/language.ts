@@ -191,3 +191,5 @@ export const useLanguageStore = defineStore('language', () => {
     getDefaultLanguage,
   }
 })
+
+export type { LanguageResource }

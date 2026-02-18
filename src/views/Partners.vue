@@ -23,10 +23,7 @@
     </template>
 
     <template #search>
-      <SearchControl
-        v-model="searchQuery"
-        placeholder="Search partners..."
-      />
+      <SearchControl v-model="searchQuery" placeholder="Search partners..." />
     </template>
 
     <template #headers>
@@ -46,10 +43,7 @@
         >
           Created
         </TableHeader>
-        <TableHeader
-          class="hidden sm:table-cell"
-          variant="actions"
-        >
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -74,17 +68,10 @@
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay
-            :date="partner.created_at"
-            format="short"
-            variant="small-dark"
-          />
+          <DateDisplay :date="partner.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div
-            class="flex space-x-2"
-            @click.stop
-          >
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/partners/${partner.id}`)" />
             <EditButton @click="router.push(`/partners/${partner.id}?edit=true`)" />
             <DeleteButton @click="handleDeletePartner(partner)" />
@@ -101,7 +88,7 @@
   import { storeToRefs } from 'pinia'
 
   // Stores
-  import { usePartnerStore } from '@/stores/partner'
+  import { usePartnerStore, type PartnerResource } from '@/stores/partner'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -134,7 +121,7 @@
     useRoutePagination(partnerStore.fetchPartners)
 
   const searchQuery = ref('')
-  const sortKey = ref<string>('internal_name')
+  const sortKey = ref<keyof PartnerResource>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   const emptyMessage = computed(() => {
@@ -144,7 +131,7 @@
     return 'Get started by creating a new partner.'
   })
 
-  function handleSort(key: string) {
+  function handleSort(key: keyof PartnerResource) {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
     } else {
@@ -165,7 +152,7 @@
       )
     }
 
-    return list.sort((a: any, b: any) => {
+    return list.sort((a: PartnerResource, b: PartnerResource) => {
       const valA = a[sortKey.value] ?? ''
       const valB = b[sortKey.value] ?? ''
       const modifier = sortDirection.value === 'asc' ? 1 : -1
@@ -173,7 +160,7 @@
     })
   })
 
-  const handleDeletePartner = async (partner: any) => {
+  const handleDeletePartner = async (partner: PartnerResource) => {
     const result = await deleteStore.trigger('Delete Partner', `Delete "${partner.internal_name}"?`)
     if (result === 'delete') {
       try {

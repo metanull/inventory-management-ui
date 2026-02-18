@@ -23,10 +23,7 @@
     </template>
 
     <template #search>
-      <SearchControl
-        v-model="searchQuery"
-        placeholder="Search items..."
-      />
+      <SearchControl v-model="searchQuery" placeholder="Search items..." />
     </template>
 
     <template #headers>
@@ -46,10 +43,7 @@
         >
           Created
         </TableHeader>
-        <TableHeader
-          class="hidden sm:table-cell"
-          variant="actions"
-        >
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -74,17 +68,10 @@
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay
-            :date="item.created_at"
-            format="short"
-            variant="small-dark"
-          />
+          <DateDisplay :date="item.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div
-            class="flex space-x-2"
-            @click.stop
-          >
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/items/${item.id}`)" />
             <EditButton @click="router.push(`/items/${item.id}?edit=true`)" />
             <DeleteButton @click="handleDeleteItem(item)" />
@@ -101,7 +88,7 @@
   import { storeToRefs } from 'pinia'
 
   // Stores
-  import { useItemStore } from '@/stores/item'
+  import { useItemStore, type ItemResource } from '@/stores/item'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
@@ -134,7 +121,7 @@
     useRoutePagination(itemStore.fetchItems)
 
   const searchQuery = ref('')
-  const sortKey = ref<string>('internal_name')
+  const sortKey = ref<keyof ItemResource>('internal_name')
   const sortDirection = ref<'asc' | 'desc'>('asc')
 
   const emptyMessage = computed(() => {
@@ -144,7 +131,7 @@
     return 'Get started by creating a new item.'
   })
 
-  function handleSort(key: string) {
+  function handleSort(key: keyof ItemResource) {
     if (sortKey.value === key) {
       sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
     } else {
@@ -165,7 +152,7 @@
       )
     }
 
-    return list.sort((a: any, b: any) => {
+    return list.sort((a: ItemResource, b: ItemResource) => {
       const valA = a[sortKey.value] ?? ''
       const valB = b[sortKey.value] ?? ''
       const modifier = sortDirection.value === 'asc' ? 1 : -1
@@ -173,7 +160,7 @@
     })
   })
 
-  const handleDeleteItem = async (item: any) => {
+  const handleDeleteItem = async (item: ItemResource) => {
     const result = await deleteStore.trigger('Delete Item', `Delete "${item.internal_name}"?`)
     if (result === 'delete') {
       try {

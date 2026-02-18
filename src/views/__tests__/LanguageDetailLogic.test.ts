@@ -224,32 +224,25 @@ describe('LanguageDetail Logic Tests', () => {
   describe('Mode Management Logic', () => {
     it('should determine create mode', () => {
       const languageId = 'new'
-      const isCreateMode = languageId === 'new'
-
-      expect(isCreateMode).toBe(true)
+      expect(languageId === 'new').toBe(true)
     })
 
     it('should determine edit/view mode', () => {
       const languageId = 'eng'
       const mode = 'edit'
 
-      const isCreateMode = languageId === 'new'
-      const isEditMode = !isCreateMode && mode === 'edit'
-      const isViewMode = !isCreateMode && mode !== 'edit'
-
-      expect(isCreateMode).toBe(false)
-      expect(isEditMode).toBe(true)
-      expect(isViewMode).toBe(false)
+      expect(languageId === 'new').toBe(false)
+      expect(languageId !== 'new' && mode === 'edit').toBe(true)
+      expect(languageId !== 'new' && mode !== 'edit').toBe(false)
     })
 
     it('should handle mode transitions', () => {
       let mode = 'view'
+      expect(mode).toBe('view')
 
-      // View to edit
       mode = 'edit'
       expect(mode).toBe('edit')
 
-      // Edit to view
       mode = 'view'
       expect(mode).toBe('view')
     })

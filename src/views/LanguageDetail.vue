@@ -69,30 +69,16 @@
             </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow
-          v-if="language?.created_at"
-          variant="white"
-        >
+        <DescriptionRow v-if="language?.created_at" variant="white">
           <DescriptionTerm>Created</DescriptionTerm>
           <DescriptionDetail>
-            <DateDisplay
-              :date="language.created_at"
-              format="medium"
-              variant="small-dark"
-            />
+            <DateDisplay :date="language.created_at" format="medium" variant="small-dark" />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow
-          v-if="language?.updated_at"
-          variant="gray"
-        >
+        <DescriptionRow v-if="language?.updated_at" variant="gray">
           <DescriptionTerm>Last Updated</DescriptionTerm>
           <DescriptionDetail>
-            <DateDisplay
-              :date="language.updated_at"
-              format="medium"
-              variant="small-dark"
-            />
+            <DateDisplay :date="language.updated_at" format="medium" variant="small-dark" />
           </DescriptionDetail>
         </DescriptionRow>
       </DescriptionList>

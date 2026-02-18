@@ -7,18 +7,10 @@
     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
     @change="handleChange"
   >
-    <option
-      v-if="placeholder"
-      value=""
-      disabled
-    >
+    <option v-if="placeholder" value="" disabled>
       {{ placeholder }}
     </option>
-    <option
-      v-for="option in options"
-      :key="option.id"
-      :value="option.id"
-    >
+    <option v-for="option in options" :key="option.id" :value="option.id">
       {{ option.internal_name }}
     </option>
   </select>
@@ -32,12 +24,10 @@
     :value="modelValue"
     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
     @input="handleInput"
-  >
+  />
 </template>
 
 <script setup lang="ts">
-  /*global HTMLSelectElement*/
-
   interface Option {
     id: string
     internal_name: string
