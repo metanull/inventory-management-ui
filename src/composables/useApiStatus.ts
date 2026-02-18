@@ -2,44 +2,38 @@ import { ref, onMounted } from 'vue'
 import {
   Configuration,
   InfoApi,
-  type InfoVersion200Response,
 } from '@metanull/inventory-app-api-client'
+
+type InfoVersionData = Awaited<ReturnType<InstanceType<typeof InfoApi>['infoVersion']>>['data']
 
 export function useApiStatus() {
   const isApiUp = ref(false)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const versionData = ref<InfoVersion200Response | null>(null)
+  const versionData = ref<InfoVersionData | null>(null)
 
   const checkApiStatus = async () => {
     loading.value = true
     error.value = null
 
     try {
-      // Support both Vite (import.meta.env) and Node (process.env) for baseURL
-      let baseURL: string
-      if (
-        typeof import.meta !== 'undefined' &&
-        import.meta.env &&
-        import.meta.env.VITE_API_BASE_URL
-      ) {
-        baseURL = import.meta.env.VITE_API_BASE_URL
-      } else {
-        baseURL = 'http://127.0.0.1:8000/api'
-      }
+      // Use Vite environment variables with a fallback for local development
+      const baseURL = import.meta.env?.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
 
       const config = new Configuration({ basePath: baseURL })
       const infoApi = new InfoApi(config)
 
-      // Only call the version endpoint
+      // Execute the request
       const versionResponse = await infoApi.infoVersion()
+      
+      // Update state on success
       versionData.value = versionResponse.data
-
       isApiUp.value = true
     } catch (e) {
+      // Reset states on failure
       isApiUp.value = false
-      error.value = e instanceof Error ? e.message : 'Unknown error'
       versionData.value = null
+      error.value = e instanceof Error ? e.message : 'Unknown error'
     } finally {
       loading.value = false
     }
