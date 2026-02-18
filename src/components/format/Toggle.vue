@@ -1,9 +1,6 @@
 <template>
   <!-- Small version - just the toggle switch -->
-  <div
-    v-if="small"
-    class="flex items-center justify-center"
-  >
+  <div v-if="small" class="flex items-center justify-center">
     <button
       type="button"
       :disabled="disabled || loading"
@@ -14,16 +11,10 @@
       @click="handleToggle"
     >
       <span :class="toggleSwitchClasses">
-        <span
-          :class="inactiveIconClasses"
-          aria-hidden="true"
-        >
+        <span :class="inactiveIconClasses" aria-hidden="true">
           <XMarkIcon class="h-3 w-3 text-gray-400" />
         </span>
-        <span
-          :class="activeIconClasses"
-          aria-hidden="true"
-        >
+        <span :class="activeIconClasses" aria-hidden="true">
           <CheckIcon class="h-3 w-3 text-indigo-600" />
         </span>
       </span>
@@ -31,20 +22,14 @@
   </div>
 
   <!-- Full version - card with icon, text, and toggle -->
-  <div
-    v-else
-    class="bg-white overflow-hidden shadow rounded-lg"
-  >
+  <div v-else class="bg-white overflow-hidden shadow rounded-lg">
     <div class="p-5">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div
             :class="['w-8 h-8 rounded-full flex items-center justify-center', iconBackgroundClass]"
           >
-            <component
-              :is="iconComponent"
-              :class="['w-5 h-5', iconClass]"
-            />
+            <component :is="iconComponent" :class="['w-5 h-5', iconClass]" />
           </div>
         </div>
         <div class="ml-5 w-0 flex-1">
@@ -57,15 +42,9 @@
             </dd>
           </dl>
         </div>
-        <div
-          v-if="!hideSwitch"
-          class="ml-5 flex-shrink-0"
-        >
+        <div v-if="!hideSwitch" class="ml-5 flex-shrink-0">
           <div class="flex items-center space-x-3">
-            <span
-              v-if="loading"
-              class="text-sm text-gray-500"
-            >Updating...</span>
+            <span v-if="loading" class="text-sm text-gray-500">Updating...</span>
             <button
               type="button"
               :disabled="disabled || loading"
@@ -75,16 +54,10 @@
               @click="handleToggle"
             >
               <span :class="toggleSwitchClasses">
-                <span
-                  :class="inactiveIconClasses"
-                  aria-hidden="true"
-                >
+                <span :class="inactiveIconClasses" aria-hidden="true">
                   <XMarkIcon class="h-3 w-3 text-gray-400" />
                 </span>
-                <span
-                  :class="activeIconClasses"
-                  aria-hidden="true"
-                >
+                <span :class="activeIconClasses" aria-hidden="true">
                   <CheckIcon class="h-3 w-3 text-indigo-600" />
                 </span>
               </span>

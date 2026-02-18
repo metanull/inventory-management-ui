@@ -8,10 +8,7 @@
     @background-click="cancelChangesStore.stay()"
   >
     <template #icon>
-      <ExclamationTriangleIcon
-        class="h-6 w-6 text-yellow-600"
-        aria-hidden="true"
-      />
+      <ExclamationTriangleIcon class="h-6 w-6 text-yellow-600" aria-hidden="true" />
     </template>
 
     <template #actions>

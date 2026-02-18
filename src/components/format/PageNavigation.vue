@@ -19,18 +19,9 @@
         ‹
       </button>
 
-      <nav
-        class="flex items-center gap-1"
-        aria-label="Pagination"
-      >
-        <template
-          v-for="(link, index) in filteredLinks"
-          :key="index"
-        >
-          <span
-            v-if="isEllipsis(link)"
-            class="px-2 py-1 text-gray-400"
-          > {{ link.label }} </span>
+      <nav class="flex items-center gap-1" aria-label="Pagination">
+        <template v-for="(link, index) in filteredLinks" :key="index">
+          <span v-if="isEllipsis(link)" class="px-2 py-1 text-gray-400"> {{ link.label }} </span>
 
           <button
             v-else
@@ -69,10 +60,7 @@
     </div>
 
     <div class="flex items-center gap-2 border-l pl-4">
-      <label
-        :for="jumpPageId"
-        class="text-sm text-gray-600 whitespace-nowrap"
-      >Go to</label>
+      <label :for="jumpPageId" class="text-sm text-gray-600 whitespace-nowrap">Go to</label>
       <input
         :id="jumpPageId"
         type="number"
@@ -81,26 +69,19 @@
         class="w-12 border rounded px-1 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         placeholder="#"
         @keydown.enter="e => goToPage((e.target as HTMLInputElement).value)"
-      >
+      />
     </div>
 
     <div class="ml-auto flex items-center gap-4">
       <div class="flex items-center gap-2">
-        <label
-          :for="perPageId"
-          class="text-sm text-gray-600 whitespace-nowrap"
-        >Per page</label>
+        <label :for="perPageId" class="text-sm text-gray-600 whitespace-nowrap">Per page</label>
         <select
           :id="perPageId"
           v-model.number="localPerPage"
           class="border rounded px-1 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500"
           @change="onPerPageChange"
         >
-          <option
-            v-for="per in perPageOptions"
-            :key="per"
-            :value="per"
-          >
+          <option v-for="per in perPageOptions" :key="per" :value="per">
             {{ per }}
           </option>
         </select>

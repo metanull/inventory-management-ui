@@ -1,14 +1,7 @@
 <template>
   <div class="border-t border-gray-200 py-4">
-    <div
-      v-if="fullImageUrl"
-      class="mb-4"
-    >
-      <img
-        :src="fullImageUrl"
-        :alt="altText ?? ''"
-        class="max-w-full h-auto"
-      >
+    <div v-if="fullImageUrl" class="mb-4">
+      <img :src="fullImageUrl" :alt="altText ?? ''" class="max-w-full h-auto" />
     </div>
 
     <slot />

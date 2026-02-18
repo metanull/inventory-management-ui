@@ -8,7 +8,7 @@
         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-3 pr-10 py-2"
         @input="handleInput"
         @keydown.enter="handleSearch"
-      >
+      />
     </div>
     <button
       type="button"

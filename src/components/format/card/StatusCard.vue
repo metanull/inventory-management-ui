@@ -1,9 +1,6 @@
 <template>
   <!-- Compact mode: Only show the Toggle without Card wrapper -->
-  <div
-    v-if="compact"
-    class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
-  >
+  <div v-if="compact" class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
     <Toggle
       :title="toggleTitle"
       :status-text="statusText"
@@ -21,12 +18,7 @@
   </div>
 
   <!-- Standard mode: Show Card with title, description, and Toggle -->
-  <Card
-    v-else
-    :title="title"
-    :description="description"
-    :main-color="mainColor"
-  >
+  <Card v-else :title="title" :description="description" :main-color="mainColor">
     <template #icon>
       <slot name="icon" />
     </template>
