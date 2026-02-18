@@ -61,7 +61,9 @@
                 :alt-text="image.alt_text"
               />
             </div>
-            <DisplayText v-else> No images available for this item. </DisplayText>
+            <DisplayText v-else>
+              No images available for this item.
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -209,7 +211,7 @@
   // Resource data
   const item = computed(() => itemStore.currentEntry)
   const partnersList = computed(() => partnerStore.allPartners)
-  const projects = computed(() => projectStore.projects)
+  const projects = computed(() => projectStore.category)
 
   const types = Object.entries(StoreItemRequestTypeEnum).map(([key, value]) => ({
     id: key,

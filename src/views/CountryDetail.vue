@@ -67,13 +67,19 @@
             </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="country?.created_at" variant="white">
+        <DescriptionRow
+          v-if="country?.created_at"
+          variant="white"
+        >
           <DescriptionTerm>Created</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="country.created_at" />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="country?.updated_at" variant="gray">
+        <DescriptionRow
+          v-if="country?.updated_at"
+          variant="gray"
+        >
           <DescriptionTerm>Updated</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="country.updated_at" />

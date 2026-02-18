@@ -1,5 +1,8 @@
 <template>
-  <span :class="className" :title="fullUuid">
+  <span
+    :class="className"
+    :title="fullUuid"
+  >
     {{ displayedUuid }}
   </span>
 </template>

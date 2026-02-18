@@ -1,5 +1,9 @@
 <template>
-  <Card :title="title" :description="description" :main-color="mainColor">
+  <Card
+    :title="title"
+    :description="description"
+    :main-color="mainColor"
+  >
     <template #icon>
       <slot name="icon" />
     </template>
