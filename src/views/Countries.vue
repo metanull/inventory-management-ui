@@ -23,10 +23,7 @@
     </template>
 
     <template #search>
-      <SearchControl
-        v-model="searchQuery"
-        placeholder="Search countries..."
-      />
+      <SearchControl v-model="searchQuery" placeholder="Search countries..." />
     </template>
 
     <template #headers>
@@ -46,10 +43,7 @@
         >
           Created
         </TableHeader>
-        <TableHeader
-          class="hidden sm:table-cell"
-          variant="actions"
-        >
+        <TableHeader class="hidden sm:table-cell" variant="actions">
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -74,17 +68,10 @@
           </InternalName>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay
-            :date="country.created_at"
-            format="short"
-            variant="small-dark"
-          />
+          <DateDisplay :date="country.created_at" format="short" variant="small-dark" />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div
-            class="flex space-x-2"
-            @click.stop
-          >
+          <div class="flex space-x-2" @click.stop>
             <ViewButton @click="router.push(`/countries/${country.id}`)" />
             <EditButton @click="router.push(`/countries/${country.id}?edit=true`)" />
             <DeleteButton @click="handleDeleteCountry(country)" />

@@ -13,7 +13,6 @@ export default [
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   ...tseslint.configs.recommended,
-  configPrettier,
 
   {
     name: 'app/vue-typescript',
@@ -56,4 +55,6 @@ export default [
       },
     },
   },
+
+  configPrettier,
 ]

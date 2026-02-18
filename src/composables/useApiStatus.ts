@@ -1,8 +1,5 @@
 import { ref, onMounted } from 'vue'
-import {
-  Configuration,
-  InfoApi,
-} from '@metanull/inventory-app-api-client'
+import { Configuration, InfoApi } from '@metanull/inventory-app-api-client'
 
 type InfoVersionData = Awaited<ReturnType<InstanceType<typeof InfoApi>['infoVersion']>>['data']
 
@@ -25,7 +22,7 @@ export function useApiStatus() {
 
       // Execute the request
       const versionResponse = await infoApi.infoVersion()
-      
+
       // Update state on success
       versionData.value = versionResponse.data
       isApiUp.value = true

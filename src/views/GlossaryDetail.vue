@@ -36,10 +36,7 @@
           </DescriptionDetail>
         </DescriptionRow>
 
-        <DescriptionRow
-          v-if="glossaryEntryLanguages.length > 0 || mode === 'edit'"
-          variant="white"
-        >
+        <DescriptionRow v-if="glossaryEntryLanguages.length > 0 || mode === 'edit'" variant="white">
           <DescriptionTerm>Available Languages</DescriptionTerm>
           <DescriptionDetail>
             <div class="mb-4 grid grid-cols-5 gap-2">
@@ -92,10 +89,7 @@
             <div v-if="currentLanguageSpellings.length > 0">
               <DisplayText>
                 <ul class="space-y-2">
-                  <li
-                    v-for="(spelling, index) in currentLanguageSpellings"
-                    :key="index"
-                  >
+                  <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
                     <div v-if="spellingMode === 'view'">
                       {{ spelling.spelling }}
                       <EditButton
@@ -118,10 +112,7 @@
                         :placeholder="`Editing this spelling: ${spelling.spelling}`"
                         class="mb-2"
                       />
-                      <SaveButton
-                        class="mr-2"
-                        @click="saveGlossarySpellingEntry"
-                      />
+                      <SaveButton class="mr-2" @click="saveGlossarySpellingEntry" />
                       <CancelButton @click="cancel('spelling')" />
                     </div>
                   </li>
@@ -173,10 +164,7 @@
                 :placeholder="`Enter the ${currentLanguage.id ? currentLanguage.internal_name : newLanguage.internal_name} definition here.`"
                 class="mb-2"
               />
-              <SaveButton
-                class="mr-2"
-                @click="saveGlossaryTranslation"
-              />
+              <SaveButton class="mr-2" @click="saveGlossaryTranslation" />
             </div>
             <div
               v-else-if="
@@ -198,19 +186,13 @@
                 :placeholder="`Edit the ${currentLanguage.internal_name} definition.`"
                 class="mb-2"
               />
-              <SaveButton
-                class="mr-2"
-                @click="saveGlossaryTranslation"
-              />
+              <SaveButton class="mr-2" @click="saveGlossaryTranslation" />
               <CancelButton @click="cancel('translation')" />
             </div>
           </DescriptionDetail>
         </DescriptionRow>
 
-        <DescriptionRow
-          v-if="glossaryEntry?.created_at"
-          variant="white"
-        >
+        <DescriptionRow v-if="glossaryEntry?.created_at" variant="white">
           <DescriptionTerm>Creation Date</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="glossaryEntry.created_at" />
