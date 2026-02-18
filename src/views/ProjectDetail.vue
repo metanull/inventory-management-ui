@@ -32,7 +32,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ project?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ project?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -47,7 +49,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ project?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ project?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -65,7 +69,12 @@
                 format="medium"
                 variant="small-dark"
               />
-              <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+              <DisplayText
+                v-else
+                variant="gray"
+              >
+                Not scheduled
+              </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>
@@ -81,8 +90,15 @@
               no-default-value=""
             />
             <template v-else>
-              <DisplayText v-if="project?.context">{{ project.context.internal_name }}</DisplayText>
-              <DisplayText v-else variant="gray">No default context set</DisplayText>
+              <DisplayText v-if="project?.context">
+                {{ project.context.internal_name }}
+              </DisplayText>
+              <DisplayText
+                v-else
+                variant="gray"
+              >
+                No default context set
+              </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>
@@ -98,10 +114,17 @@
               no-default-value=""
             />
             <template v-else>
-              <DisplayText v-if="project?.language">{{
-                project.language.internal_name
-              }}</DisplayText>
-              <DisplayText v-else variant="gray">No default language set</DisplayText>
+              <DisplayText v-if="project?.language">
+                {{
+                  project.language.internal_name
+                }}
+              </DisplayText>
+              <DisplayText
+                v-else
+                variant="gray"
+              >
+                No default language set
+              </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>

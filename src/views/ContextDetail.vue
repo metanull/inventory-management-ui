@@ -31,7 +31,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ context?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ context?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -46,7 +48,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ context?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ context?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
       </DescriptionList>

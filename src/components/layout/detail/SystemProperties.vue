@@ -1,28 +1,48 @@
 <template>
   <div class="bg-white shadow overflow-hidden sm:rounded-lg">
     <div class="px-4 py-5 sm:px-6">
-      <Title variant="system" description="Internal system data managed by the API.">
+      <Title
+        variant="system"
+        description="Internal system data managed by the API."
+      >
         System Properties
       </Title>
     </div>
     <div class="border-t border-gray-200">
       <DescriptionList>
         <DescriptionRow size="small">
-          <DescriptionTerm variant="small-gray">ID</DescriptionTerm>
+          <DescriptionTerm variant="small-gray">
+            ID
+          </DescriptionTerm>
           <DescriptionDetail variant="small-gray">
-            <UuidDisplay :uuid="id" format="long" />
+            <UuidDisplay
+              :uuid="id"
+              format="long"
+            />
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow size="small">
-          <DescriptionTerm variant="small-gray">Created</DescriptionTerm>
+          <DescriptionTerm variant="small-gray">
+            Created
+          </DescriptionTerm>
           <DescriptionDetail variant="small-gray">
-            <DateDisplay :date="createdAt" format="medium" show-time />
+            <DateDisplay
+              :date="createdAt"
+              format="medium"
+              show-time
+            />
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow size="small">
-          <DescriptionTerm variant="small-gray">Last Updated</DescriptionTerm>
+          <DescriptionTerm variant="small-gray">
+            Last Updated
+          </DescriptionTerm>
           <DescriptionDetail variant="small-gray">
-            <DateDisplay :date="updatedAt" format="medium" show-time />
+            <DateDisplay
+              :date="updatedAt"
+              format="medium"
+              show-time
+            />
           </DescriptionDetail>
         </DescriptionRow>
       </DescriptionList>

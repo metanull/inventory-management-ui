@@ -1,7 +1,10 @@
 <template>
   <div>
     <!-- Detail Content -->
-    <div v-if="resource || mode === 'create'" class="relative space-y-6">
+    <div
+      v-if="resource || mode === 'create'"
+      class="relative space-y-6"
+    >
       <!-- Header -->
       <div
         class="bg-white shadow"
@@ -11,13 +14,19 @@
           <div class="flex items-center justify-between">
             <div>
               <!-- Back Navigation Link -->
-              <div v-if="backLink" class="mb-2">
+              <div
+                v-if="backLink"
+                class="mb-2"
+              >
                 <router-link
                   :to="backLink.route"
                   :class="backLinkClasses"
                   class="inline-flex items-center text-sm font-medium transition-colors hover:underline"
                 >
-                  <component :is="backLink.icon" class="w-4 h-4 mr-1" />
+                  <component
+                    :is="backLink.icon"
+                    class="w-4 h-4 mr-1"
+                  />
                   {{ backLink.title }}
                 </router-link>
               </div>
@@ -60,7 +69,10 @@
                 <DeleteButton @click="$emit('delete')" />
               </template>
               <template v-else>
-                <SaveButton :disabled="isSaveDisabled" @click="$emit('save')" />
+                <SaveButton
+                  :disabled="isSaveDisabled"
+                  @click="$emit('save')"
+                />
                 <CancelButton @click="handleCancel" />
               </template>
             </div>
@@ -96,14 +108,24 @@
       </div>
 
       <!-- Information Section (Slot) -->
-      <div class="bg-white shadow overflow-hidden sm:rounded-lg" :class="{}">
+      <div
+        class="bg-white shadow overflow-hidden sm:rounded-lg"
+        :class="{}"
+      >
         <div class="px-4 py-5 sm:px-6">
-          <Title variant="section" :description="informationDescription">
+          <Title
+            variant="section"
+            :description="informationDescription"
+          >
             {{ informationTitle }}
           </Title>
         </div>
         <div class="border-t border-gray-200">
-          <slot name="information" :mode="mode" :on-field-change="handleFieldChange" />
+          <slot
+            name="information"
+            :mode="mode"
+            :on-field-change="handleFieldChange"
+          />
         </div>
       </div>
 

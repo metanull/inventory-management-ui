@@ -32,7 +32,9 @@
               placeholder="ISO country code (e.g., GBR)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ country?.id }}</DisplayText>
+            <DisplayText v-else>
+              {{ country?.id }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -43,7 +45,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ country?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ country?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -58,16 +62,24 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ country?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ country?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="country?.created_at" variant="white">
+        <DescriptionRow
+          v-if="country?.created_at"
+          variant="white"
+        >
           <DescriptionTerm>Created</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="country.created_at" />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="country?.updated_at" variant="gray">
+        <DescriptionRow
+          v-if="country?.updated_at"
+          variant="gray"
+        >
           <DescriptionTerm>Updated</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="country.updated_at" />

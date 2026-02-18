@@ -3,7 +3,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center py-6">
         <div class="flex items-center">
-          <RouterLink to="/" class="text-2xl font-bold text-gray-900">
+          <RouterLink
+            to="/"
+            class="text-2xl font-bold text-gray-900"
+          >
             {{ appTitle }}
           </RouterLink>
         </div>
@@ -18,7 +21,10 @@
           </RouterLink>
 
           <!-- Reference Data Dropdown -->
-          <div class="relative" @mouseleave="closeDropdown">
+          <div
+            class="relative"
+            @mouseleave="closeDropdown"
+          >
             <button
               class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-lg font-medium flex items-center gap-1"
               @mouseenter="openDropdown"
@@ -91,14 +97,23 @@
             class="text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 p-2"
             @click="toggleMobileMenu"
           >
-            <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" />
-            <XMarkIcon v-else class="w-6 h-6" />
+            <Bars3Icon
+              v-if="!isMobileMenuOpen"
+              class="w-6 h-6"
+            />
+            <XMarkIcon
+              v-else
+              class="w-6 h-6"
+            />
           </button>
         </div>
       </div>
 
       <!-- Mobile Navigation -->
-      <div v-if="isMobileMenuOpen" class="md:hidden border-t border-gray-200 py-4">
+      <div
+        v-if="isMobileMenuOpen"
+        class="md:hidden border-t border-gray-200 py-4"
+      >
         <div class="flex flex-col space-y-2">
           <RouterLink
             to="/"
@@ -122,7 +137,10 @@
               />
             </button>
 
-            <div v-if="isMobileDropdownOpen" class="mt-2 space-y-2 pl-4 border-l-2 border-gray-200">
+            <div
+              v-if="isMobileDropdownOpen"
+              class="mt-2 space-y-2 pl-4 border-l-2 border-gray-200"
+            >
               <RouterLink
                 to="/languages"
                 class="text-gray-500 hover:text-gray-900 block py-2 text-sm flex items-center gap-2"

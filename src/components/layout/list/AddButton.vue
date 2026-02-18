@@ -1,6 +1,12 @@
 <template>
-  <router-link :to="to" :class="buttonClasses">
-    <PlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+  <router-link
+    :to="to"
+    :class="buttonClasses"
+  >
+    <PlusIcon
+      class="-ml-1 mr-2 h-5 w-5"
+      aria-hidden="true"
+    />
     {{ label || 'Add Item' }}
   </router-link>
 </template>

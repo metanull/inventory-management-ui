@@ -10,10 +10,10 @@
     :empty-message="emptyMessage"
     :show-empty-add-button="filterMode === 'all'"
     empty-add-button-label="New Project"
-    @retry="fetchProjects"
     :links="links"
     :meta="meta"
     :per-page="currentPerPage"
+    @retry="fetchProjects"
     @change-page-number="handlePageChange"
     @per-page-change="handlePerPageChange"
     @change-page="handleUrlChange"
@@ -54,7 +54,10 @@
     </template>
 
     <template #search>
-      <SearchControl v-model="searchQuery" placeholder="Search projects..." />
+      <SearchControl
+        v-model="searchQuery"
+        placeholder="Search projects..."
+      />
     </template>
 
     <template #headers>
@@ -98,7 +101,10 @@
         >
           Created
         </TableHeader>
-        <TableHeader class="hidden sm:table-cell" variant="actions">
+        <TableHeader
+          class="hidden sm:table-cell"
+          variant="actions"
+        >
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -151,13 +157,25 @@
             format="short"
             variant="small-dark"
           />
-          <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+          <DisplayText
+            v-else
+            variant="gray"
+          >
+            Not scheduled
+          </DisplayText>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay :date="project.created_at" format="short" variant="small-dark" />
+          <DateDisplay
+            :date="project.created_at"
+            format="short"
+            variant="small-dark"
+          />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div class="flex space-x-2" @click.stop>
+          <div
+            class="flex space-x-2"
+            @click.stop
+          >
             <ViewButton @click="router.push(`/projects/${project.id}`)" />
             <EditButton @click="router.push(`/projects/${project.id}?edit=true`)" />
             <DeleteButton @click="handleDeleteProject(project)" />

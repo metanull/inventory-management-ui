@@ -6,7 +6,9 @@
     content-class="!bg-transparent !shadow-none !border-none !rounded-none !transform-none !overflow-visible"
   >
     <SpinnerIcon class="h-12 w-12 text-white" />
-    <p class="mt-4 text-white">{{ loadingStore.text }}</p>
+    <p class="mt-4 text-white">
+      {{ loadingStore.text }}
+    </p>
   </ModalOverlay>
 </template>
 

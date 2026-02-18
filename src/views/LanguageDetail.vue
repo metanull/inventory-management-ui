@@ -34,7 +34,9 @@
               placeholder="ISO language code (e.g., eng)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ language?.id }}</DisplayText>
+            <DisplayText v-else>
+              {{ language?.id }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -45,7 +47,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ language?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ language?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -60,19 +64,35 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ language?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ language?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="language?.created_at" variant="white">
+        <DescriptionRow
+          v-if="language?.created_at"
+          variant="white"
+        >
           <DescriptionTerm>Created</DescriptionTerm>
           <DescriptionDetail>
-            <DateDisplay :date="language.created_at" format="medium" variant="small-dark" />
+            <DateDisplay
+              :date="language.created_at"
+              format="medium"
+              variant="small-dark"
+            />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="language?.updated_at" variant="gray">
+        <DescriptionRow
+          v-if="language?.updated_at"
+          variant="gray"
+        >
           <DescriptionTerm>Last Updated</DescriptionTerm>
           <DescriptionDetail>
-            <DateDisplay :date="language.updated_at" format="medium" variant="small-dark" />
+            <DateDisplay
+              :date="language.updated_at"
+              format="medium"
+              variant="small-dark"
+            />
           </DescriptionDetail>
         </DescriptionRow>
       </DescriptionList>

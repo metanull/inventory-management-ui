@@ -10,10 +10,10 @@
     :empty-message="emptyMessage"
     :show-empty-add-button="filterMode === 'all'"
     empty-add-button-label="New Context"
-    @retry="fetchContexts"
     :links="links"
     :meta="meta"
     :per-page="currentPerPage"
+    @retry="fetchContexts"
     @change-page-number="handlePageChange"
     @per-page-change="handlePerPageChange"
     @change-page="handleUrlChange"
@@ -40,7 +40,10 @@
     </template>
 
     <template #search>
-      <SearchControl v-model="searchQuery" placeholder="Search contexts..." />
+      <SearchControl
+        v-model="searchQuery"
+        placeholder="Search contexts..."
+      />
     </template>
 
     <template #headers>
@@ -68,7 +71,10 @@
         >
           Created
         </TableHeader>
-        <TableHeader class="hidden sm:table-cell" variant="actions">
+        <TableHeader
+          class="hidden sm:table-cell"
+          variant="actions"
+        >
           <span class="sr-only">Actions</span>
         </TableHeader>
       </TableRow>
@@ -104,10 +110,17 @@
           </div>
         </TableCell>
         <TableCell class="hidden lg:table-cell">
-          <DateDisplay :date="context.created_at" format="short" variant="small-dark" />
+          <DateDisplay
+            :date="context.created_at"
+            format="short"
+            variant="small-dark"
+          />
         </TableCell>
         <TableCell class="hidden sm:table-cell">
-          <div class="flex space-x-2" @click.stop>
+          <div
+            class="flex space-x-2"
+            @click.stop
+          >
             <ViewButton @click="router.push(`/contexts/${context.id}`)" />
             <EditButton @click="router.push(`/contexts/${context.id}?edit=true`)" />
             <DeleteButton @click="handleDelete(context)" />

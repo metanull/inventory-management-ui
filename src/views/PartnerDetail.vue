@@ -32,7 +32,9 @@
               placeholder="ISO partner code (e.g., GBR)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ partner?.id }}</DisplayText>
+            <DisplayText v-else>
+              {{ partner?.id }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -43,7 +45,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ partner?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ partner?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -58,16 +62,24 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ partner?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ partner?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="partner?.created_at" variant="white">
+        <DescriptionRow
+          v-if="partner?.created_at"
+          variant="white"
+        >
           <DescriptionTerm>Created</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="partner.created_at" />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="partner?.updated_at" variant="gray">
+        <DescriptionRow
+          v-if="partner?.updated_at"
+          variant="gray"
+        >
           <DescriptionTerm>Updated</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="partner.updated_at" />

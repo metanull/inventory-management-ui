@@ -21,12 +21,19 @@
     </template>
 
     <!-- No default option (if enabled) -->
-    <option v-if="showNoDefaultOption" :value="noDefaultValue" :class="getNoDefaultOptionClasses()">
+    <option
+      v-if="showNoDefaultOption"
+      :value="noDefaultValue"
+      :class="getNoDefaultOptionClasses()"
+    >
       {{ formatNoDefaultText() }}
     </option>
 
     <!-- Separator (if priority items exist or no default option is shown) -->
-    <option v-if="sortedOptions.priorityItems.length > 0 || showNoDefaultOption" disabled>
+    <option
+      v-if="sortedOptions.priorityItems.length > 0 || showNoDefaultOption"
+      disabled
+    >
       ────────────────
     </option>
 
@@ -66,10 +73,10 @@
     showNoDefaultOption?: boolean
     noDefaultValue?: string
     noDefaultLabel?: string
-    sortFunction?: (options: GenericDropdownOption[]) => GenericDropdownOption[] // eslint-disable-line no-unused-vars
+    sortFunction?: (options: GenericDropdownOption[]) => GenericDropdownOption[]  
     highlightFunction?: (
-      option: GenericDropdownOption, // eslint-disable-line no-unused-vars
-      currentValue: string // eslint-disable-line no-unused-vars
+      option: GenericDropdownOption,  
+      currentValue: string  
     ) => { classes: string; label: string } | null
   }
 
