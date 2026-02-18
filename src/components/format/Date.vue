@@ -1,5 +1,8 @@
 <template>
-  <span :class="[baseClasses, props.className]" :title="fullDate">
+  <span
+    :class="[baseClasses, props.className]"
+    :title="fullDate"
+  >
     {{ formattedDate }}
   </span>
 </template>

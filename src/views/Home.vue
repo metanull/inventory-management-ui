@@ -1,7 +1,12 @@
 <template>
   <div>
     <div class="mb-8">
-      <Title variant="page" description="Welcome to the Virtual Office for MWNF!"> Homepage </Title>
+      <Title
+        variant="page"
+        description="Welcome to the Virtual Office for MWNF!"
+      >
+        Homepage
+      </Title>
     </div>
 
     <div class="flex flex-col mb-8 space-y-8">
@@ -14,12 +19,23 @@
             :title="showCategories ? 'Collapse section' : 'Expand section'"
             @click="toggleCategories"
           >
-            <MinusCircleIcon v-if="showCategories" class="w-8 h-8 mr-4" />
-            <PlusCircleIcon v-else class="w-8 h-8 mr-4" />
-            <div class="text-xl font-semibold">Categories</div>
+            <MinusCircleIcon
+              v-if="showCategories"
+              class="w-8 h-8 mr-4"
+            />
+            <PlusCircleIcon
+              v-else
+              class="w-8 h-8 mr-4"
+            />
+            <div class="text-xl font-semibold">
+              Categories
+            </div>
           </button>
         </div>
-        <div v-show="showCategories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-show="showCategories"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           <!-- Contexts Management Card -->
           <NavigationCard
             title="Contexts"
@@ -56,13 +72,24 @@
               :title="showLists ? 'Collapse section' : 'Expand section'"
               @click="toggleLists"
             >
-              <MinusCircleIcon v-if="showLists" class="w-8 h-8 mr-4" />
-              <PlusCircleIcon v-else class="w-8 h-8 mr-4" />
-              <div class="text-xl font-semibold">Lists</div>
+              <MinusCircleIcon
+                v-if="showLists"
+                class="w-8 h-8 mr-4"
+              />
+              <PlusCircleIcon
+                v-else
+                class="w-8 h-8 mr-4"
+              />
+              <div class="text-xl font-semibold">
+                Lists
+              </div>
             </button>
           </div>
         </div>
-        <div v-show="showLists" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-show="showLists"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           <!-- Languages Management Card -->
           <NavigationCard
             title="Languages"
@@ -135,13 +162,24 @@
               :title="showMisc ? 'Collapse section' : 'Expand section'"
               @click="toggleMisc"
             >
-              <MinusCircleIcon v-if="showMisc" class="w-8 h-8 mr-4" />
-              <PlusCircleIcon v-else class="w-8 h-8 mr-4" />
-              <div class="text-xl font-semibold">Miscellaneous</div>
+              <MinusCircleIcon
+                v-if="showMisc"
+                class="w-8 h-8 mr-4"
+              />
+              <PlusCircleIcon
+                v-else
+                class="w-8 h-8 mr-4"
+              />
+              <div class="text-xl font-semibold">
+                Miscellaneous
+              </div>
             </button>
           </div>
         </div>
-        <div v-show="showMisc" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-show="showMisc"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           <!-- System Status Card -->
           <StatusCard
             title="System Status"

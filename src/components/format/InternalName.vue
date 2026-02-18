@@ -1,9 +1,15 @@
 <template>
   <div class="flex items-center">
     <!-- Icon for both small and regular modes -->
-    <div class="flex-shrink-0" :class="small ? 'mr-2' : 'mr-3'">
+    <div
+      class="flex-shrink-0"
+      :class="small ? 'mr-2' : 'mr-3'"
+    >
       <slot name="icon">
-        <RectangleGroupIcon :class="small ? 'h-5 w-5' : 'h-6 w-6'" class="text-gray-600" />
+        <RectangleGroupIcon
+          :class="small ? 'h-5 w-5' : 'h-6 w-6'"
+          class="text-gray-600"
+        />
       </slot>
     </div>
     <div>
@@ -21,7 +27,10 @@
         <div class="text-sm font-medium text-gray-900">
           {{ internalName }}
         </div>
-        <div v-if="backwardCompatibility" class="text-xs text-gray-500">
+        <div
+          v-if="backwardCompatibility"
+          class="text-xs text-gray-500"
+        >
           Legacy: {{ backwardCompatibility }}
         </div>
       </template>

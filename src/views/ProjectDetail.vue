@@ -69,7 +69,12 @@
                 format="medium"
                 variant="small-dark"
               />
-              <DisplayText v-else variant="gray"> Not scheduled </DisplayText>
+              <DisplayText
+                v-else
+                variant="gray"
+              >
+                Not scheduled
+              </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>
@@ -88,7 +93,12 @@
               <DisplayText v-if="project?.context">
                 {{ project.context.internal_name }}
               </DisplayText>
-              <DisplayText v-else variant="gray"> No default context set </DisplayText>
+              <DisplayText
+                v-else
+                variant="gray"
+              >
+                No default context set
+              </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>
@@ -107,7 +117,12 @@
               <DisplayText v-if="project?.language">
                 {{ project.language.internal_name }}
               </DisplayText>
-              <DisplayText v-else variant="gray"> No default language set </DisplayText>
+              <DisplayText
+                v-else
+                variant="gray"
+              >
+                No default language set
+              </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>

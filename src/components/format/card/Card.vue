@@ -1,10 +1,16 @@
 <template>
   <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
     <div class="flex items-center content-center mb-4">
-      <div :class="iconClasses" class="h-8 w-8 mr-3">
+      <div
+        :class="iconClasses"
+        class="h-8 w-8 mr-3"
+      >
         <slot name="icon" />
       </div>
-      <Title variant="card" :description="description">
+      <Title
+        variant="card"
+        :description="description"
+      >
         {{ title }}
       </Title>
     </div>

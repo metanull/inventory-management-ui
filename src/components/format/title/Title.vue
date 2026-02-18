@@ -1,9 +1,15 @@
 <template>
   <div :class="wrapperClasses">
-    <component :is="headingTag" :class="headingClasses">
+    <component
+      :is="headingTag"
+      :class="headingClasses"
+    >
       <slot />
     </component>
-    <p v-if="description || $slots.description" :class="descriptionClasses">
+    <p
+      v-if="description || $slots.description"
+      :class="descriptionClasses"
+    >
       <slot name="description">
         {{ description }}
       </slot>

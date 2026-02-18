@@ -67,13 +67,19 @@
             </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="partner?.created_at" variant="white">
+        <DescriptionRow
+          v-if="partner?.created_at"
+          variant="white"
+        >
           <DescriptionTerm>Created</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="partner.created_at" />
           </DescriptionDetail>
         </DescriptionRow>
-        <DescriptionRow v-if="partner?.updated_at" variant="gray">
+        <DescriptionRow
+          v-if="partner?.updated_at"
+          variant="gray"
+        >
           <DescriptionTerm>Updated</DescriptionTerm>
           <DescriptionDetail>
             <DateDisplay :date="partner.updated_at" />
