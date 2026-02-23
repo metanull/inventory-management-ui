@@ -30,7 +30,8 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
       () => getApi().glossaryTranslationIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch glossary translations'
+      'Failed to fetch glossary translations',
+      true
     )
     if (res?.data) {
       glossaryTranslations.value = res.data.data || []
@@ -47,7 +48,8 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
       () => getApi().glossaryTranslationShow(id),
       loading,
       error,
-      `Failed to fetch glossary translation entry with ID: ${id}`
+      `Failed to fetch glossary translation entry with ID: ${id}`,
+      true
     )
     if (res?.data?.data) currentGlossaryTranslationEntry.value = res.data.data
   }
@@ -73,7 +75,8 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
       () => getApi().glossaryTranslationUpdate(id, data),
       loading,
       error,
-      'Failed to update glossary translation entry'
+      'Failed to update glossary translation entry',
+      true
     )
     if (res?.data?.data) {
       const idx = glossaryTranslations.value.findIndex(g => g.id === id)
@@ -91,7 +94,8 @@ export const useGlossaryTranslationStore = defineStore('glossaryTranslation', ()
       () => getApi().glossaryTranslationDestroy(id),
       loading,
       error,
-      'Failed to delete glossary translation entry'
+      'Failed to delete glossary translation entry',
+      true
     )
     if (res) {
       glossaryTranslations.value = glossaryTranslations.value.filter(g => g.id !== id)

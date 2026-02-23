@@ -10,14 +10,9 @@ import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/
 
 export const useLanguageStore = defineStore('language', () => {
   const state = createPaginatedStoreState<LanguageResource>()
-  const {
-    category: languages,
-    currentEntry: currentLanguage,
-    pageLinks,
-    pageMeta,
-    loading,
-    error,
-  } = state
+
+  const languages = state.category
+  const currentLanguage = state.currentEntry
 
   // Additional Language-specific state
   const allLanguages = ref<LanguageResource[]>([])
@@ -33,14 +28,15 @@ export const useLanguageStore = defineStore('language', () => {
     const res = await useApiCall(
       'fetchLanguages',
       () => getApi().languageIndex(page, perPage),
-      loading,
-      error,
-      'Failed to fetch languages'
+      state.loading,
+      state.error,
+      'Failed to fetch languages',
+      true
     )
     if (res?.data) {
       languages.value = res.data.data || []
-      pageLinks.value = res.data.links || null
-      pageMeta.value = res.data.meta || null
+      state.pageLinks.value = res.data.links || null
+      state.pageMeta.value = res.data.meta || null
     }
     return languages.value
   }
@@ -50,9 +46,10 @@ export const useLanguageStore = defineStore('language', () => {
     const res = await useApiCall(
       'fetchLanguage',
       () => getApi().languageShow(id),
-      loading,
-      error,
-      `Failed to fetch language ${id}`
+      state.loading,
+      state.error,
+      `Failed to fetch language ${id}`,
+      true
     )
     if (res?.data?.data) currentLanguage.value = res.data.data
     return res?.data?.data
@@ -81,9 +78,10 @@ export const useLanguageStore = defineStore('language', () => {
         }
         return fullList
       },
-      loading,
-      error,
-      'Failed to fetch all languages'
+      state.loading,
+      state.error,
+      'Failed to fetch all languages',
+      true
     )
 
     if (res) {
@@ -98,9 +96,10 @@ export const useLanguageStore = defineStore('language', () => {
     const res = await useApiCall(
       'createLanguage',
       () => getApi().languageStore(data),
-      loading,
-      error,
-      'Failed to create language'
+      state.loading,
+      state.error,
+      'Failed to create language',
+      true
     )
     if (res?.data?.data) languages.value.push(res.data.data)
     return res?.data?.data || null
@@ -110,8 +109,8 @@ export const useLanguageStore = defineStore('language', () => {
     const res = await useApiCall(
       'updateLanguage',
       () => getApi().languageUpdate(id, data),
-      loading,
-      error,
+      state.loading,
+      state.error,
       `Failed to update language ${id}`
     )
     if (res?.data?.data) {
@@ -126,23 +125,27 @@ export const useLanguageStore = defineStore('language', () => {
     const res = await useApiCall(
       'deleteLanguage',
       () => getApi().languageDestroy(id),
-      loading,
-      error,
-      `Failed to delete language ${id}`
+      state.loading,
+      state.error,
+      `Failed to delete language ${id}`,
+      true
     )
     if (res) {
       languages.value = languages.value.filter(l => l.id !== id)
       if (currentLanguage.value?.id === id) state.clearCurrent()
+      return true
     }
+    return false
   }
 
   const setDefaultLanguage = async (id: string, isDefault: boolean) => {
     const res = await useApiCall(
       'setDefaultLanguage',
       () => getApi().languageSetDefault(id, { is_default: isDefault }),
-      loading,
-      error,
-      `Failed to set default language ${id}`
+      state.loading,
+      state.error,
+      `Failed to set default language ${id}`,
+      true
     )
     if (res?.data?.data) {
       languages.value = languages.value.map(lang => ({
@@ -158,9 +161,10 @@ export const useLanguageStore = defineStore('language', () => {
     const res = await useApiCall(
       'getDefaultLanguage',
       () => getApi().languageGetDefault(),
-      loading,
-      error,
-      'Failed to get default language'
+      state.loading,
+      state.error,
+      'Failed to get default language',
+      true
     )
     if (res?.data?.data) {
       const defaultLang = res.data.data
@@ -172,13 +176,14 @@ export const useLanguageStore = defineStore('language', () => {
       }
       return defaultLang
     }
+    return null
   }
 
   return {
     ...state,
+    languages,
+    currentLanguage,
     allLanguages,
-    pageLinks,
-    pageMeta,
     defaultLanguage,
     defaultLanguages,
     fetchLanguages,
@@ -189,6 +194,7 @@ export const useLanguageStore = defineStore('language', () => {
     deleteLanguage,
     setDefaultLanguage,
     getDefaultLanguage,
+    clearCurrentLanguage: state.clearCurrent,
   }
 })
 

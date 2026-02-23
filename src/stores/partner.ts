@@ -41,7 +41,8 @@ export const usePartnerStore = defineStore('partner', () => {
       () => getApi().partnerIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch partners'
+      'Failed to fetch partners',
+      true
     )
 
     if (res?.data) {
@@ -78,7 +79,8 @@ export const usePartnerStore = defineStore('partner', () => {
       },
       loading,
       error,
-      'Failed to fetch all partners'
+      'Failed to fetch all partners',
+      true
     )
 
     if (res) {
@@ -97,7 +99,8 @@ export const usePartnerStore = defineStore('partner', () => {
       () => getApi().partnerShow(id),
       loading,
       error,
-      `Failed to fetch partner with ID: ${id}`
+      `Failed to fetch partner with ID: ${id}`,
+      true
     )
     if (res?.data?.data) currentPartner.value = res.data.data
   }
@@ -108,7 +111,8 @@ export const usePartnerStore = defineStore('partner', () => {
       () => getApi().partnerStore(data),
       loading,
       error,
-      'Failed to create partner'
+      'Failed to create partner',
+      true
     )
     if (res?.data?.data) partners.value.push(res.data.data)
     return res?.data?.data || null
@@ -123,7 +127,8 @@ export const usePartnerStore = defineStore('partner', () => {
       () => getApi().partnerUpdate(id, data),
       loading,
       error,
-      'Failed to update partner'
+      'Failed to update partner',
+      true
     )
     if (res?.data?.data) {
       const idx = partners.value.findIndex(p => p.id === id)
@@ -139,7 +144,8 @@ export const usePartnerStore = defineStore('partner', () => {
       () => getApi().partnerDestroy(id),
       loading,
       error,
-      'Failed to delete partner'
+      'Failed to delete partner',
+      true
     )
     if (res) {
       partners.value = partners.value.filter(p => p.id !== id)

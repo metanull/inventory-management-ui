@@ -16,8 +16,8 @@ vi.mock('console', () => ({
 }))
 
 // Store original console methods for cleanup
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let originalConsole: any
+
+let originalConsole: typeof console
 
 beforeAll(() => {
   originalConsole = { ...console }

@@ -27,7 +27,8 @@ export async function useApiCall<T>(
   apiCall: () => Promise<T>,
   loadingRef: { value: boolean },
   errorRef: { value: string | null },
-  errorMessage: string
+  errorMessage: string,
+  rethrow: boolean = false
 ): Promise<T | null> {
   loadingRef.value = true
   errorRef.value = null
@@ -36,6 +37,7 @@ export async function useApiCall<T>(
   } catch (err) {
     errorRef.value = errorMessage
     ErrorHandler.handleError(err, actionName)
+    if (rethrow) throw err
     return null
   } finally {
     loadingRef.value = false
@@ -44,7 +46,7 @@ export async function useApiCall<T>(
 
 export function createBaseStoreState<T extends { id: string }>() {
   const category = ref<T[]>([])
-  const currentEntry = ref<T | null>(null)
+  const currentEntry = ref<T | null | undefined>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 

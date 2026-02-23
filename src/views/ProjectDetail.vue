@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import {
     useRoute,
     useRouter,
@@ -125,7 +125,7 @@
     type RouteLocationNormalized,
     type NavigationGuardNext,
   } from 'vue-router'
-  import { useProjectStore } from '@/stores/project'
+  import { useProjectStore, type ProjectResource } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
@@ -176,7 +176,9 @@
   const mode = ref<Mode>('view')
 
   // Computed properties
-  const project = computed(() => projectStore.currentEntry)
+  const project = computed<ProjectResource | null>(() => {
+    return projectStore.currentEntry ?? null
+  })
 
   // Dropdown options
   const contexts = computed(() => contextStore.contexts)
@@ -546,6 +548,10 @@
 
   // Lifecycle
   onMounted(initializeComponent)
+
+  onUnmounted(() => {
+    projectStore.clearProjects()
+  })
 
   // Expose properties for testing
   defineExpose({

@@ -32,8 +32,8 @@ describe('Country Store Integration Tests', () => {
       // Then fetch countries
       await countryStore.fetchCountries()
 
-      expect(countryStore.countries).toBeDefined()
-      expect(Array.isArray(countryStore.countries)).toBe(true)
+      expect(countryStore.category).toBeDefined()
+      expect(Array.isArray(countryStore.category)).toBe(true)
       expect(countryStore.loading).toBe(false)
       expect(countryStore.error).toBeNull()
     } catch (error) {

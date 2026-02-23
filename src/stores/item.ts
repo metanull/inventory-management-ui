@@ -21,7 +21,8 @@ export const useItemStore = defineStore('item', () => {
       () => getApi().itemIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch items'
+      'Failed to fetch items',
+      true
     )
     if (res?.data) {
       items.value = res.data.data || []
@@ -38,7 +39,8 @@ export const useItemStore = defineStore('item', () => {
       () => getApi().itemShow(id, include),
       loading,
       error,
-      `Failed to fetch item with ID: ${id}`
+      `Failed to fetch item with ID: ${id}`,
+      true
     )
     if (res?.data?.data) currentItem.value = res.data.data
   }
@@ -49,7 +51,8 @@ export const useItemStore = defineStore('item', () => {
       () => getApi().itemStore(data),
       loading,
       error,
-      'Failed to create item'
+      'Failed to create item',
+      true
     )
     if (res?.data?.data) items.value.push(res.data.data)
     return res?.data?.data || null
@@ -61,7 +64,8 @@ export const useItemStore = defineStore('item', () => {
       () => getApi().itemUpdate(id, data),
       loading,
       error,
-      'Failed to update item'
+      'Failed to update item',
+      true
     )
     if (res?.data?.data) {
       const idx = items.value.findIndex(item => item.id === id)
@@ -77,7 +81,8 @@ export const useItemStore = defineStore('item', () => {
       () => getApi().itemDestroy(id),
       loading,
       error,
-      'Failed to delete item'
+      'Failed to delete item',
+      true
     )
     if (res) {
       items.value = items.value.filter(item => item.id !== id)

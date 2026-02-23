@@ -42,12 +42,12 @@ vi.mock('@heroicons/vue/24/solid', () => ({
 
 // Mock stores
 const mockLanguageStore = {
-  currentLanguage: null as LanguageResource | null,
+  currentEntry: null as LanguageResource | null,
   loading: false,
   fetchLanguage: vi.fn().mockImplementation(async (id: string) => {
-    // Simulate setting currentLanguage when fetchLanguage is called
+    // Simulate setting currentEntry when fetchLanguage is called
     if (id === 'fra') {
-      mockLanguageStore.currentLanguage = {
+      mockLanguageStore.currentEntry = {
         id: 'fra',
         internal_name: 'French',
         backward_compatibility: 'fr',
@@ -57,8 +57,8 @@ const mockLanguageStore = {
       }
     }
   }),
-  clearCurrentLanguage: vi.fn().mockImplementation(() => {
-    mockLanguageStore.currentLanguage = null
+  clearCurrent: vi.fn().mockImplementation(() => {
+    mockLanguageStore.currentEntry = null
   }),
   createLanguage: vi.fn(),
   updateLanguage: vi.fn(),
@@ -139,7 +139,7 @@ describe('LanguageDetail.vue', () => {
     })
 
     // Reset mock store states
-    mockLanguageStore.currentLanguage = null
+    mockLanguageStore.currentEntry = null
     mockLanguageStore.loading = false
   })
 
@@ -168,7 +168,7 @@ describe('LanguageDetail.vue', () => {
         updated_at: '2023-01-01T00:00:00Z',
       }
 
-      mockLanguageStore.currentLanguage = mockLanguage
+      mockLanguageStore.currentEntry = mockLanguage
       await router.push('/languages/eng')
 
       const wrapper = mount(LanguageDetail, {
@@ -250,7 +250,7 @@ describe('LanguageDetail.vue', () => {
         updated_at: '2023-01-01T00:00:00Z',
       }
 
-      mockLanguageStore.currentLanguage = mockLanguage
+      mockLanguageStore.currentEntry = mockLanguage
       await router.push('/languages/deu')
 
       const wrapper = mount(LanguageDetail, {
@@ -279,7 +279,7 @@ describe('LanguageDetail.vue', () => {
         updated_at: '2023-01-01T00:00:00Z',
       }
 
-      mockLanguageStore.currentLanguage = mockLanguage
+      mockLanguageStore.currentEntry = mockLanguage
       await router.push('/languages/spa')
 
       const wrapper = mount(LanguageDetail, {

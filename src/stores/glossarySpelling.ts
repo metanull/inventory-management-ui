@@ -30,7 +30,8 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
       () => getApi().glossarySpellingIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch glossary spellings'
+      'Failed to fetch glossary spellings',
+      true
     )
     if (res?.data) {
       glossarySpellings.value = res.data.data || []
@@ -47,7 +48,8 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
       () => getApi().glossarySpellingShow(id),
       loading,
       error,
-      `Failed to fetch glossary spelling entry with ID: ${id}`
+      `Failed to fetch glossary spelling entry with ID: ${id}`,
+      true
     )
     if (res?.data?.data) currentGlossarySpellingEntry.value = res.data.data
   }
@@ -58,7 +60,8 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
       () => getApi().glossarySpellingStore(data),
       loading,
       error,
-      'Failed to create glossary spelling entry'
+      'Failed to create glossary spelling entry',
+      true
     )
     if (res?.data?.data) glossarySpellings.value.push(res.data.data)
     return res?.data?.data || null
@@ -70,7 +73,8 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
       () => getApi().glossarySpellingUpdate(id, data),
       loading,
       error,
-      'Failed to update glossary spelling entry'
+      'Failed to update glossary spelling entry',
+      true
     )
     if (res?.data?.data) {
       const idx = glossarySpellings.value.findIndex(g => g.id === id)
@@ -88,7 +92,8 @@ export const useGlossarySpellingStore = defineStore('glossarySpelling', () => {
       () => getApi().glossarySpellingDestroy(id),
       loading,
       error,
-      'Failed to delete glossary spelling entry'
+      'Failed to delete glossary spelling entry',
+      true
     )
     if (res) {
       glossarySpellings.value = glossarySpellings.value.filter(g => g.id !== id)

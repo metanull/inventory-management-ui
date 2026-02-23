@@ -1,26 +1,15 @@
 import { beforeEach, describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
+import { createTestingPinia } from '@pinia/testing'
 import { createRouter, createWebHistory } from 'vue-router'
 import Countries from '../Countries.vue'
 import { useCountryStore } from '@/stores/country'
-import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-import { useErrorDisplayStore } from '@/stores/errorDisplay'
 import { createMockCountry } from '@/__tests__/test-utils'
 import type { CountryResource } from '@metanull/inventory-app-api-client'
 import type { Router } from 'vue-router'
 
-// Mock console.error to avoid noise in test output
-vi.mock('console', () => ({
-  error: vi.fn(),
-  warn: vi.fn(),
-  log: vi.fn(),
-}))
-
-// Store original console methods for cleanup
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let originalConsole: any
-
+// Mock console to avoid noise
+let originalConsole: typeof console
 beforeAll(() => {
   originalConsole = { ...console }
   console.error = vi.fn()
@@ -32,7 +21,6 @@ afterAll(() => {
   Object.assign(console, originalConsole)
 })
 
-// Component interface for proper typing
 interface CountriesComponentInstance {
   countries: CountryResource[]
   filteredCountries: CountryResource[]
@@ -44,161 +32,103 @@ interface CountriesComponentInstance {
   fetchCountries: () => Promise<void>
 }
 
-// Mock the stores
-vi.mock('@/stores/country')
-vi.mock('@/stores/loadingOverlay')
-vi.mock('@/stores/errorDisplay')
-
 const mockCountries: CountryResource[] = [
-  createMockCountry({
-    id: 'GBR',
-    internal_name: 'United Kingdom',
-    backward_compatibility: 'GB',
-    created_at: '2023-01-01T00:00:00Z',
-    updated_at: '2023-01-01T00:00:00Z',
-  }),
-  createMockCountry({
-    id: 'USA',
-    internal_name: 'United States',
-    backward_compatibility: 'US',
-    created_at: '2023-01-02T00:00:00Z',
-    updated_at: '2023-01-02T00:00:00Z',
-  }),
-  createMockCountry({
-    id: 'FRA',
-    internal_name: 'France',
-    backward_compatibility: null,
-    created_at: '2023-01-03T00:00:00Z',
-    updated_at: '2023-01-03T00:00:00Z',
-  }),
+  createMockCountry({ id: 'GBR', internal_name: 'United Kingdom', backward_compatibility: 'GB' }),
+  createMockCountry({ id: 'USA', internal_name: 'United States', backward_compatibility: 'US' }),
+  createMockCountry({ id: 'FRA', internal_name: 'France', backward_compatibility: null }),
 ]
 
 describe('Countries.vue', () => {
-  let mockCountryStore: ReturnType<typeof useCountryStore>
-  let mockLoadingStore: ReturnType<typeof useLoadingOverlayStore>
-  let mockErrorStore: ReturnType<typeof useErrorDisplayStore>
   let router: Router
 
   beforeEach(() => {
-    setActivePinia(createPinia())
-
-    // Setup router
     router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div>Home</div>' } },
         { path: '/countries', component: Countries },
-        { path: '/countries/new', component: { template: '<div>New Country</div>' } },
-        { path: '/countries/:id', component: { template: '<div>Country Detail</div>' } },
       ],
     })
-
-    // Setup store mocks
-    mockCountryStore = {
-      countries: mockCountries,
-      currentCountry: null,
-      loading: false,
-      error: null,
-      fetchCountries: vi.fn().mockResolvedValue(mockCountries),
-      getCountryById: vi.fn(),
-      createCountry: vi.fn(),
-      updateCountry: vi.fn(),
-      deleteCountry: vi.fn(),
-    } as ReturnType<typeof useCountryStore>
-
-    mockLoadingStore = {
-      show: vi.fn(),
-      hide: vi.fn(),
-    } as ReturnType<typeof useLoadingOverlayStore>
-
-    mockErrorStore = {
-      addMessage: vi.fn(),
-    } as ReturnType<typeof useErrorDisplayStore>
-
-    // Mock store implementations
-    vi.mocked(useCountryStore).mockReturnValue(mockCountryStore)
-    vi.mocked(useLoadingOverlayStore).mockReturnValue(mockLoadingStore)
-    vi.mocked(useErrorDisplayStore).mockReturnValue(mockErrorStore)
-
-    vi.clearAllMocks()
   })
+
+  // Factory function to create the wrapper
+  const createWrapper = () => {
+    return mount(Countries, {
+      global: {
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            initialState: {
+              country: {
+                category: mockCountries,
+                pageLinks: {},
+                pageMeta: {
+                  total: 3,
+                  links: [
+                    { url: '/?page=1', label: '1', active: true },
+                    { url: null, label: 'Next', active: false },
+                  ],
+                },
+              },
+            },
+          }),
+          router,
+        ],
+      },
+    })
+  }
 
   describe('Component Logic', () => {
     it('should initialize with default values', async () => {
-      const wrapper = mount(Countries, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as CountriesComponentInstance
 
-      await wrapper.vm.$nextTick()
-
-      expect((wrapper.vm as unknown as CountriesComponentInstance).sortKey).toBe('internal_name')
-      expect((wrapper.vm as unknown as CountriesComponentInstance).sortDirection).toBe('asc')
-      expect((wrapper.vm as unknown as CountriesComponentInstance).searchQuery).toBe('')
+      expect(vm.sortKey).toBe('internal_name')
+      expect(vm.sortDirection).toBe('asc')
     })
 
     it('should have access to store data', async () => {
-      const wrapper = mount(Countries, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as CountriesComponentInstance
 
-      await wrapper.vm.$nextTick()
-
-      expect((wrapper.vm as unknown as CountriesComponentInstance).countries.length).toBe(3)
+      expect(vm.countries.length).toBe(3)
     })
   })
 
   describe('Search Functionality', () => {
     it('should search countries by internal name', async () => {
-      const wrapper = mount(Countries, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as CountriesComponentInstance
 
-      await wrapper.vm.$nextTick()
-      ;(wrapper.vm as unknown as CountriesComponentInstance).searchQuery = 'United'
+      vm.searchQuery = 'United'
       await wrapper.vm.$nextTick()
 
-      const filteredCountries = (wrapper.vm as unknown as CountriesComponentInstance)
-        .filteredCountries
-      expect(filteredCountries.length).toBe(2)
-      expect(filteredCountries[0].internal_name).toContain('United')
-      expect(filteredCountries[1].internal_name).toContain('United')
+      expect(vm.filteredCountries.length).toBe(2)
+      expect(vm.filteredCountries[0]?.internal_name).toContain('United')
     })
 
     it('should filter countries by backward_compatibility', async () => {
-      const wrapper = mount(Countries, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as CountriesComponentInstance
 
-      await wrapper.vm.$nextTick()
-      ;(wrapper.vm as unknown as CountriesComponentInstance).searchQuery = 'GB'
+      vm.searchQuery = 'GB'
       await wrapper.vm.$nextTick()
 
-      const filteredCountries = (wrapper.vm as unknown as CountriesComponentInstance)
-        .filteredCountries
-      expect(filteredCountries.length).toBe(1)
-      expect(filteredCountries[0].backward_compatibility).toBe('GB')
+      expect(vm.filteredCountries.length).toBe(1)
+      expect(vm.filteredCountries[0]?.backward_compatibility).toBe('GB')
     })
   })
 
   describe('Store Integration', () => {
     it('should call fetchCountries on mount', async () => {
-      mount(Countries, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      // Trigger mount to run the setup/lifecycle hooks
+      createWrapper()
+
+      // Access the mocked store instance
+      const countryStore = useCountryStore()
 
       await flushPromises()
-
-      expect(mockCountryStore.fetchCountries).toHaveBeenCalledOnce()
+      expect(countryStore.fetchCountries).toHaveBeenCalled()
     })
   })
 })

@@ -27,7 +27,8 @@ export const useCountryStore = defineStore('country', () => {
       () => getApi().countryIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch countries'
+      'Failed to fetch countries',
+      true
     )
     if (res?.data) {
       countries.value = res.data.data || []
@@ -44,9 +45,11 @@ export const useCountryStore = defineStore('country', () => {
       () => getApi().countryShow(id),
       loading,
       error,
-      `Failed to fetch country with ID: ${id}`
+      `Failed to fetch country with ID: ${id}`,
+      true
     )
     if (res?.data?.data) currentCountry.value = res.data.data
+    return res?.data?.data || null
   }
 
   const createCountry = async (data: StoreCountryRequest) => {
@@ -55,7 +58,8 @@ export const useCountryStore = defineStore('country', () => {
       () => getApi().countryStore(data),
       loading,
       error,
-      'Failed to create country'
+      'Failed to create country',
+      true
     )
     if (res?.data?.data) countries.value.push(res.data.data)
     return res?.data?.data || null
@@ -67,7 +71,8 @@ export const useCountryStore = defineStore('country', () => {
       () => getApi().countryUpdate(id, data),
       loading,
       error,
-      'Failed to update country'
+      'Failed to update country',
+      true
     )
     if (res?.data?.data) {
       const idx = countries.value.findIndex(c => c.id === id)
@@ -83,9 +88,16 @@ export const useCountryStore = defineStore('country', () => {
       () => getApi().countryDestroy(id),
       loading,
       error,
-      'Failed to delete country'
+      'Failed to delete country',
+      true
     )
-    if (res) countries.value = countries.value.filter(c => c.id !== id)
+    if (res) {
+      countries.value = countries.value.filter(c => c.id !== id)
+
+      if (currentCountry.value?.id === id) {
+        currentCountry.value = null
+      }
+    }
     return !!res
   }
 

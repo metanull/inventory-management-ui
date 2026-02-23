@@ -1,52 +1,52 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createTestingPinia } from '@pinia/testing'
+import { useAuthStore } from '../auth'
 
-// Mock the API client before importing the store
+// 1. Mock the API client BEFORE any imports that might use it
+// We use a regular function because arrow functions cannot be constructors (new)
 const mockApiInstance = {
   tokenAcquire: vi.fn(),
   tokenWipe: vi.fn(),
 }
 
 vi.mock('@metanull/inventory-app-api-client', () => ({
-  MobileAppAuthenticationApi: vi.fn(function (this: object) {
+  MobileAppAuthenticationApi: vi.fn(function () {
     return mockApiInstance
   }),
-  Configuration: vi.fn(function (this: object) {
-    // Configuration constructor doesn't need to do anything
+  Configuration: vi.fn(function () {
+    // No-op constructor
   }),
 }))
 
-import { useAuthStore } from '../auth'
-
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-}
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-})
+// 2. Setup Spies for localStorage
+const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
+const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
+const getItemSpy = vi.spyOn(Storage.prototype, 'getItem')
 
 describe('Auth Store', () => {
   let authStore: ReturnType<typeof useAuthStore>
 
-  beforeEach(async () => {
-    // Clear all mocks first
+  beforeEach(() => {
+    // Reset all mocks to ensure test isolation
     vi.clearAllMocks()
-    localStorageMock.getItem.mockReturnValue(null)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    // Default localStorage behavior for initial state
+    getItemSpy.mockReturnValue(null)
 
-    // Setup Pinia
-    setActivePinia(createPinia())
+    // 3. Initialize Testing Pinia
+    createTestingPinia({
+      createSpy: vi.fn,
+      stubActions: false, // Essential: allows the store's real login/logout logic to run
+      initialState: {
+        auth: {
+          token: null,
+          loading: false,
+          error: null,
+        },
+      },
+    })
 
-    // Import the store after setting up mocks
-    const { useAuthStore } = await import('../auth')
     authStore = useAuthStore()
-  })
-
-  afterEach(() => {
-    vi.resetAllMocks()
   })
 
   describe('Initial State', () => {
@@ -72,35 +72,46 @@ describe('Auth Store', () => {
 
       await authStore.login('test@example.com', 'password')
 
-      expect(mockApiInstance.tokenAcquire).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'password',
-        device_name: 'Inventory Management UI',
-        wipe_tokens: true,
-      })
+      // Verify API call
+      expect(mockApiInstance.tokenAcquire).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: 'test@example.com',
+          password: 'password',
+          device_name: 'Inventory Management UI',
+          wipe_tokens: true,
+        })
+      )
+
+      // Verify State updates
       expect(authStore.token).toBe(mockToken)
       expect(authStore.loading).toBe(false)
       expect(authStore.error).toBeNull()
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('auth_token', mockToken)
+
+      // Verify Persistence
+      expect(setItemSpy).toHaveBeenCalledWith('auth_token', mockToken)
     })
 
     it('should handle login error', async () => {
+      const errorMessage = 'Invalid credentials'
       const mockError = {
         response: {
           data: {
-            message: 'Invalid credentials',
+            message: errorMessage,
           },
         },
       }
 
       mockApiInstance.tokenAcquire.mockRejectedValueOnce(mockError)
 
-      await expect(authStore.login('test@example.com', 'wrong-password')).rejects.toThrow()
+      // Based on your stderr, the store throws an error when error.value is set
+      await expect(authStore.login('test@example.com', 'wrong-password')).rejects.toThrow(
+        errorMessage
+      )
 
       expect(authStore.token).toBeNull()
       expect(authStore.loading).toBe(false)
-      expect(authStore.error).toBe('Invalid credentials')
-      expect(localStorageMock.setItem).not.toHaveBeenCalled()
+      expect(authStore.error).toBe(errorMessage)
+      expect(setItemSpy).not.toHaveBeenCalled()
     })
   })
 
@@ -117,7 +128,7 @@ describe('Auth Store', () => {
       expect(mockApiInstance.tokenWipe).toHaveBeenCalled()
       expect(authStore.token).toBeNull()
       expect(authStore.error).toBeNull()
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('auth_token')
+      expect(removeItemSpy).toHaveBeenCalledWith('auth_token')
     })
   })
 

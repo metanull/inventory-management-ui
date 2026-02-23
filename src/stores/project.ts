@@ -36,7 +36,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch projects'
+      'Failed to fetch projects',
+      true
     )
     if (res?.data) {
       projects.value = res.data.data || []
@@ -66,7 +67,8 @@ export const useProjectStore = defineStore('project', () => {
       },
       loading,
       error,
-      'Failed to fetch all projects'
+      'Failed to fetch all projects',
+      true
     )
 
     if (res) {
@@ -83,7 +85,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectEnabled(),
       loading,
       error,
-      'Failed to fetch enabled projects'
+      'Failed to fetch enabled projects',
+      true
     )
     visibleProjects.value = res?.data?.data || []
   }
@@ -95,7 +98,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectShow(id),
       loading,
       error,
-      `Failed to fetch project ${id}`
+      `Failed to fetch project ${id}`,
+      true
     )
     if (res?.data?.data) currentProject.value = res.data.data
     return res?.data?.data
@@ -107,7 +111,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectStore(data),
       loading,
       error,
-      'Failed to create project'
+      'Failed to create project',
+      true
     )
     if (res?.data?.data) {
       projects.value.push(res.data.data)
@@ -122,7 +127,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectUpdate(id, data),
       loading,
       error,
-      'Failed to update project'
+      'Failed to update project',
+      true
     )
     if (res?.data?.data) {
       const idx = projects.value.findIndex(p => p.id === id)
@@ -138,7 +144,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectDestroy(id),
       loading,
       error,
-      'Failed to delete project'
+      'Failed to delete project',
+      true
     )
     if (res) {
       projects.value = projects.value.filter(p => p.id !== id)
@@ -152,7 +159,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectSetEnabled(id, { is_enabled: isEnabled }),
       loading,
       error,
-      'Failed to set project enabled status'
+      'Failed to set project enabled status',
+      true
     )
     if (res?.data?.data) {
       const idx = projects.value.findIndex(p => p.id === id)
@@ -168,7 +176,8 @@ export const useProjectStore = defineStore('project', () => {
       () => getApi().projectSetLaunched(id, { is_launched: isLaunched }),
       loading,
       error,
-      'Failed to set project launched status'
+      'Failed to set project launched status',
+      true
     )
     if (res?.data?.data) {
       const idx = projects.value.findIndex(p => p.id === id)
@@ -187,6 +196,8 @@ export const useProjectStore = defineStore('project', () => {
 
   return {
     ...state,
+    projects,
+    currentProject,
     allProjects,
     visibleProjects,
     pageLinks,

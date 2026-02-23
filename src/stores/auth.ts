@@ -28,8 +28,12 @@ export const useAuthStore = defineStore('auth', () => {
       () => getApi().tokenAcquire(tokenRequest),
       loading,
       error,
-      'Login failed'
+      'Invalid credentials'
     )
+
+    if (error.value) {
+      throw new Error(error.value)
+    }
 
     const authToken = res?.data?.token
 

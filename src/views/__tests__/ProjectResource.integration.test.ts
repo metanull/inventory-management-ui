@@ -20,8 +20,8 @@ vi.mock('console', () => ({
 }))
 
 // Store original console methods for cleanup
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let originalConsole: any
+
+let originalConsole: typeof console
 
 beforeAll(() => {
   originalConsole = { ...console }
@@ -184,7 +184,7 @@ describe('Project Resource Integration Tests', () => {
     it('should complete full project lifecycle: list → create → view → edit → delete', async () => {
       // 1. Load initial project list (simulating Projects.vue)
       await projectStore.fetchProjects()
-      expect(projectStore.projects).toHaveLength(3)
+      expect(projectStore.category).toHaveLength(3)
 
       // 2. Create new project (simulating ProjectDetail.vue in create mode)
       const newProjectData = {
@@ -201,7 +201,7 @@ describe('Project Resource Integration Tests', () => {
 
       // 3. Fetch the created project (simulating navigation to detail view)
       await projectStore.fetchProject('new-project')
-      expect(projectStore.currentProject?.internal_name).toBe('New Integration Project')
+      expect(projectStore.currentEntry?.internal_name).toBe('New Integration Project')
 
       // 4. Edit the project (simulating ProjectDetail.vue in edit mode)
       const updatedData = {
@@ -267,7 +267,7 @@ describe('Project Resource Integration Tests', () => {
       ])
 
       // Verify all stores have data
-      expect(projectStore.currentProject).toBeTruthy()
+      expect(projectStore.currentEntry).toBeTruthy()
       expect(contextStore.contexts).toHaveLength(1)
       expect(languageStore.languages).toHaveLength(1)
 
@@ -326,7 +326,7 @@ describe('Project Resource Integration Tests', () => {
 
       // Simulate search functionality that would be used in Projects.vue
       const searchTerm = 'alpha'
-      const searchResults = projectStore.projects.filter(
+      const searchResults = projectStore.category.filter(
         project =>
           project.internal_name.toLowerCase().includes(searchTerm) ||
           (project.backward_compatibility &&

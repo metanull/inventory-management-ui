@@ -16,8 +16,8 @@ vi.mock('console', () => ({
 }))
 
 // Store original console methods for cleanup
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let originalConsole: any
+
+let originalConsole: typeof console
 
 beforeAll(() => {
   originalConsole = { ...console }
@@ -201,8 +201,8 @@ describe('LanguageDetail Logic Tests', () => {
       const defaultLanguages = languages.filter(lang => lang.is_default)
 
       expect(defaultLanguages.length).toBe(2)
-      expect(defaultLanguages[0].id).toBe('eng')
-      expect(defaultLanguages[1].id).toBe('spa')
+      expect(defaultLanguages[0]?.id).toBe('eng')
+      expect(defaultLanguages[1]?.id).toBe('spa')
     })
 
     it('should validate multiple default languages allowed', () => {

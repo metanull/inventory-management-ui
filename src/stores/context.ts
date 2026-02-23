@@ -43,7 +43,8 @@ export const useContextStore = defineStore('context', () => {
       () => getApi().contextIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch contexts'
+      'Failed to fetch contexts',
+      true
     )
     if (res?.data) {
       contexts.value = res.data.data || []
@@ -60,7 +61,8 @@ export const useContextStore = defineStore('context', () => {
       () => getApi().contextShow(id),
       loading,
       error,
-      `Failed to fetch context with ID: ${id}`
+      `Failed to fetch context with ID: ${id}`,
+      true
     )
     if (res?.data?.data) currentContext.value = res.data.data
     return res?.data?.data
@@ -72,7 +74,8 @@ export const useContextStore = defineStore('context', () => {
       () => getApi().contextStore(data),
       loading,
       error,
-      'Failed to create context'
+      'Failed to create context',
+      true
     )
     if (res?.data?.data) {
       contexts.value.push(res.data.data)
@@ -87,7 +90,8 @@ export const useContextStore = defineStore('context', () => {
       () => getApi().contextUpdate(id, data),
       loading,
       error,
-      'Failed to update context'
+      'Failed to update context',
+      true
     )
     if (res?.data?.data) {
       const updated = res.data.data
@@ -105,7 +109,8 @@ export const useContextStore = defineStore('context', () => {
       () => getApi().contextDestroy(id),
       loading,
       error,
-      'Failed to delete context'
+      'Failed to delete context',
+      true
     )
     if (res) {
       contexts.value = contexts.value.filter(c => c.id !== id)
@@ -122,7 +127,8 @@ export const useContextStore = defineStore('context', () => {
       () => getApi().contextSetDefault(id, { is_default: isDefault }),
       loading,
       error,
-      'Failed to set default context'
+      'Failed to set default context',
+      true
     )
     if (res?.data?.data) {
       const updated = res.data.data
@@ -143,7 +149,8 @@ export const useContextStore = defineStore('context', () => {
       () => getApi().contextGetDefault(),
       loading,
       error,
-      'Failed to get default context'
+      'Failed to get default context',
+      true
     )
     if (res?.data?.data) {
       const defaultCtx = res.data.data

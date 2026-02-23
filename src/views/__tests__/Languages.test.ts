@@ -1,53 +1,20 @@
-import { beforeEach, describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
+import { beforeEach, describe, expect, it, vi, beforeAll } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
+import { createTestingPinia } from '@pinia/testing'
 import { createRouter, createWebHistory } from 'vue-router'
 import Languages from '../Languages.vue'
 import { useLanguageStore } from '@/stores/language'
-import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
-import { useErrorDisplayStore } from '@/stores/errorDisplay'
 import { createMockLanguage } from '@/__tests__/test-utils'
 import type { LanguageResource } from '@metanull/inventory-app-api-client'
 import type { Router } from 'vue-router'
 
-// Mock console.error to avoid noise in test output
-vi.mock('console', () => ({
-  error: vi.fn(),
-  warn: vi.fn(),
-  log: vi.fn(),
-}))
-
-// Store original console methods for cleanup
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let originalConsole: any
-
-beforeAll(() => {
-  originalConsole = { ...console }
-  console.error = vi.fn()
-  console.warn = vi.fn()
-  console.log = vi.fn()
-})
-
-afterAll(() => {
-  Object.assign(console, originalConsole)
-})
-
-// Component interface for proper typing
 interface LanguagesComponentInstance {
   languages: LanguageResource[]
   filteredLanguages: LanguageResource[]
   searchQuery: string
   sortDirection: string
   sortKey: string
-  openLanguageDetail: (id: string) => void
-  handleSort: (field: string) => void
-  fetchLanguages: () => Promise<void>
 }
-
-// Mock the stores
-vi.mock('@/stores/language')
-vi.mock('@/stores/loadingOverlay')
-vi.mock('@/stores/errorDisplay')
 
 const mockLanguages: LanguageResource[] = [
   createMockLanguage({
@@ -55,139 +22,104 @@ const mockLanguages: LanguageResource[] = [
     internal_name: 'English',
     backward_compatibility: 'en',
     is_default: true,
-    created_at: '2023-01-01T00:00:00Z',
-    updated_at: '2023-01-01T00:00:00Z',
   }),
   createMockLanguage({
     id: 'fra',
     internal_name: 'French',
     backward_compatibility: 'fr',
     is_default: false,
-    created_at: '2023-01-02T00:00:00Z',
-    updated_at: '2023-01-02T00:00:00Z',
   }),
   createMockLanguage({
     id: 'deu',
     internal_name: 'German',
     backward_compatibility: null,
     is_default: false,
-    created_at: '2023-01-03T00:00:00Z',
-    updated_at: '2023-01-03T00:00:00Z',
   }),
 ]
 
 describe('Languages.vue', () => {
-  let mockLanguageStore: ReturnType<typeof useLanguageStore>
-  let mockLoadingStore: ReturnType<typeof useLoadingOverlayStore>
-  let mockErrorStore: ReturnType<typeof useErrorDisplayStore>
   let router: Router
 
-  beforeEach(() => {
-    setActivePinia(createPinia())
+  beforeAll(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
 
-    // Setup router
+  beforeEach(() => {
     router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div>Home</div>' } },
         { path: '/languages', component: Languages },
-        { path: '/languages/new', component: { template: '<div>New Language</div>' } },
-        { path: '/languages/:id', component: { template: '<div>Language Detail</div>' } },
       ],
     })
-
-    // Setup store mocks
-    mockLanguageStore = {
-      languages: mockLanguages,
-      currentLanguage: null,
-      loading: false,
-      error: null,
-      fetchLanguages: vi.fn().mockResolvedValue(mockLanguages),
-      getLanguageById: vi.fn(),
-      createLanguage: vi.fn(),
-      updateLanguage: vi.fn(),
-      deleteLanguage: vi.fn(),
-      defaultLanguages: mockLanguages.filter(lang => lang.is_default),
-    } as ReturnType<typeof useLanguageStore>
-
-    mockLoadingStore = {
-      show: vi.fn(),
-      hide: vi.fn(),
-    } as ReturnType<typeof useLoadingOverlayStore>
-
-    mockErrorStore = {
-      addMessage: vi.fn(),
-    } as ReturnType<typeof useErrorDisplayStore>
-
-    // Mock store implementations
-    vi.mocked(useLanguageStore).mockReturnValue(mockLanguageStore)
-    vi.mocked(useLoadingOverlayStore).mockReturnValue(mockLoadingStore)
-    vi.mocked(useErrorDisplayStore).mockReturnValue(mockErrorStore)
-
-    vi.clearAllMocks()
   })
+
+  // Helper to mount with Testing Pinia
+  const createWrapper = () => {
+    return mount(Languages, {
+      global: {
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            initialState: {
+              language: {
+                // Ensure this matches your store ID
+                languages: mockLanguages,
+                loading: false,
+              },
+            },
+            stubActions: false, // Allows real getters/logic to run if needed
+          }),
+          router,
+        ],
+      },
+    })
+  }
 
   describe('Component Logic', () => {
     it('should initialize with default values', async () => {
-      const wrapper = mount(Languages, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as LanguagesComponentInstance
 
-      await wrapper.vm.$nextTick()
-
-      expect((wrapper.vm as unknown as LanguagesComponentInstance).sortKey).toBe('internal_name')
-      expect((wrapper.vm as unknown as LanguagesComponentInstance).sortDirection).toBe('asc')
-      expect((wrapper.vm as unknown as LanguagesComponentInstance).searchQuery).toBe('')
+      expect(vm.sortKey).toBe('internal_name')
+      expect(vm.sortDirection).toBe('asc')
+      expect(vm.searchQuery).toBe('')
     })
 
     it('should have access to store data', async () => {
-      const wrapper = mount(Languages, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as LanguagesComponentInstance
 
-      await wrapper.vm.$nextTick()
+      // Accessing the store instance created by createTestingPinia
+      const store = useLanguageStore()
 
-      expect((wrapper.vm as unknown as LanguagesComponentInstance).languages.length).toBe(3)
+      expect(vm.languages.length).toBe(3)
+      expect(store.languages).toHaveLength(3)
     })
   })
 
   describe('Search Functionality', () => {
     it('should search languages by internal name', async () => {
-      const wrapper = mount(Languages, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as LanguagesComponentInstance
 
-      await wrapper.vm.$nextTick()
-      ;(wrapper.vm as unknown as LanguagesComponentInstance).searchQuery = 'English'
+      vm.searchQuery = 'English'
       await wrapper.vm.$nextTick()
 
-      const filteredLanguages = (wrapper.vm as unknown as LanguagesComponentInstance)
-        .filteredLanguages
-      expect(filteredLanguages.length).toBe(1)
-      expect(filteredLanguages[0].internal_name).toContain('English')
+      expect(vm.filteredLanguages.length).toBe(1)
+      expect(vm.filteredLanguages[0]?.internal_name).toBe('English')
     })
 
     it('should filter languages by backward_compatibility', async () => {
-      const wrapper = mount(Languages, {
-        global: {
-          plugins: [createPinia(), router],
-        },
-      })
+      const wrapper = createWrapper()
+      const vm = wrapper.vm as unknown as LanguagesComponentInstance
 
-      await wrapper.vm.$nextTick()
-      ;(wrapper.vm as unknown as LanguagesComponentInstance).searchQuery = 'fr'
+      vm.searchQuery = 'fr'
       await wrapper.vm.$nextTick()
 
-      const filteredLanguages = (wrapper.vm as unknown as LanguagesComponentInstance)
-        .filteredLanguages
-      expect(filteredLanguages.length).toBe(1)
-      expect(filteredLanguages[0].backward_compatibility).toBe('fr')
+      expect(vm.filteredLanguages.length).toBe(1)
+      expect(vm.filteredLanguages[0]?.backward_compatibility).toBe('fr')
     })
   })
 })

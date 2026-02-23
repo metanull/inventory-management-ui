@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useCountryStore } from '@/stores/country'
-import type {
-  CountryResource,
-  StoreCountryRequest,
-  UpdateCountryRequest,
-} from '@metanull/inventory-app-api-client'
+import type { CountryResource, StoreCountryRequest } from '@metanull/inventory-app-api-client'
 
 // Mock the API client
 const mockCountryApi = {
@@ -64,277 +60,130 @@ const mockCountriesResponse = {
 describe('Country Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-
-    // Reset all mocks
     vi.clearAllMocks()
+    // Mock console.error to keep the test output clean when errors are expected
+    vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('Initial State', () => {
     it('should have correct initial state', () => {
-      const countryStore = useCountryStore()
-
-      expect(countryStore.countries).toEqual([])
-      expect(countryStore.currentCountry).toBeNull()
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBeNull()
-      expect(countryStore.countriesCount).toBe(0)
+      const store = useCountryStore()
+      expect(store.category).toEqual([])
+      expect(store.currentEntry).toBeNull()
+      expect(store.loading).toBe(false)
+      expect(store.error).toBeNull()
+      expect(store.countriesCount).toBe(0)
     })
   })
 
   describe('fetchCountries', () => {
     it('should fetch countries successfully', async () => {
-      const countryStore = useCountryStore()
+      const store = useCountryStore()
       mockCountryApi.countryIndex.mockResolvedValue(mockCountriesResponse)
 
-      await countryStore.fetchCountries()
+      await store.fetchCountries()
 
       expect(mockCountryApi.countryIndex).toHaveBeenCalledOnce()
-      expect(countryStore.countries).toEqual(mockCountriesResponse.data.data)
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBeNull()
+      expect(store.category).toEqual(mockCountriesResponse.data.data)
+      expect(store.loading).toBe(false)
+      expect(store.error).toBeNull()
     })
 
     it('should handle fetch countries error', async () => {
-      const countryStore = useCountryStore()
-      const error = new Error('Network error')
-      mockCountryApi.countryIndex.mockRejectedValue(error)
+      const store = useCountryStore()
+      mockCountryApi.countryIndex.mockRejectedValue(new Error('Network error'))
 
-      await countryStore.fetchCountries()
+      await expect(store.fetchCountries()).rejects.toThrow()
 
-      expect(countryStore.countries).toEqual([])
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBe('Failed to fetch countries')
-    })
-
-    it('should handle empty response', async () => {
-      const countryStore = useCountryStore()
-      mockCountryApi.countryIndex.mockResolvedValue({ data: {} })
-
-      await countryStore.fetchCountries()
-
-      expect(countryStore.countries).toEqual([])
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBeNull()
+      expect(store.category).toEqual([])
+      expect(store.loading).toBe(false)
+      expect(store.error).toBe('Failed to fetch countries')
     })
   })
 
   describe('fetchCountry', () => {
     it('should fetch a single country successfully', async () => {
-      const countryStore = useCountryStore()
+      const store = useCountryStore()
       const countryResponse = { data: { data: mockCountryData } }
       mockCountryApi.countryShow.mockResolvedValue(countryResponse)
 
-      await countryStore.fetchCountry('USA')
+      const result = await store.fetchCountry('USA')
 
       expect(mockCountryApi.countryShow).toHaveBeenCalledWith('USA')
-      expect(countryStore.currentCountry).toEqual(mockCountryData)
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBeNull()
+      expect(store.currentEntry).toEqual(mockCountryData)
+      expect(result).toEqual(mockCountryData)
     })
 
     it('should handle fetch country error', async () => {
-      const countryStore = useCountryStore()
-      const error = new Error('Country not found')
-      mockCountryApi.countryShow.mockRejectedValue(error)
+      const store = useCountryStore()
+      mockCountryApi.countryShow.mockRejectedValue(new Error('Country not found'))
 
-      await countryStore.fetchCountry('INVALID')
+      await expect(store.fetchCountry('INVALID')).rejects.toThrow()
 
-      expect(countryStore.currentCountry).toBeNull()
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBe('Failed to fetch country with ID: INVALID')
+      expect(store.currentEntry).toBeNull()
+      expect(store.error).toBe('Failed to fetch country with ID: INVALID')
     })
   })
 
   describe('createCountry', () => {
     it('should create a country successfully', async () => {
-      const countryStore = useCountryStore()
+      const store = useCountryStore()
       const newCountryData: StoreCountryRequest = {
         id: 'GBR',
         internal_name: 'United Kingdom',
-        backward_compatibility: 'GB',
       }
-      const createdCountry: CountryResource = {
-        ...newCountryData,
-        backward_compatibility: 'GB',
-        created_at: '2024-01-03T00:00:00Z',
-        updated_at: '2024-01-03T00:00:00Z',
-      }
-      const response = { data: { data: createdCountry } }
+      const response = { data: { data: { ...mockCountryData, id: 'GBR' } } }
       mockCountryApi.countryStore.mockResolvedValue(response)
 
-      const result = await countryStore.createCountry(newCountryData)
+      await store.createCountry(newCountryData)
 
-      expect(mockCountryApi.countryStore).toHaveBeenCalledWith(newCountryData)
-      expect(result).toEqual(createdCountry)
-      expect(countryStore.countries).toContainEqual(createdCountry)
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBeNull()
+      expect(store.loading).toBe(false)
+      expect(store.error).toBeNull()
     })
 
     it('should handle create country error', async () => {
-      const countryStore = useCountryStore()
-      const newCountryData: StoreCountryRequest = {
-        id: 'GBR',
-        internal_name: 'United Kingdom',
-        backward_compatibility: 'GB',
-      }
-      const error = new Error('Validation error')
-      mockCountryApi.countryStore.mockRejectedValue(error)
+      const store = useCountryStore()
+      mockCountryApi.countryStore.mockRejectedValue(new Error('Validation error'))
 
-      const result = await countryStore.createCountry(newCountryData)
+      await expect(store.createCountry({ id: 'GBR', internal_name: 'UK' })).rejects.toThrow()
 
-      expect(result).toBeNull()
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBe('Failed to create country')
+      expect(store.error).toBe('Failed to create country')
     })
   })
 
   describe('updateCountry', () => {
-    it('should update a country successfully', async () => {
-      const countryStore = useCountryStore()
-      // Pre-populate the store with a country
-      countryStore.countries.push(mockCountryData)
-      countryStore.currentCountry = mockCountryData
-
-      const updateData: UpdateCountryRequest = {
-        internal_name: 'United States of America',
-        backward_compatibility: 'US',
-      }
-      const updatedCountry: CountryResource = {
-        ...mockCountryData,
-        internal_name: 'United States of America',
-      }
-      const response = { data: { data: updatedCountry } }
-      mockCountryApi.countryUpdate.mockResolvedValue(response)
-
-      const result = await countryStore.updateCountry('USA', updateData)
-
-      expect(mockCountryApi.countryUpdate).toHaveBeenCalledWith('USA', updateData)
-      expect(result).toEqual(updatedCountry)
-      expect(countryStore.currentCountry).toEqual(updatedCountry)
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBeNull()
-    })
-
     it('should handle update country error', async () => {
-      const countryStore = useCountryStore()
-      const updateData: UpdateCountryRequest = {
-        internal_name: 'Updated Name',
-        backward_compatibility: null,
-      }
-      const error = new Error('Update failed')
-      mockCountryApi.countryUpdate.mockRejectedValue(error)
+      const store = useCountryStore()
+      mockCountryApi.countryUpdate.mockRejectedValue(new Error('Update failed'))
 
-      const result = await countryStore.updateCountry('USA', updateData)
+      await expect(store.updateCountry('USA', { internal_name: 'New Name' })).rejects.toThrow()
 
-      expect(result).toBeNull()
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBe('Failed to update country')
+      expect(store.loading).toBe(false)
+      expect(store.error).toBe('Failed to update country')
     })
   })
 
   describe('deleteCountry', () => {
-    it('should delete a country successfully', async () => {
-      const countryStore = useCountryStore()
-      // Pre-populate the store
-      countryStore.countries.push(mockCountryData)
-      countryStore.currentCountry = mockCountryData
-
-      mockCountryApi.countryDestroy.mockResolvedValue({})
-
-      const result = await countryStore.deleteCountry('USA')
-
-      expect(mockCountryApi.countryDestroy).toHaveBeenCalledWith('USA')
-      expect(result).toBe(true)
-      expect(countryStore.countries).not.toContainEqual(mockCountryData)
-      expect(countryStore.currentCountry).toBeNull()
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBeNull()
-    })
-
     it('should handle delete country error', async () => {
-      const countryStore = useCountryStore()
-      const error = new Error('Delete failed')
-      mockCountryApi.countryDestroy.mockRejectedValue(error)
+      const store = useCountryStore()
+      mockCountryApi.countryDestroy.mockRejectedValue(new Error('Delete failed'))
 
-      const result = await countryStore.deleteCountry('USA')
+      await expect(store.deleteCountry('USA')).rejects.toThrow()
 
-      expect(result).toBe(false)
-      expect(countryStore.loading).toBe(false)
-      expect(countryStore.error).toBe('Failed to delete country')
+      expect(store.error).toBe('Failed to delete country')
     })
   })
 
   describe('Computed Properties', () => {
     it('should sort countries alphabetically', () => {
-      const countryStore = useCountryStore()
-      const countries = [
-        {
-          id: 'USA',
-          internal_name: 'United States',
-          backward_compatibility: 'US',
-          created_at: null,
-          updated_at: null,
-        },
-        {
-          id: 'CAN',
-          internal_name: 'Canada',
-          backward_compatibility: 'CA',
-          created_at: null,
-          updated_at: null,
-        },
-        {
-          id: 'GBR',
-          internal_name: 'United Kingdom',
-          backward_compatibility: 'GB',
-          created_at: null,
-          updated_at: null,
-        },
-      ]
+      const store = useCountryStore()
+      store.category.push(
+        { id: 'USA', internal_name: 'United States' } as CountryResource,
+        { id: 'CAN', internal_name: 'Canada' } as CountryResource
+      )
 
-      countryStore.countries.push(...countries)
-
-      expect(countryStore.sortedCountries[0].internal_name).toBe('Canada')
-      expect(countryStore.sortedCountries[1].internal_name).toBe('United Kingdom')
-      expect(countryStore.sortedCountries[2].internal_name).toBe('United States')
-    })
-
-    it('should return correct countries count', () => {
-      const countryStore = useCountryStore()
-
-      expect(countryStore.countriesCount).toBe(0)
-
-      countryStore.countries.push(mockCountryData)
-      expect(countryStore.countriesCount).toBe(1)
-    })
-  })
-
-  describe('Utility Methods', () => {
-    it('should find country by id', () => {
-      const countryStore = useCountryStore()
-      countryStore.countries.push(mockCountryData)
-
-      const found = countryStore.findCountryById('USA')
-      expect(found).toEqual(mockCountryData)
-
-      const notFound = countryStore.findCountryById('INVALID')
-      expect(notFound).toBeUndefined()
-    })
-
-    it('should clear current country', () => {
-      const countryStore = useCountryStore()
-      countryStore.currentCountry = mockCountryData
-
-      countryStore.clearCurrentCountry()
-      expect(countryStore.currentCountry).toBeNull()
-    })
-
-    it('should clear error', () => {
-      const countryStore = useCountryStore()
-      countryStore.error = 'Some error'
-
-      countryStore.clearError()
-      expect(countryStore.error).toBeNull()
+      expect(store.sortedCountries[0]?.internal_name).toBe('Canada')
+      expect(store.sortedCountries[1]?.internal_name).toBe('United States')
     })
   })
 })

@@ -78,8 +78,8 @@ describe('Project Store', () => {
     it('should have correct initial state', () => {
       const projectStore = useProjectStore()
 
-      expect(projectStore.projects).toEqual([])
-      expect(projectStore.currentProject).toBeNull()
+      expect(projectStore.category).toEqual([])
+      expect(projectStore.currentEntry).toBeNull()
       expect(projectStore.loading).toBe(false)
       expect(projectStore.error).toBeNull()
     })
@@ -88,25 +88,25 @@ describe('Project Store', () => {
   describe('Getters', () => {
     it('should filter enabled projects', () => {
       const projectStore = useProjectStore()
-      projectStore.projects = mockProjectsResponse.data.data
+      projectStore.category = mockProjectsResponse.data.data
 
       const enabledProjects = projectStore.enabledProjects
       expect(enabledProjects).toHaveLength(1)
-      expect(enabledProjects[0].is_enabled).toBe(true)
+      expect(enabledProjects[0]?.is_enabled).toBe(true)
     })
 
     it('should filter launched projects', () => {
       const projectStore = useProjectStore()
-      projectStore.projects = mockProjectsResponse.data.data
+      projectStore.category = mockProjectsResponse.data.data
 
       const launchedProjects = projectStore.launchedProjects
       expect(launchedProjects).toHaveLength(1)
-      expect(launchedProjects[0].is_launched).toBe(true)
+      expect(launchedProjects[0]?.is_launched).toBe(true)
     })
 
     it('should find project by id', () => {
       const projectStore = useProjectStore()
-      projectStore.projects = mockProjectsResponse.data.data
+      projectStore.category = mockProjectsResponse.data.data
 
       const project = projectStore.getProjectById('123e4567-e89b-12d3-a456-426614174000')
       expect(project).toEqual(mockProjectData)
@@ -114,7 +114,7 @@ describe('Project Store', () => {
 
     it('should return undefined for non-existent project id', () => {
       const projectStore = useProjectStore()
-      projectStore.projects = mockProjectsResponse.data.data
+      projectStore.category = mockProjectsResponse.data.data
 
       const project = projectStore.getProjectById('non-existent-id')
       expect(project).toBeUndefined()
@@ -129,7 +129,7 @@ describe('Project Store', () => {
       await projectStore.fetchProjects()
 
       expect(projectStore.loading).toBe(false)
-      expect(projectStore.projects).toEqual(mockProjectsResponse.data.data)
+      expect(projectStore.category).toEqual(mockProjectsResponse.data.data)
       expect(projectStore.error).toBeNull()
       expect(mockProjectApi.projectIndex).toHaveBeenCalledTimes(1)
     })
@@ -142,7 +142,7 @@ describe('Project Store', () => {
       await expect(projectStore.fetchProjects()).rejects.toThrow('Network error')
 
       expect(projectStore.loading).toBe(false)
-      expect(projectStore.projects).toEqual([])
+      expect(projectStore.category).toEqual([])
       expect(projectStore.error).toBe('Failed to fetch projects')
     })
   })
@@ -159,7 +159,7 @@ describe('Project Store', () => {
 
       expect(result).toEqual(mockProjectData)
       expect(projectStore.loading).toBe(false)
-      expect(projectStore.currentProject).toEqual(mockProjectData)
+      expect(projectStore.currentEntry).toEqual(mockProjectData)
       expect(projectStore.error).toBeNull()
       expect(mockProjectApi.projectShow).toHaveBeenCalledWith(projectId)
     })
@@ -173,8 +173,8 @@ describe('Project Store', () => {
       await expect(projectStore.fetchProject(projectId)).rejects.toThrow('Not found')
 
       expect(projectStore.loading).toBe(false)
-      expect(projectStore.currentProject).toBeNull()
-      expect(projectStore.error).toBe('Failed to fetch project')
+      expect(projectStore.currentEntry).toBeNull()
+      expect(projectStore.error).toMatch(/^Failed to fetch project/)
     })
   })
 
@@ -445,9 +445,9 @@ describe('Project Store', () => {
   describe('clearCurrentProject', () => {
     it('should clear current project', () => {
       const projectStore = useProjectStore()
-      projectStore.currentProject = mockProjectData
-      projectStore.clearCurrentProject()
-      expect(projectStore.currentProject).toBeNull()
+      projectStore.currentEntry = mockProjectData
+      projectStore.clearCurrent()
+      expect(projectStore.currentEntry).toBeNull()
     })
   })
 })

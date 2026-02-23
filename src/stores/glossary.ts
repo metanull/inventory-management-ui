@@ -26,7 +26,8 @@ export const useGlossaryStore = defineStore('glossary', () => {
       () => getApi().glossaryIndex(page, perPage),
       loading,
       error,
-      'Failed to fetch glossary'
+      'Failed to fetch glossary',
+      true
     )
     if (res?.data) {
       glossary.value = res.data.data || []
@@ -43,7 +44,8 @@ export const useGlossaryStore = defineStore('glossary', () => {
       () => getApi().glossaryShow(id, include),
       loading,
       error,
-      `Failed to fetch entry ${id}`
+      `Failed to fetch entry ${id}`,
+      true
     )
     if (res?.data?.data) currentGlossaryEntry.value = res.data.data
   }
@@ -54,7 +56,8 @@ export const useGlossaryStore = defineStore('glossary', () => {
       () => getApi().glossaryStore(data),
       loading,
       error,
-      'Failed to create entry'
+      'Failed to create entry',
+      true
     )
     if (res?.data?.data) {
       glossary.value.push(res.data.data)
@@ -69,7 +72,8 @@ export const useGlossaryStore = defineStore('glossary', () => {
       () => getApi().glossaryUpdate(id, data),
       loading,
       error,
-      'Failed to update entry'
+      'Failed to update entry',
+      true
     )
     if (res?.data?.data) {
       const updated = res.data.data
@@ -87,7 +91,8 @@ export const useGlossaryStore = defineStore('glossary', () => {
       () => getApi().glossaryDestroy(id),
       loading,
       error,
-      'Failed to delete entry'
+      'Failed to delete entry',
+      true
     )
     if (res) {
       glossary.value = glossary.value.filter(g => g.id !== id)
