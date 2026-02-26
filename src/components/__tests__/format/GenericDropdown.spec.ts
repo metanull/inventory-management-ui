@@ -120,7 +120,7 @@ describe('GenericDropdown', () => {
         options: mockOptions,
       },
     })
-    
+
     const select = wrapper.element as HTMLSelectElement
     expect(select.value).toBe('2')
   })
