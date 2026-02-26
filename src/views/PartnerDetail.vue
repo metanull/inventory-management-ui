@@ -2,7 +2,7 @@
   <!-- Unified Partner Detail View -->
   <DetailView
     :store-loading="partnerStore.loading"
-    :resource="mode === 'create' ? null : partner"
+    :resource="(mode === 'create' ? null : partner) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
@@ -32,7 +32,9 @@
               placeholder="ISO partner code (e.g., GBR)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ partner?.id }}</DisplayText>
+            <DisplayText v-else>
+              {{ partner?.id }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -43,7 +45,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ partner?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ partner?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -58,7 +62,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ partner?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ partner?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow v-if="partner?.created_at" variant="white">
@@ -135,7 +141,7 @@
   }
 
   // Resource data
-  const partner = computed(() => partnerStore.currentPartner)
+  const partner = computed(() => partnerStore.currentEntry)
 
   // Edit form state
   const editForm = ref<PartnerFormData>({

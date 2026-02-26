@@ -32,7 +32,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ project?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ project?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -47,7 +49,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ project?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ project?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -65,7 +69,7 @@
                 format="medium"
                 variant="small-dark"
               />
-              <DisplayText v-else variant="gray">Not scheduled</DisplayText>
+              <DisplayText v-else variant="gray"> Not scheduled </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>
@@ -81,8 +85,10 @@
               no-default-value=""
             />
             <template v-else>
-              <DisplayText v-if="project?.context">{{ project.context.internal_name }}</DisplayText>
-              <DisplayText v-else variant="gray">No default context set</DisplayText>
+              <DisplayText v-if="project?.context">
+                {{ project.context.internal_name }}
+              </DisplayText>
+              <DisplayText v-else variant="gray"> No default context set </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>
@@ -98,10 +104,10 @@
               no-default-value=""
             />
             <template v-else>
-              <DisplayText v-if="project?.language">{{
-                project.language.internal_name
-              }}</DisplayText>
-              <DisplayText v-else variant="gray">No default language set</DisplayText>
+              <DisplayText v-if="project?.language">
+                {{ project.language.internal_name }}
+              </DisplayText>
+              <DisplayText v-else variant="gray"> No default language set </DisplayText>
             </template>
           </DescriptionDetail>
         </DescriptionRow>
@@ -111,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import {
     useRoute,
     useRouter,
@@ -119,7 +125,7 @@
     type RouteLocationNormalized,
     type NavigationGuardNext,
   } from 'vue-router'
-  import { useProjectStore } from '@/stores/project'
+  import { useProjectStore, type ProjectResource } from '@/stores/project'
   import { useContextStore } from '@/stores/context'
   import { useLanguageStore } from '@/stores/language'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
@@ -170,11 +176,13 @@
   const mode = ref<Mode>('view')
 
   // Computed properties
-  const project = computed(() => projectStore.currentProject)
+  const project = computed<ProjectResource | null>(() => {
+    return projectStore.currentEntry ?? null
+  })
 
   // Dropdown options
   const contexts = computed(() => contextStore.contexts)
-  const languages = computed(() => languageStore.languages)
+  const languages = computed(() => languageStore.category)
   const defaultContext = computed(() => contextStore.defaultContext)
   const defaultLanguage = computed(() => languageStore.defaultLanguage)
 
@@ -368,7 +376,9 @@
         errorStore.addMessage('info', 'Project created successfully.')
 
         // Load the new project and enter view mode
-        await projectStore.fetchProject(newProject.id)
+        if (newProject) {
+          await projectStore.fetchProject(newProject.id)
+        }
         enterViewMode()
       } else if (mode.value === 'edit' && project.value) {
         // Update existing project
@@ -481,7 +491,7 @@
     try {
       if (isCreateRoute) {
         // Clear current project to avoid showing stale data from previously viewed projects
-        projectStore.clearCurrentProject()
+        projectStore.clearCurrent()
 
         // For create mode, only fetch dropdown options
         await Promise.all([contextStore.fetchContexts(), languageStore.fetchLanguages()])
@@ -538,6 +548,10 @@
 
   // Lifecycle
   onMounted(initializeComponent)
+
+  onUnmounted(() => {
+    projectStore.clearProjects()
+  })
 
   // Expose properties for testing
   defineExpose({

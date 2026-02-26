@@ -2,7 +2,7 @@
   <!-- Unified Glossary Detail View -->
   <DetailView
     :store-loading="glossaryStore.loading"
-    :resource="mode === 'create' ? null : glossaryEntry"
+    :resource="(mode === 'create' ? null : glossaryEntry) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
@@ -30,7 +30,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ glossaryEntry?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ glossaryEntry?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
 
@@ -42,16 +44,14 @@
                 v-if="mode === 'edit'"
                 label="Add New Language"
                 @click="createNewLanguage"
-              >
-              </GenericButton>
+              />
               <GenericButton
                 v-for="language in glossaryEntryLanguages"
                 :key="language.id"
                 :label="language.internal_name"
                 :class="{ 'bg-sky-300': currentLanguage.id === language.id }"
                 @click="assignCurrentLanguage(language)"
-              >
-              </GenericButton>
+              />
             </div>
             <div v-if="mode === 'edit' && languageMode === 'create'">
               <FormInput
@@ -76,6 +76,7 @@
               v-if="
                 mode === 'edit' && spellingMode === 'view' && (currentLanguage.id || newLanguage.id)
               "
+              class="mb-4"
             >
               <FormInput
                 v-model="createSpellingForm.spelling"
@@ -83,11 +84,11 @@
                 :placeholder="`Create a new ${currentLanguage.id ? currentLanguage.internal_name : newLanguage.internal_name} spelling.`"
                 class="mb-2"
               />
-              <SaveButton @click="saveGlossarySpellingEntry"></SaveButton>
+              <SaveButton @click="saveGlossarySpellingEntry" />
             </div>
-            <div v-if="spellingMode === 'view' && currentLanguageSpellings.length > 0">
+            <div v-if="currentLanguageSpellings.length > 0">
               <DisplayText>
-                <ul class="mt-4 space-y-2">
+                <ul class="space-y-2">
                   <li v-for="(spelling, index) in currentLanguageSpellings" :key="index">
                     <div v-if="spellingMode === 'view'">
                       {{ spelling.spelling }}
@@ -111,8 +112,8 @@
                         :placeholder="`Editing this spelling: ${spelling.spelling}`"
                         class="mb-2"
                       />
-                      <SaveButton class="mr-2" @click="saveGlossarySpellingEntry"></SaveButton>
-                      <CancelButton @click="spellingMode = 'view'"></CancelButton>
+                      <SaveButton class="mr-2" @click="saveGlossarySpellingEntry" />
+                      <CancelButton @click="cancel('spelling')" />
                     </div>
                   </li>
                 </ul>
@@ -123,10 +124,10 @@
                 mode === 'view' && spellingMode === 'view' && currentLanguageSpellings.length === 0
               "
             >
-              <DisplayText
-                >{{ currentLanguage.internal_name }} spellings not yet entered. Click "Edit" to add
-                spellings.</DisplayText
-              >
+              <DisplayText>
+                {{ currentLanguage.internal_name }} spellings not yet entered. Click "Edit" to add
+                spellings.
+              </DisplayText>
             </div>
           </DescriptionDetail>
         </DescriptionRow>
@@ -147,10 +148,10 @@
                 mode === 'view' && translationMode === 'view' && !currentLanguageTranslation
               "
             >
-              <DisplayText
-                >{{ currentLanguage.internal_name }} definition not yet entered. Click "Edit" to add
-                a definition.</DisplayText
-              >
+              <DisplayText>
+                {{ currentLanguage.internal_name }} definition not yet entered. Click "Edit" to add
+                a definition.
+              </DisplayText>
             </div>
             <div
               v-else-if="
@@ -163,7 +164,7 @@
                 :placeholder="`Enter the ${currentLanguage.id ? currentLanguage.internal_name : newLanguage.internal_name} definition here.`"
                 class="mb-2"
               />
-              <SaveButton class="mr-2" @click="saveGlossaryTranslation"></SaveButton>
+              <SaveButton class="mr-2" @click="saveGlossaryTranslation" />
             </div>
             <div
               v-else-if="
@@ -185,8 +186,8 @@
                 :placeholder="`Edit the ${currentLanguage.internal_name} definition.`"
                 class="mb-2"
               />
-              <SaveButton class="mr-2" @click="saveGlossaryTranslation"></SaveButton>
-              <CancelButton @click="translationMode = 'view'"></CancelButton>
+              <SaveButton class="mr-2" @click="saveGlossaryTranslation" />
+              <CancelButton @click="cancel('translation')" />
             </div>
           </DescriptionDetail>
         </DescriptionRow>
@@ -250,6 +251,7 @@
   type SpellingMode = 'view' | 'edit' | 'create'
   type LanguageMode = 'view' | 'create'
   type TranslationMode = 'view' | 'edit' | 'create'
+  type Clear = 'glossary' | 'language' | 'spelling' | 'translation' | 'all'
 
   interface GlossaryFormData {
     id: string
@@ -313,11 +315,9 @@
   }
 
   // Resource data
-  const glossaryEntry = computed(() => glossaryStore.currentGlossaryEntry)
-  const glossarySpellingEntry = computed(() => glossarySpellingStore.currentGlossarySpellingEntry)
-  const glossaryTranslationEntry = computed(
-    () => glossaryTranslationStore.currentGlossaryTranslationEntry
-  )
+  const glossaryEntry = computed(() => glossaryStore.currentEntry)
+  const glossarySpellingEntry = computed(() => glossarySpellingStore.currentEntry)
+  const glossaryTranslationEntry = computed(() => glossaryTranslationStore.currentEntry)
   const languages = computed(() => languageStore.allLanguages)
 
   const glossaryEntryLanguages = computed(() => {
@@ -414,26 +414,17 @@
   })
 
   const languageHasEntries = computed(() => {
-    let exists = false
-    if (
-      glossaryEntry.value &&
-      glossaryEntry.value.spellings &&
-      !glossaryEntry.value.spellings.find(s => s.language_id === currentLanguage.value.id)
-    ) {
-      exists = false
-    } else {
-      return true
-    }
-    if (
-      glossaryEntry.value &&
-      glossaryEntry.value.translations &&
-      !glossaryEntry.value.translations.find(t => t.language_id === currentLanguage.value.id)
-    ) {
-      exists = false
-    } else {
-      return true
-    }
-    return exists
+    if (!glossaryEntry.value || !currentLanguage.value) return false
+
+    const hasSpelling = glossaryEntry.value.spellings?.some(
+      s => s.language_id === currentLanguage.value.id
+    )
+
+    const hasTranslation = glossaryEntry.value.translations?.some(
+      t => t.language_id === currentLanguage.value.id
+    )
+
+    return !!(hasSpelling || hasTranslation)
   })
 
   // Unsaved changes tracking
@@ -485,7 +476,7 @@
       loadingStore.show('Saving...')
       if (mode.value === 'create') {
         const createData: StoreGlossaryRequest = {
-          id: editForm.value.id,
+          // id: editForm.value.id,
           internal_name: editForm.value.internal_name,
           backward_compatibility: editForm.value.backward_compatibility || undefined,
         }
@@ -760,12 +751,43 @@
     } else if (mode.value === 'create') {
       router.push('/glossary')
     } else {
-      mode.value = 'view'
-      languageMode.value = 'view'
-      spellingMode.value = 'view'
-      translationMode.value = 'view'
-      newLanguage.value = { id: '', internal_name: '' }
-      currentLanguage.value = { id: '', internal_name: '' }
+      cancel('all')
+    }
+  }
+
+  const cancel = (target: Clear) => {
+    switch (target) {
+      case 'language':
+        languageMode.value = 'view'
+        newLanguage.value = { id: '', internal_name: '' }
+        currentLanguage.value = { id: '', internal_name: '' }
+        break
+
+      case 'spelling':
+        spellingMode.value = 'view'
+        glossarySpellingStore.clearCurrent()
+        break
+
+      case 'translation':
+        translationMode.value = 'view'
+        glossaryTranslationStore.clearCurrent()
+        break
+
+      case 'glossary':
+        mode.value = 'view'
+        break
+
+      case 'all':
+        mode.value = 'view'
+        languageMode.value = 'view'
+        spellingMode.value = 'view'
+        translationMode.value = 'view'
+        newLanguage.value = { id: '', internal_name: '' }
+        currentLanguage.value = { id: '', internal_name: '' }
+        break
+
+      default:
+        console.warn(`"${target}" is not a valid option to reset.`)
     }
   }
 

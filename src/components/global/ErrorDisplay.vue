@@ -32,7 +32,9 @@
             <InformationCircleIcon v-else class="h-5 w-5 text-blue-400" aria-hidden="true" />
           </div>
           <div class="ml-3">
-            <p class="text-sm font-medium">{{ message.text }}</p>
+            <p class="text-sm font-medium">
+              {{ message.text }}
+            </p>
           </div>
         </div>
         <button

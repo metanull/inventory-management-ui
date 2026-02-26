@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+  import { type Component } from 'vue'
   import Card from './Card.vue'
   import Toggle from '@/components/format/Toggle.vue'
 
@@ -61,8 +62,8 @@
     inactiveIconBackgroundClass: string
     activeIconClass: string
     inactiveIconClass: string
-    activeIconComponent: any
-    inactiveIconComponent: any
+    activeIconComponent: Component
+    inactiveIconComponent: Component
   }>()
 
   defineEmits<{

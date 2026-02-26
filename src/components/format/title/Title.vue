@@ -4,7 +4,9 @@
       <slot />
     </component>
     <p v-if="description || $slots.description" :class="descriptionClasses">
-      <slot name="description">{{ description }}</slot>
+      <slot name="description">
+        {{ description }}
+      </slot>
     </p>
   </div>
 </template>

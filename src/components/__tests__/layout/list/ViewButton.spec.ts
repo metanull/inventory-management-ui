@@ -110,8 +110,8 @@ describe('ViewButton', () => {
     expect(paths.length).toBeGreaterThanOrEqual(1)
 
     // Verify it has the expected icon structure
-    expect(paths[0].attributes('stroke-linecap')).toBe('round')
-    expect(paths[0].attributes('stroke-linejoin')).toBe('round')
+    expect(paths[0]?.attributes('stroke-linecap')).toBe('round')
+    expect(paths[0]?.attributes('stroke-linejoin')).toBe('round')
     // HeroIcons may or may not have stroke-width attribute, so we don't test for specific value
   })
 

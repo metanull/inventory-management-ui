@@ -28,8 +28,6 @@
 </template>
 
 <script setup lang="ts">
-  /*global HTMLSelectElement*/
-
   interface Option {
     id: string
     internal_name: string

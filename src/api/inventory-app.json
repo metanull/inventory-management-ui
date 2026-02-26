@@ -6208,7 +6208,7 @@
         "tags": ["Picture"],
         "responses": {
           "200": {
-            "description": "Array of `PictureResource`",
+            "description": "Array of `ItemImageResource`",
             "content": {
               "application/json": {
                 "schema": {
@@ -6217,7 +6217,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/PictureResource"
+                        "$ref": "#/components/schemas/ItemImageResource"
                       }
                     }
                   },
@@ -6251,14 +6251,14 @@
         ],
         "responses": {
           "200": {
-            "description": "`PictureResource`",
+            "description": "`ItemImageResource`",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/PictureResource"
+                      "$ref": "#/components/schemas/ItemImageResource"
                     }
                   },
                   "required": ["data"]
@@ -6322,14 +6322,14 @@
         },
         "responses": {
           "200": {
-            "description": "`PictureResource`",
+            "description": "`ItemImageResource`",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/PictureResource"
+                      "$ref": "#/components/schemas/ItemImageResource"
                     }
                   },
                   "required": ["data"]
@@ -9747,7 +9747,7 @@
         ],
         "title": "PartnerResource"
       },
-      "PictureResource": {
+      "ItemImageResource": {
         "type": "object",
         "properties": {
           "id": {
@@ -9825,7 +9825,7 @@
           "created_at",
           "updated_at"
         ],
-        "title": "PictureResource"
+        "title": "ItemImageResource"
       },
       "PictureTranslationResource": {
         "type": "object",

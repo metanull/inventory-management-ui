@@ -2,60 +2,27 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
   PartnerApi,
-  Configuration,
   type PartnerResource,
   type StorePartnerRequest,
   type UpdatePartnerRequest,
 } from '@metanull/inventory-app-api-client'
-import { useAuthStore } from './auth'
-import { ErrorHandler } from '@/utils/errorHandler'
-import { type PageLinks, type PageMeta } from '@/composables/usePagination'
-
-// Declare process for Node.js environments
-declare const process: {
-  env: Record<string, string | undefined>
-}
+import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
 export const usePartnerStore = defineStore('partner', () => {
-  const partners = ref<PartnerResource[]>([])
+  const state = createPaginatedStoreState<PartnerResource>()
+  const {
+    category: partners,
+    currentEntry: currentPartner,
+    pageLinks,
+    pageMeta,
+    loading,
+    error,
+  } = state
+
+  // Additional Partner-specific state
   const allPartners = ref<PartnerResource[]>([])
-  const currentPartner = ref<PartnerResource | null>(null)
-  const pageLinks = ref<PageLinks | null>(null)
-  const pageMeta = ref<PageMeta | null>(null)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
 
-  const authStore = useAuthStore()
-
-  // Create API client instance with configuration
-  const createApiClient = () => {
-    // Support both Vite (import.meta.env) and Node (process.env) for baseURL
-    let baseURL: string
-    if (
-      typeof import.meta !== 'undefined' &&
-      import.meta.env &&
-      import.meta.env.VITE_API_BASE_URL
-    ) {
-      baseURL = import.meta.env.VITE_API_BASE_URL
-    } else if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
-      baseURL = process.env.VITE_API_BASE_URL
-    } else {
-      baseURL = 'http://127.0.0.1:8000/api'
-    }
-
-    const configParams: { basePath: string; accessToken?: string } = {
-      basePath: baseURL,
-    }
-
-    if (authStore.token) {
-      configParams.accessToken = authStore.token
-    }
-
-    // Create configuration for the API client
-    const configuration = new Configuration(configParams)
-
-    return new PartnerApi(configuration)
-  }
+  const getApi = () => new PartnerApi(createApiConfig())
 
   // Computed properties
   const sortedPartners = computed(() => {
@@ -64,237 +31,144 @@ export const usePartnerStore = defineStore('partner', () => {
 
   const partnersCount = computed(() => partners.value.length)
 
-  // Fetch partners by page
+  // Actions
   const fetchPartners = async (
     page: number = 1,
     perPage: number = 10
   ): Promise<PartnerResource[]> => {
-    loading.value = true
-    error.value = null
+    const res = await useApiCall(
+      'fetchPartners',
+      () => getApi().partnerIndex(page, perPage),
+      loading,
+      error,
+      'Failed to fetch partners',
+      true
+    )
 
-    try {
-      const apiClient = createApiClient()
-      const response = await apiClient.partnerIndex(page, perPage)
-
-      if (response.data && response.data.data) {
-        partners.value = response.data.data
-      } else {
-        partners.value = []
-      }
-
-      pageLinks.value = response.data?.links ?? null
-      pageMeta.value = response.data?.meta ?? null
-
-      return partners.value
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, 'Failed to fetch partners')
-      error.value = 'Failed to fetch partners'
-      partners.value = []
-      throw err
-    } finally {
-      loading.value = false
+    if (res?.data) {
+      partners.value = res.data.data || []
+      pageLinks.value = res.data.links || null
+      pageMeta.value = res.data.meta || null
     }
+
+    return partners.value
   }
 
-  // Fetch all partners
   const fetchAllPartners = async (): Promise<PartnerResource[]> => {
-    loading.value = true
-    error.value = null
-
     const fullList: PartnerResource[] = []
     let currentPage = 1
     let hasMorePages = true
 
-    try {
-      const apiClient = createApiClient()
+    const res = await useApiCall(
+      'fetchAllPartners',
+      async () => {
+        while (hasMorePages) {
+          const response = await getApi().partnerIndex(currentPage, 100)
+          const data = response.data.data || []
+          const meta = response.data.meta
 
-      while (hasMorePages) {
-        const response = await apiClient.partnerIndex(currentPage, 100)
-        const data = response.data.data || []
-        const meta = response.data.meta
+          fullList.push(...data)
 
-        fullList.push(...data)
-
-        if (meta && meta.current_page < meta.last_page) {
-          currentPage++
-        } else {
-          hasMorePages = false
+          if (meta && meta.current_page < meta.last_page) {
+            currentPage++
+          } else {
+            hasMorePages = false
+          }
         }
-      }
+        return fullList
+      },
+      loading,
+      error,
+      'Failed to fetch all partners',
+      true
+    )
 
-      allPartners.value = fullList.sort((a, b) =>
+    if (res) {
+      allPartners.value = [...res].sort((a, b) =>
         (a.internal_name || '').localeCompare(b.internal_name || '')
       )
-
-      pageMeta.value = {
-        current_page: 1,
-        last_page: 1,
-        // Provide a basic links array to satisfy the type
-        links: [
-          { url: null, label: 'pagination.previous', active: false },
-          { url: null, label: '1', active: true },
-          { url: null, label: 'pagination.next', active: false },
-        ],
-      }
-
-      return allPartners.value
-    } catch (err: unknown) {
-      ErrorHandler.handleError(err, 'Failed to fetch all partners')
-      error.value = 'Failed to fetch all partners'
-      return []
-    } finally {
-      loading.value = false
     }
+
+    return allPartners.value
   }
 
   const fetchPartner = async (id: string): Promise<void> => {
-    loading.value = true
-    error.value = null
-    currentPartner.value = null
-
-    try {
-      const api = createApiClient()
-      const response = await api.partnerShow(id)
-
-      if (response.data && response.data.data) {
-        currentPartner.value = response.data.data
-      } else {
-        throw new Error('Partner not found')
-      }
-    } catch (err) {
-      error.value = `Failed to fetch partner with ID: ${id}`
-      ErrorHandler.handleError(err, 'fetchPartner')
-      currentPartner.value = null
-    } finally {
-      loading.value = false
-    }
+    state.clearCurrent()
+    const res = await useApiCall(
+      'fetchPartner',
+      () => getApi().partnerShow(id),
+      loading,
+      error,
+      `Failed to fetch partner with ID: ${id}`,
+      true
+    )
+    if (res?.data?.data) currentPartner.value = res.data.data
   }
 
-  const createPartner = async (
-    partnerData: StorePartnerRequest
-  ): Promise<PartnerResource | null> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const api = createApiClient()
-      const response = await api.partnerStore(partnerData)
-
-      if (response.data && response.data.data) {
-        const newParter = response.data.data
-        partners.value.push(newParter)
-        return newParter
-      } else {
-        throw new Error('Failed to create partner')
-      }
-    } catch (err) {
-      error.value = 'Failed to create partner'
-      ErrorHandler.handleError(err, 'createPartner')
-      return null
-    } finally {
-      loading.value = false
-    }
+  const createPartner = async (data: StorePartnerRequest): Promise<PartnerResource | null> => {
+    const res = await useApiCall(
+      'createPartner',
+      () => getApi().partnerStore(data),
+      loading,
+      error,
+      'Failed to create partner',
+      true
+    )
+    if (res?.data?.data) partners.value.push(res.data.data)
+    return res?.data?.data || null
   }
 
   const updatePartner = async (
     id: string,
-    partnerData: UpdatePartnerRequest
+    data: UpdatePartnerRequest
   ): Promise<PartnerResource | null> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const api = createApiClient()
-      const response = await api.partnerUpdate(id, partnerData)
-
-      if (response.data && response.data.data) {
-        const updatedPartner = response.data.data
-
-        // Update in partners list
-        const index = partners.value.findIndex(partner => partner.id === id)
-        if (index !== -1) {
-          partners.value[index] = updatedPartner
-        }
-
-        // Update current partner if it's the same
-        if (currentPartner.value && currentPartner.value.id === id) {
-          currentPartner.value = updatedPartner
-        }
-
-        return updatedPartner
-      } else {
-        throw new Error('Failed to update partner')
-      }
-    } catch (err) {
-      error.value = 'Failed to update partner'
-      ErrorHandler.handleError(err, 'updatePartner')
-      return null
-    } finally {
-      loading.value = false
+    const res = await useApiCall(
+      'updatePartner',
+      () => getApi().partnerUpdate(id, data),
+      loading,
+      error,
+      'Failed to update partner',
+      true
+    )
+    if (res?.data?.data) {
+      const idx = partners.value.findIndex(p => p.id === id)
+      if (idx !== -1) partners.value[idx] = res.data.data
+      if (currentPartner.value?.id === id) currentPartner.value = res.data.data
     }
+    return res?.data?.data || null
   }
 
   const deletePartner = async (id: string): Promise<boolean> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const api = createApiClient()
-      await api.partnerDestroy(id)
-
-      // Remove from partners list
-      partners.value = partners.value.filter(partner => partner.id !== id)
-
-      // Clear current partner if it's the same
-      if (currentPartner.value && currentPartner.value.id === id) {
-        currentPartner.value = null
-      }
-
-      return true
-    } catch (err) {
-      error.value = 'Failed to delete partner'
-      ErrorHandler.handleError(err, 'deletePartner')
-      return false
-    } finally {
-      loading.value = false
+    const res = await useApiCall(
+      'deletePartner',
+      () => getApi().partnerDestroy(id),
+      loading,
+      error,
+      'Failed to delete partner',
+      true
+    )
+    if (res) {
+      partners.value = partners.value.filter(p => p.id !== id)
+      if (currentPartner.value?.id === id) state.clearCurrent()
     }
-  }
-
-  const findPartnerById = (id: string): PartnerResource | undefined => {
-    return partners.value.find(partner => partner.id === id)
-  }
-
-  const clearCurrentPartner = (): void => {
-    currentPartner.value = null
-  }
-
-  const clearError = (): void => {
-    error.value = null
+    return !!res
   }
 
   return {
-    // State
-    partners,
+    ...state,
     allPartners,
-    currentPartner,
-    loading,
-    error,
     pageLinks,
     pageMeta,
-
-    // Computed
     sortedPartners,
     partnersCount,
-
-    // Actions
     fetchPartners,
     fetchAllPartners,
     fetchPartner,
     createPartner,
     updatePartner,
     deletePartner,
-    findPartnerById,
-    clearCurrentPartner,
-    clearError,
+    findPartnerById: (id: string) => partners.value.find(p => p.id === id),
   }
 })
+
+export type { PartnerResource }

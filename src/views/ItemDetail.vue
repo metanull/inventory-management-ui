@@ -2,7 +2,7 @@
   <!-- Unified Item Detail View -->
   <DetailView
     :store-loading="itemStore.loading"
-    :resource="mode === 'create' ? null : item"
+    :resource="(mode === 'create' ? null : item) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
@@ -32,7 +32,9 @@
               placeholder="ISO item code (e.g., GBR)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ item?.id }}</DisplayText>
+            <DisplayText v-else>
+              {{ item?.id }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -43,7 +45,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ item?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ item?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -55,10 +59,9 @@
                 :key="image.id"
                 :image-url="image.path"
                 :alt-text="image.alt_text"
-              >
-              </DescriptionImage>
+              />
             </div>
-            <DisplayText v-else>No images available for this item.</DisplayText>
+            <DisplayText v-else> No images available for this item. </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -72,7 +75,9 @@
               placeholder="Select a type"
               class="mb-2"
             />
-            <DisplayText v-else>{{ item?.type }}</DisplayText>
+            <DisplayText v-else>
+              {{ item?.type }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -86,7 +91,9 @@
               placeholder="Select a partner"
               class="mb-2"
             />
-            <DisplayText v-else>{{ item?.partner?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ item?.partner?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -100,7 +107,9 @@
               placeholder="Select a project"
               class="mb-2"
             />
-            <DisplayText v-else>{{ item?.project?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ item?.project?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow v-if="item?.backward_compatibility || mode === 'edit' || mode === 'create'">
@@ -112,7 +121,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ item?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ item?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow v-if="item?.created_at">
@@ -196,9 +207,9 @@
   }
 
   // Resource data
-  const item = computed(() => itemStore.currentItem)
+  const item = computed(() => itemStore.currentEntry)
   const partnersList = computed(() => partnerStore.allPartners)
-  const projects = computed(() => projectStore.projects)
+  const projects = computed(() => projectStore.category)
 
   const types = Object.entries(StoreItemRequestTypeEnum).map(([key, value]) => ({
     id: key,

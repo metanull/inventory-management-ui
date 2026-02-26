@@ -112,8 +112,8 @@ describe('ErrorDisplay', () => {
 
     const icons = wrapper.findAllComponents({ name: 'ExclamationTriangleIcon' })
     expect(icons.length).toBe(1)
-    expect(icons[0].classes()).toContain('mock-exclamation-icon')
-    expect(icons[0].attributes('aria-hidden')).toBe('true')
+    expect(icons[0]?.classes()).toContain('mock-exclamation-icon')
+    expect(icons[0]?.attributes('aria-hidden')).toBe('true')
   })
 
   it('renders ExclamationTriangleIcon for warning messages', async () => {
@@ -129,8 +129,8 @@ describe('ErrorDisplay', () => {
 
     const icons = wrapper.findAllComponents({ name: 'ExclamationTriangleIcon' })
     expect(icons.length).toBe(1)
-    expect(icons[0].classes()).toContain('mock-exclamation-icon')
-    expect(icons[0].attributes('aria-hidden')).toBe('true')
+    expect(icons[0]?.classes()).toContain('mock-exclamation-icon')
+    expect(icons[0]?.attributes('aria-hidden')).toBe('true')
   })
 
   it('renders InformationCircleIcon for info messages', async () => {

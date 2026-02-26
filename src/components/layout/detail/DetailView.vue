@@ -162,7 +162,7 @@
   const props = defineProps<{
     // Loading states
     storeLoading?: boolean // Store's internal loading state (optional)
-    resource: Resource | null
+    resource: Resource | null | undefined
 
     // Mode state - Single source of truth
     mode: Mode
@@ -176,7 +176,7 @@
     backLink?: {
       title: string
       route: string
-      icon: any
+      icon: Component
       color?: string
     }
 

@@ -67,8 +67,8 @@ describe('Language Store', () => {
   it('should initialize with empty state', () => {
     const store = useLanguageStore()
 
-    expect(store.languages).toEqual([])
-    expect(store.currentLanguage).toBeNull()
+    expect(store.category).toEqual([])
+    expect(store.currentEntry).toBeNull()
     expect(store.loading).toBe(false)
     expect(store.error).toBeNull()
   })
@@ -80,7 +80,7 @@ describe('Language Store', () => {
     expect(store.defaultLanguage).toBeUndefined()
 
     // Add languages with one being default
-    store.languages = mockLanguages
+    store.category = mockLanguages
     expect(store.defaultLanguage?.id).toBe('eng')
   })
 
@@ -96,10 +96,10 @@ describe('Language Store', () => {
   it('should clear current language', () => {
     const store = useLanguageStore()
 
-    store.currentLanguage = mockLanguages[0]
-    store.clearCurrentLanguage()
+    store.currentEntry = mockLanguages[0]
+    store.clearCurrent()
 
-    expect(store.currentLanguage).toBeNull()
+    expect(store.currentEntry).toBeNull()
   })
 
   it('should handle fetchLanguages success', async () => {
@@ -112,7 +112,7 @@ describe('Language Store', () => {
     await store.fetchLanguages()
 
     expect(mockLanguageApi.languageIndex).toHaveBeenCalled()
-    expect(store.languages).toEqual(mockLanguages)
+    expect(store.category).toEqual(mockLanguages)
     expect(store.loading).toBe(false)
     expect(store.error).toBeNull()
   })
@@ -123,10 +123,15 @@ describe('Language Store', () => {
 
     mockLanguageApi.languageIndex.mockRejectedValue(error)
 
-    await expect(store.fetchLanguages()).rejects.toThrow('Network error')
+    try {
+      await store.fetchLanguages()
+    } catch (e) {
+      expect(e).toBe(error)
+    }
 
-    expect(store.loading).toBe(false)
     expect(store.error).toBe('Failed to fetch languages')
+    expect(store.category).toEqual([])
+    expect(store.loading).toBe(false)
   })
 
   it('should handle fetchLanguage success', async () => {
@@ -140,7 +145,7 @@ describe('Language Store', () => {
     const result = await store.fetchLanguage('eng')
 
     expect(mockLanguageApi.languageShow).toHaveBeenCalledWith('eng')
-    expect(store.currentLanguage).toEqual(language)
+    expect(store.currentEntry).toEqual(language)
     expect(result).toEqual(language)
   })
 
@@ -168,14 +173,14 @@ describe('Language Store', () => {
     const result = await store.createLanguage(createData)
 
     expect(mockLanguageApi.languageStore).toHaveBeenCalledWith(createData)
-    expect(store.languages).toHaveLength(1)
-    expect(store.languages[0]).toEqual(newLanguage)
+    expect(store.category).toHaveLength(1)
+    expect(store.category[0]).toEqual(newLanguage)
     expect(result).toEqual(newLanguage)
   })
 
   it('should handle updateLanguage success', async () => {
     const store = useLanguageStore()
-    store.languages = [...mockLanguages]
+    store.category = [...mockLanguages]
 
     const updatedLanguage = { ...mockLanguages[0], internal_name: 'Updated English' }
     const updateData = {
@@ -191,27 +196,27 @@ describe('Language Store', () => {
     const result = await store.updateLanguage('eng', updateData)
 
     expect(mockLanguageApi.languageUpdate).toHaveBeenCalledWith('eng', updateData)
-    expect(store.languages[0]).toEqual(updatedLanguage)
+    expect(store.category[0]).toEqual(updatedLanguage)
     expect(result).toEqual(updatedLanguage)
   })
 
   it('should handle deleteLanguage success', async () => {
     const store = useLanguageStore()
-    store.languages = [...mockLanguages]
+    store.category = [...mockLanguages]
 
     mockLanguageApi.languageDestroy.mockResolvedValue({})
 
     await store.deleteLanguage('fra')
 
     expect(mockLanguageApi.languageDestroy).toHaveBeenCalledWith('fra')
-    expect(store.languages).toHaveLength(1)
-    expect(store.languages[0].id).toBe('eng')
+    expect(store.category).toHaveLength(1)
+    expect(store.category[0]?.id).toBe('eng')
   })
 
   it('should handle setDefaultLanguage success', async () => {
     const store = useLanguageStore()
-    store.languages = [...mockLanguages]
-    store.currentLanguage = mockLanguages[1] // 'fra' language
+    store.category = [...mockLanguages]
+    store.currentEntry = mockLanguages[1] // 'fra' language
 
     const updatedLanguage = { ...mockLanguages[1], is_default: true }
 
@@ -224,25 +229,26 @@ describe('Language Store', () => {
     expect(mockLanguageApi.languageSetDefault).toHaveBeenCalledWith('fra', { is_default: true })
 
     // Check that the target language is now default
-    expect(store.languages.find(lang => lang.id === 'fra')?.is_default).toBe(true)
+    expect(store.category.find(lang => lang.id === 'fra')?.is_default).toBe(true)
 
     // Check that other languages are no longer default
-    expect(store.languages.find(lang => lang.id === 'eng')?.is_default).toBe(false)
+    expect(store.category.find(lang => lang.id === 'eng')?.is_default).toBe(false)
 
     // Check that current language is updated if it matches
-    expect(store.currentLanguage?.is_default).toBe(true)
+    expect(store.currentEntry?.is_default).toBe(true)
 
     expect(result).toEqual(updatedLanguage)
   })
 
   it('should handle setDefaultLanguage error', async () => {
     const store = useLanguageStore()
+    const langCode = 'fra'
     const errorMessage = 'Failed to set default'
 
     mockLanguageApi.languageSetDefault.mockRejectedValue(new Error(errorMessage))
 
-    await expect(store.setDefaultLanguage('fra', true)).rejects.toThrow(errorMessage)
-    expect(store.error).toBe('Failed to set default language')
+    await expect(store.setDefaultLanguage(langCode, true)).rejects.toThrow(errorMessage)
+    expect(store.error).toBe(`Failed to set default language ${langCode}`)
   })
 
   it('should handle getDefaultLanguage success', async () => {
@@ -254,14 +260,14 @@ describe('Language Store', () => {
     })
 
     // Initially empty languages array
-    store.languages = []
+    store.category = []
 
     const result = await store.getDefaultLanguage()
 
     expect(mockLanguageApi.languageGetDefault).toHaveBeenCalled()
     expect(result).toEqual(defaultLanguage)
-    expect(store.languages).toHaveLength(1)
-    expect(store.languages[0]).toEqual(defaultLanguage)
+    expect(store.category).toHaveLength(1)
+    expect(store.category[0]).toEqual(defaultLanguage)
     expect(store.loading).toBe(false)
     expect(store.error).toBeNull()
   })

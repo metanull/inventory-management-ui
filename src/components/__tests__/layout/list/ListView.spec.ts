@@ -206,8 +206,8 @@ describe('ListView', () => {
       // Find the empty state title (second Title component)
       const titles = wrapper.findAllComponents({ name: 'Title' })
       expect(titles).toHaveLength(2) // Header title and empty state title
-      expect(titles[1].props('variant')).toBe('empty')
-      expect(titles[1].text()).toBe('No items found')
+      expect(titles[1]?.props('variant')).toBe('empty')
+      expect(titles[1]?.text()).toBe('No items found')
     })
 
     it('displays empty message correctly', () => {
@@ -219,7 +219,7 @@ describe('ListView', () => {
       // Find the empty state title (second Title component)
       const titles = wrapper.findAllComponents({ name: 'Title' })
       const emptyStateTitle = titles[1]
-      expect(emptyStateTitle.props('description')).toBe('Custom empty message')
+      expect(emptyStateTitle?.props('description')).toBe('Custom empty message')
     })
 
     it('renders icon in empty state when provided', () => {
@@ -398,7 +398,7 @@ describe('ListView', () => {
       expect(wrapper.find('.text-center.py-12').exists()).toBe(true)
       // Find the empty state title (second Title component)
       const titles = wrapper.findAllComponents({ name: 'Title' })
-      expect(titles[1].props('variant')).toBe('empty')
+      expect(titles[1]?.props('variant')).toBe('empty')
       expect(wrapper.findComponent({ name: 'TableElement' }).exists()).toBe(false)
       expect(wrapper.findComponent({ name: 'AddButton' }).exists()).toBe(true)
     })
@@ -477,7 +477,7 @@ describe('ListView', () => {
 
       expect(wrapper.exists()).toBe(true)
       const titles = wrapper.findAllComponents({ name: 'Title' })
-      expect(titles[0].text()).toBe('Test')
+      expect(titles[0]?.text()).toBe('Test')
     })
   })
 
@@ -513,8 +513,8 @@ describe('ListView', () => {
       // Find the empty state title (second Title component)
       const titles = wrapper.findAllComponents({ name: 'Title' })
       const emptyStateTitle = titles[1]
-      expect(emptyStateTitle.text()).toBe('Accessible Empty Title')
-      expect(emptyStateTitle.props('description')).toBe('Descriptive message for screen readers')
+      expect(emptyStateTitle?.text()).toBe('Accessible Empty Title')
+      expect(emptyStateTitle?.props('description')).toBe('Descriptive message for screen readers')
     })
   })
 })

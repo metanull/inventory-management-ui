@@ -1,118 +1,31 @@
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import * as parserVue from 'vue-eslint-parser'
-import configTypeScript from '@typescript-eslint/eslint-plugin'
-import parserTypeScript from '@typescript-eslint/parser'
+import tseslint from 'typescript-eslint'
 import configPrettier from 'eslint-config-prettier'
+import globals from 'globals'
 
 export default [
   {
-    name: 'app/files-to-lint',
-    files: ['**/*.{ts,mts,tsx,vue}'],
-  },
-
-  {
-    name: 'app/files-to-ignore',
     ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/scripts/**', '**/.env*'],
   },
 
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
-  configPrettier,
+  ...tseslint.configs.recommended,
 
   {
-    name: 'app/vue-rules',
+    name: 'app/vue-typescript',
     files: ['**/*.vue'],
     languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
       parser: parserVue,
       parserOptions: {
-        parser: parserTypeScript,
+        parser: tseslint.parser,
         extraFileExtensions: ['.vue'],
         sourceType: 'module',
       },
-      globals: {
-        // Browser globals
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        localStorage: 'readonly',
-        sessionStorage: 'readonly',
-        navigator: 'readonly',
-        location: 'readonly',
-        alert: 'readonly',
-        confirm: 'readonly',
-        prompt: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-        FormData: 'readonly',
-        File: 'readonly',
-        Blob: 'readonly',
-        Event: 'readonly',
-        HTMLElement: 'readonly',
-        HTMLInputElement: 'readonly',
-        HTMLImageElement: 'readonly',
-        Element: 'readonly',
-        Node: 'readonly',
-      },
     },
-  },
-
-  {
-    name: 'app/ts-rules',
-    files: ['**/*.{ts,mts,tsx}'],
-    languageOptions: {
-      parser: parserTypeScript,
-      parserOptions: {
-        sourceType: 'module',
-      },
-      globals: {
-        // Browser globals
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        localStorage: 'readonly',
-        sessionStorage: 'readonly',
-        navigator: 'readonly',
-        location: 'readonly',
-        alert: 'readonly',
-        confirm: 'readonly',
-        prompt: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-        FormData: 'readonly',
-        File: 'readonly',
-        Blob: 'readonly',
-        Event: 'readonly',
-        HTMLElement: 'readonly',
-        HTMLInputElement: 'readonly',
-        HTMLImageElement: 'readonly',
-        Element: 'readonly',
-        Node: 'readonly',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': configTypeScript,
-    },
-    rules: {
-      ...configTypeScript.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-    },
-  },
-
-  {
-    name: 'app/vue-rules',
-    files: ['**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
       'vue/require-default-prop': 'off',
@@ -121,45 +34,27 @@ export default [
   },
 
   {
+    name: 'app/ts-rules',
+    files: ['**/*.{ts,mts,tsx}'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+
+  {
     name: 'app/test-rules',
     files: ['**/__tests__/**/*', '**/*.test.*'],
     languageOptions: {
       globals: {
-        // Test framework globals
-        vitest: 'readonly',
-        vi: 'readonly',
-        describe: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        // Browser globals for tests
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        localStorage: 'readonly',
-        sessionStorage: 'readonly',
-        navigator: 'readonly',
-        location: 'readonly',
-        alert: 'readonly',
-        confirm: 'readonly',
-        prompt: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-        FormData: 'readonly',
-        File: 'readonly',
-        Blob: 'readonly',
-        Event: 'readonly',
-        HTMLElement: 'readonly',
-        HTMLInputElement: 'readonly',
-        HTMLImageElement: 'readonly',
-        Element: 'readonly',
-        Node: 'readonly',
+        ...globals.browser,
+        ...globals.vitest, 
       },
     },
   },
+
+  configPrettier,
 ]

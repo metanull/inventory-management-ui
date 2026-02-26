@@ -2,14 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
   MobileAppAuthenticationApi,
-  Configuration,
   type AcquireTokenMobileAppAuthenticationRequest,
 } from '@metanull/inventory-app-api-client'
-
-// Declare process for Node.js environments
-declare const process: {
-  env: Record<string, string | undefined>
-}
+import { createApiConfig, useApiCall } from '@/utils/storeFunctions'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('auth_token'))
@@ -18,88 +13,44 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value)
 
-  // Create API client instance with configuration
-  const createApiClient = () => {
-    // Support both Vite (import.meta.env) and Node (process.env) for baseURL
-    let baseURL: string
-    if (
-      typeof import.meta !== 'undefined' &&
-      import.meta.env &&
-      import.meta.env.VITE_API_BASE_URL
-    ) {
-      baseURL = import.meta.env.VITE_API_BASE_URL
-    } else if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
-      baseURL = process.env.VITE_API_BASE_URL
-    } else {
-      baseURL = 'http://127.0.0.1:8000/api'
-    }
-
-    const configParams: { basePath: string; accessToken?: string } = {
-      basePath: baseURL,
-    }
-
-    if (token.value) {
-      configParams.accessToken = token.value
-    }
-
-    // Create configuration for the API client
-    const configuration = new Configuration(configParams)
-
-    return new MobileAppAuthenticationApi(configuration)
-  }
+  const getApi = () => new MobileAppAuthenticationApi(createApiConfig())
 
   const login = async (email: string, password: string) => {
-    loading.value = true
-    error.value = null
+    const tokenRequest: AcquireTokenMobileAppAuthenticationRequest = {
+      email,
+      password,
+      device_name: 'Inventory Management UI',
+      wipe_tokens: true,
+    }
 
-    try {
-      const apiClient = createApiClient()
-      const tokenRequest: AcquireTokenMobileAppAuthenticationRequest = {
-        email,
-        password,
-        device_name: 'Inventory Management UI',
-        wipe_tokens: true,
-      }
+    const res = await useApiCall(
+      'login',
+      () => getApi().tokenAcquire(tokenRequest),
+      loading,
+      error,
+      'Invalid credentials'
+    )
 
-      const response = await apiClient.tokenAcquire(tokenRequest)
+    if (error.value) {
+      throw new Error(error.value)
+    }
 
-      // The response now has a structured format with token and user
-      const authToken = response.data.token
+    const authToken = res?.data?.token
 
-      if (!authToken) {
-        throw new Error('No token received from authentication')
-      }
-
+    if (authToken) {
       token.value = authToken
       localStorage.setItem('auth_token', authToken)
-    } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Login failed'
-      error.value = errorMessage
-      throw err
-    } finally {
-      loading.value = false
+    } else if (res) {
+      error.value = 'No token received from authentication'
     }
   }
 
   const logout = async () => {
-    loading.value = true
+    // Clear local state
+    await useApiCall('logout', () => getApi().tokenWipe(), loading, error, 'Logout error')
 
-    try {
-      const apiClient = createApiClient()
-      await apiClient.tokenWipe()
-    } catch (err) {
-      console.error('Logout error:', err)
-    } finally {
-      token.value = null
-      localStorage.removeItem('auth_token')
-      loading.value = false
-    }
-  }
-
-  const clearError = () => {
-    error.value = null
+    token.value = null
+    localStorage.removeItem('auth_token')
   }
 
   return {
@@ -109,6 +60,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     login,
     logout,
-    clearError,
+    clearError: () => {
+      error.value = null
+    },
   }
 })

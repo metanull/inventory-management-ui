@@ -32,11 +32,11 @@ describe('FormInput', () => {
   it('defaults to text type when no type provided', () => {
     const wrapper = mount(FormInput)
 
-    // When no type is provided, the attribute is not set but behavior defaults to text
     const typeAttr = wrapper.attributes('type')
     expect(typeAttr).toBeUndefined()
-    // The actual element type will still be 'text' in the DOM
-    expect(wrapper.element.type).toBe('text')
+
+    const inputEl = wrapper.element as HTMLInputElement
+    expect(inputEl.type).toBe('text')
   })
 
   it('sets placeholder attribute', () => {
@@ -68,7 +68,8 @@ describe('FormInput', () => {
       props: { modelValue: 'test value' },
     })
 
-    expect(wrapper.element.value).toBe('test value')
+    const input = wrapper.element as HTMLInputElement
+    expect(input.value).toBe('test value')
   })
 
   it('emits update:modelValue on input', async () => {

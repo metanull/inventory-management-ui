@@ -2,7 +2,7 @@
   <!-- Unified Language Detail View -->
   <DetailView
     :store-loading="languageStore.loading"
-    :resource="mode === 'create' ? null : language"
+    :resource="(mode === 'create' ? null : language) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
@@ -34,7 +34,9 @@
               placeholder="ISO language code (e.g., eng)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ language?.id }}</DisplayText>
+            <DisplayText v-else>
+              {{ language?.id }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -45,7 +47,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ language?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ language?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -60,7 +64,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ language?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ language?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow v-if="language?.created_at" variant="white">
@@ -131,7 +137,7 @@
   const mode = ref<Mode>('view')
 
   // Computed properties
-  const language = computed(() => languageStore.currentLanguage)
+  const language = computed(() => languageStore.currentEntry)
 
   // Information description based on mode
   const informationDescription = computed(() => {
@@ -290,7 +296,9 @@
         errorStore.addMessage('info', 'Language created successfully.')
 
         // Load the new language and enter view mode
-        await languageStore.fetchLanguage(newLanguage.id)
+        if (newLanguage) {
+          await languageStore.fetchLanguage(newLanguage.id)
+        }
         enterViewMode()
       } else if (mode.value === 'edit' && language.value) {
         // Update existing language - doesn't need ID in payload
@@ -390,7 +398,7 @@
     try {
       if (isCreateRoute) {
         // Clear current language to avoid showing stale data from previously viewed languages
-        languageStore.clearCurrentLanguage()
+        languageStore.clearCurrent()
 
         enterCreateMode()
       } else if (languageId) {

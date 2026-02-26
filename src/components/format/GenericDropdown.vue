@@ -66,10 +66,10 @@
     showNoDefaultOption?: boolean
     noDefaultValue?: string
     noDefaultLabel?: string
-    sortFunction?: (options: GenericDropdownOption[]) => GenericDropdownOption[] // eslint-disable-line no-unused-vars
+    sortFunction?: (options: GenericDropdownOption[]) => GenericDropdownOption[]
     highlightFunction?: (
-      option: GenericDropdownOption, // eslint-disable-line no-unused-vars
-      currentValue: string // eslint-disable-line no-unused-vars
+      option: GenericDropdownOption,
+      currentValue: string
     ) => { classes: string; label: string } | null
   }
 

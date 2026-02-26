@@ -2,7 +2,7 @@
   <!-- Unified Country Detail View -->
   <DetailView
     :store-loading="countryStore.loading"
-    :resource="mode === 'create' ? null : country"
+    :resource="(mode === 'create' ? null : country) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
@@ -32,7 +32,9 @@
               placeholder="ISO country code (e.g., GBR)"
               :disabled="mode === 'edit'"
             />
-            <DisplayText v-else>{{ country?.id }}</DisplayText>
+            <DisplayText v-else>
+              {{ country?.id }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow>
@@ -43,7 +45,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ country?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ country?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -58,7 +62,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ country?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ country?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow v-if="country?.created_at" variant="white">
@@ -79,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import type {
     StoreCountryRequest,
@@ -133,7 +139,7 @@
   }
 
   // Resource data
-  const country = computed(() => countryStore.currentCountry)
+  const country = computed(() => countryStore.currentEntry)
 
   // Edit form state
   const editForm = ref<CountryFormData>({
@@ -264,6 +270,7 @@
   // Initialize data on mount
   onMounted(async () => {
     if (mode.value === 'create') {
+      countryStore.clearCurrent()
       editForm.value = {
         id: '',
         internal_name: '',
@@ -280,6 +287,7 @@
     async newId => {
       if (newId === 'new') {
         mode.value = 'create'
+        countryStore.clearCurrent()
         editForm.value = {
           id: '',
           internal_name: '',
@@ -306,4 +314,8 @@
     },
     { immediate: true }
   )
+
+  onUnmounted(() => {
+    countryStore.clearCurrent()
+  })
 </script>

@@ -59,6 +59,16 @@
           </div>
         </div>
       </div>
+      <div v-if="links && meta" class="mt-6">
+        <PageNavigation
+          :links="links"
+          :meta="meta"
+          :per-page="perPage"
+          @change-page-number="$emit('change-page-number', $event)"
+          @per-page-change="$emit('per-page-change', $event)"
+          @change-page="$emit('change-page', $event)"
+        />
+      </div>
     </div>
 
     <!-- Modal Slot -->
@@ -68,6 +78,8 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
+  import PageNavigation from '@/components/format/PageNavigation.vue'
+  import { type PageLinks, type PageMeta } from '@/composables/usePagination'
   import AddButton from '@/components/layout/list/AddButton.vue'
   import Title from '@/components/format/title/Title.vue'
   import TableElement from '@/components/format/table/TableElement.vue'
@@ -83,6 +95,15 @@
     emptyMessage: string
     filters?: Array<{ label: string; count?: number; isActive: boolean; variant?: string }>
     color?: string
+    links?: PageLinks | null
+    meta?: PageMeta | null
+    perPage?: number
+  }>()
+
+  defineEmits<{
+    (e: 'change-page-number', page: number): void
+    (e: 'per-page-change', perPage: number): void
+    (e: 'change-page', url: string | null): void
   }>()
 
   const iconClasses = computed(() => {

@@ -113,9 +113,9 @@ describe('SystemProperties', () => {
     expect(dateDisplays.length).toBe(2)
 
     const createdDateDisplay = dateDisplays[0]
-    expect(createdDateDisplay.props('date')).toBe(defaultProps.createdAt)
-    expect(createdDateDisplay.props('format')).toBe('medium')
-    expect(createdDateDisplay.props('showTime')).toBe(true)
+    expect(createdDateDisplay?.props('date')).toBe(defaultProps.createdAt)
+    expect(createdDateDisplay?.props('format')).toBe('medium')
+    expect(createdDateDisplay?.props('showTime')).toBe(true)
   })
 
   it('displays updated date with DateDisplay component', () => {
@@ -125,9 +125,9 @@ describe('SystemProperties', () => {
 
     const dateDisplays = wrapper.findAllComponents({ name: 'DateDisplay' })
     const updatedDateDisplay = dateDisplays[1]
-    expect(updatedDateDisplay.props('date')).toBe(defaultProps.updatedAt)
-    expect(updatedDateDisplay.props('format')).toBe('medium')
-    expect(updatedDateDisplay.props('showTime')).toBe(true)
+    expect(updatedDateDisplay?.props('date')).toBe(defaultProps.updatedAt)
+    expect(updatedDateDisplay?.props('format')).toBe('medium')
+    expect(updatedDateDisplay?.props('showTime')).toBe(true)
   })
 
   it('uses DescriptionList for layout', () => {
@@ -157,15 +157,15 @@ describe('SystemProperties', () => {
 
     // First row (ID) - gray variant
     // expect(descriptionRows[0].props('variant')).toBe('gray')
-    expect(descriptionRows[0].props('size')).toBe('small')
+    expect(descriptionRows[0]?.props('size')).toBe('small')
 
     // Second row (Created) - white variant
     // expect(descriptionRows[1].props('variant')).toBe('white')
-    expect(descriptionRows[1].props('size')).toBe('small')
+    expect(descriptionRows[1]?.props('size')).toBe('small')
 
     // Third row (Updated) - gray variant
     // expect(descriptionRows[2].props('variant')).toBe('gray')
-    expect(descriptionRows[2].props('size')).toBe('small')
+    expect(descriptionRows[2]?.props('size')).toBe('small')
   })
 
   it('renders DescriptionTerms with correct variants', () => {
@@ -180,9 +180,9 @@ describe('SystemProperties', () => {
       expect(term.props('variant')).toBe('small-gray')
     })
 
-    expect(descriptionTerms[0].text()).toBe('ID')
-    expect(descriptionTerms[1].text()).toBe('Created')
-    expect(descriptionTerms[2].text()).toBe('Last Updated')
+    expect(descriptionTerms[0]?.text()).toBe('ID')
+    expect(descriptionTerms[1]?.text()).toBe('Created')
+    expect(descriptionTerms[2]?.text()).toBe('Last Updated')
   })
 
   it('renders DescriptionDetails with correct variants', () => {
@@ -208,7 +208,7 @@ describe('SystemProperties', () => {
 
     const dateDisplays = wrapper.findAllComponents({ name: 'DateDisplay' })
     const createdDateDisplay = dateDisplays[0]
-    expect(createdDateDisplay.props('date')).toBe(null)
+    expect(createdDateDisplay?.props('date')).toBe(null)
   })
 
   it('handles null updated date', () => {
@@ -221,7 +221,7 @@ describe('SystemProperties', () => {
 
     const dateDisplays = wrapper.findAllComponents({ name: 'DateDisplay' })
     const updatedDateDisplay = dateDisplays[1]
-    expect(updatedDateDisplay.props('date')).toBe(null)
+    expect(updatedDateDisplay?.props('date')).toBe(null)
   })
 
   it('has correct header structure', () => {

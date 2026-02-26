@@ -1,7 +1,7 @@
 <template>
   <DetailView
     :store-loading="contextStore.loading"
-    :resource="mode === 'create' ? null : context"
+    :resource="(mode === 'create' ? null : context) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
@@ -31,7 +31,9 @@
               v-model="editForm.internal_name"
               type="text"
             />
-            <DisplayText v-else>{{ context?.internal_name }}</DisplayText>
+            <DisplayText v-else>
+              {{ context?.internal_name }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
         <DescriptionRow
@@ -46,7 +48,9 @@
               type="text"
               placeholder="Optional legacy identifier"
             />
-            <DisplayText v-else>{{ context?.backward_compatibility }}</DisplayText>
+            <DisplayText v-else>
+              {{ context?.backward_compatibility }}
+            </DisplayText>
           </DescriptionDetail>
         </DescriptionRow>
       </DescriptionList>
@@ -226,23 +230,27 @@
     try {
       loadingOverlayStore.show(mode.value === 'create' ? 'Creating...' : 'Saving...')
 
-      let savedContext: ContextResource
+      let savedContext: ContextResource | null = null
       if (mode.value === 'create') {
         const createData = {
           internal_name: editForm.value.internal_name,
           backward_compatibility: editForm.value.backward_compatibility || null,
         }
         savedContext = await contextStore.createContext(createData)
-        router.push(`/contexts/${savedContext.id}`)
-        errorDisplayStore.addMessage('info', 'Context created successfully.')
+        if (savedContext) {
+          router.push(`/contexts/${savedContext.id}`)
+          errorDisplayStore.addMessage('info', 'Context created successfully.')
+        }
       } else {
         const updateData = {
           internal_name: editForm.value.internal_name,
           backward_compatibility: editForm.value.backward_compatibility || null,
         }
         savedContext = await contextStore.updateContext(contextId.value, updateData)
-        exitEditMode()
-        errorDisplayStore.addMessage('info', 'Context updated successfully.')
+        if (savedContext) {
+          exitEditMode()
+          errorDisplayStore.addMessage('info', 'Context updated successfully.')
+        }
       }
     } catch {
       errorDisplayStore.addMessage(

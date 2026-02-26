@@ -59,6 +59,9 @@ describe('Context Store Integration Tests', () => {
 
       // CREATE: Create a new context
       const createdContext = await contextStore.createContext(testContextData)
+      if (!createdContext) {
+        throw new Error('Context creation failed: createdContext is null')
+      }
       expect(createdContext.internal_name).toBe('Test Context Integration')
       expect(createdContext.backward_compatibility).toBe('test-integration')
       expect(createdContext.is_default).toBe(false)
@@ -68,6 +71,9 @@ describe('Context Store Integration Tests', () => {
 
       // READ: Fetch the created context
       const fetchedContext = await contextStore.fetchContext(testContextId)
+      if (!fetchedContext) {
+        throw new Error('Context fetch failed: fetchedContext is null')
+      }
       expect(fetchedContext.id).toBe(testContextId)
       expect(fetchedContext.internal_name).toBe('Test Context Integration')
 
@@ -76,6 +82,9 @@ describe('Context Store Integration Tests', () => {
         internal_name: 'Updated Test Context Integration',
         backward_compatibility: 'test-updated',
       })
+      if (!updatedContext) {
+        throw new Error('Context update failed: updatedContext is null')
+      }
       expect(updatedContext.internal_name).toBe('Updated Test Context Integration')
       expect(updatedContext.backward_compatibility).toBe('test-updated')
 
@@ -113,19 +122,25 @@ describe('Context Store Integration Tests', () => {
 
       // Create a test context (will be created as non-default)
       const createdContext = await contextStore.createContext(testContextData)
+      if (!createdContext) {
+        throw new Error('Context creation failed: createdContext is null')
+      }
       expect(createdContext.is_default).toBe(false)
 
       const testContextId = createdContext.id
 
       // Set the context as default
       const updatedContext = await contextStore.setDefaultContext(testContextId, true)
+      if (!updatedContext) {
+        throw new Error('Setting default context failed: updatedContext is null')
+      }
       expect(updatedContext.is_default).toBe(true)
 
       // Fetch all contexts to verify only one is default
       await contextStore.fetchContexts()
       const defaultContexts = contextStore.contexts.filter(ctx => ctx.is_default)
       expect(defaultContexts).toHaveLength(1)
-      expect(defaultContexts[0].id).toBe(testContextId)
+      expect(defaultContexts[0]?.id).toBe(testContextId)
 
       // Get the original default context (if any exists) and restore it
       // For contexts, we'll just unset our test context by setting another one as default
@@ -136,6 +151,9 @@ describe('Context Store Integration Tests', () => {
       }
 
       const otherContext = await contextStore.createContext(otherContextData)
+      if (!otherContext) {
+        throw new Error('Other context creation failed: otherContext is null')
+      }
       await contextStore.setDefaultContext(otherContext.id, true)
 
       // Verify the change
@@ -206,10 +224,16 @@ describe('Context Store Integration Tests', () => {
       }
 
       const createdContext = await contextStore.createContext(testContextData)
+      if (!createdContext) {
+        throw new Error('Context creation failed: createdContext is null')
+      }
       await contextStore.setDefaultContext(createdContext.id, true)
 
       // Get the default context
       const defaultContext = await contextStore.getDefaultContext()
+      if (!defaultContext) {
+        throw new Error('Getting default context failed: defaultContext is null')
+      }
 
       expect(defaultContext).toBeDefined()
       expect(defaultContext.is_default).toBe(true)
