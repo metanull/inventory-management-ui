@@ -1,7 +1,7 @@
 <template>
   <DetailView
     :store-loading="contextStore.loading"
-    :resource="mode === 'create' ? null : context"
+    :resource="(mode === 'create' ? null : context) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"

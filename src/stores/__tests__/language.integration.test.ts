@@ -68,11 +68,17 @@ describe('Language Store Integration Tests', () => {
 
       // CREATE: Create a new language
       const createdLanguage = await languageStore.createLanguage(testLanguageData)
+      if (!createdLanguage) {
+        throw new Error('Language creation failed: createdLanguage is null')
+      }
       expect(createdLanguage.id).toBe(testLanguageId)
       expect(createdLanguage.internal_name).toBe('Test Language')
 
       // READ: Fetch the created language
       const fetchedLanguage = await languageStore.fetchLanguage(testLanguageId)
+      if (!fetchedLanguage) {
+        throw new Error('Language fetch failed: fetchedLanguage is null')
+      }
       expect(fetchedLanguage.id).toBe(testLanguageId)
       expect(fetchedLanguage.internal_name).toBe('Test Language')
 
@@ -81,6 +87,9 @@ describe('Language Store Integration Tests', () => {
         internal_name: 'Updated Test Language',
         backward_compatibility: 'ts',
       })
+      if (!updatedLanguage) {
+        throw new Error('Language update failed: updatedLanguage is null')
+      }
       expect(updatedLanguage.internal_name).toBe('Updated Test Language')
 
       // DELETE: Delete the language
@@ -127,17 +136,23 @@ describe('Language Store Integration Tests', () => {
 
       // Create a test language (will be created as non-default by API)
       const createdLanguage = await languageStore.createLanguage(testLanguageData)
+      if (!createdLanguage) {
+        throw new Error('Language creation failed: createdLanguage is null')
+      }
       expect(createdLanguage.is_default).toBe(false)
 
       // Set the language as default
       const updatedLanguage = await languageStore.setDefaultLanguage(testLanguageId, true)
+      if (!updatedLanguage) {
+        throw new Error('Setting default language failed: updatedLanguage is null')
+      }
       expect(updatedLanguage.is_default).toBe(true)
 
       // Fetch all languages to verify only one is default
       await languageStore.fetchLanguages()
       const defaultLanguages = languageStore.languages.filter(lang => lang.is_default)
       expect(defaultLanguages).toHaveLength(1)
-      expect(defaultLanguages[0].id).toBe(testLanguageId)
+      expect(defaultLanguages[0]?.id).toBe(testLanguageId)
 
       // Unset the language as default by setting another language as default
       // First, get the original default language (should be 'eng' if it exists)
@@ -209,6 +224,9 @@ describe('Language Store Integration Tests', () => {
 
       // Get the default language
       const defaultLanguage = await languageStore.getDefaultLanguage()
+      if (!defaultLanguage) {
+        throw new Error('Getting default language failed: defaultLanguage is null')
+      }
 
       expect(defaultLanguage).toBeDefined()
       expect(defaultLanguage.is_default).toBe(true)

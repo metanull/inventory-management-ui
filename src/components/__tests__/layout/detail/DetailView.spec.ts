@@ -428,8 +428,8 @@ describe('DetailView', () => {
 
       const statusCards = wrapper.findAllComponents({ name: 'StatusCard' })
       expect(statusCards).toHaveLength(2)
-      expect(statusCards[0].props('title')).toBe('Card 1')
-      expect(statusCards[1].props('title')).toBe('Card 2')
+      expect(statusCards[0]?.props('title')).toBe('Card 1')
+      expect(statusCards[1]?.props('title')).toBe('Card 2')
     })
 
     it('emits statusToggle event when status card is toggled', async () => {
@@ -459,9 +459,9 @@ describe('DetailView', () => {
       expect(titles.length).toBeGreaterThanOrEqual(2)
 
       const infoTitle = titles[1] // Information section title
-      expect(infoTitle.props('variant')).toBe('section')
-      expect(infoTitle.props('description')).toBe('Test information description')
-      expect(infoTitle.text()).toBe('Test Information')
+      expect(infoTitle?.props('variant')).toBe('section')
+      expect(infoTitle?.props('description')).toBe('Test information description')
+      expect(infoTitle?.text()).toBe('Test Information')
     })
 
     it('passes correct props to information slot', () => {
@@ -622,7 +622,7 @@ describe('DetailView', () => {
       const statusCards = wrapper.findAllComponents({ name: 'StatusCard' })
 
       // Toggle second card
-      await statusCards[1].vm.$emit('toggle')
+      await statusCards[1]?.vm?.$emit('toggle')
       expect(wrapper.emitted('statusToggle')).toHaveLength(1)
       expect(wrapper.emitted('statusToggle')?.[0]).toEqual([1])
     })

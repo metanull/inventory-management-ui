@@ -4,34 +4,37 @@ import type {
   PartnerResource,
   ProjectResource,
   TagResource,
-  PictureResource,
+  ItemImageResource,
   CountryResource,
   LanguageResource,
   ContextResource,
-  ApiResponse,
 } from '@metanull/inventory-app-api-client'
 import type { RouteRecordRaw } from 'vue-router'
 
 // Mock data factories
-export const createMockItem = (overrides: Partial<ItemResource> = {}): ItemResource => ({
-  id: '1',
-  internal_name: 'Test Item',
-  backward_compatibility: null,
-  type: 'object',
-  created_at: '2023-01-01T00:00:00Z',
-  updated_at: '2023-01-01T00:00:00Z',
-  ...overrides,
-})
+export const createMockItem = (overrides: Partial<ItemResource> = {}): ItemResource =>
+  ({
+    id: '1',
+    internal_name: 'Test Item',
+    backward_compatibility: null,
+    type: 'object',
+    parent_id: null,
+    owner_reference: null,
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
+    ...overrides,
+  }) as ItemResource
 
-export const createMockPartner = (overrides: Partial<PartnerResource> = {}): PartnerResource => ({
-  id: '1',
-  internal_name: 'Test Partner',
-  backward_compatibility: null,
-  type: 'museum',
-  created_at: '2023-01-01T00:00:00Z',
-  updated_at: '2023-01-01T00:00:00Z',
-  ...overrides,
-})
+export const createMockPartner = (overrides: Partial<PartnerResource> = {}): PartnerResource =>
+  ({
+    id: '1',
+    internal_name: 'Test Partner',
+    backward_compatibility: null,
+    type: 'museum',
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
+    ...overrides,
+  }) as PartnerResource
 
 export const createMockProject = (overrides: Partial<ProjectResource> = {}): ProjectResource => ({
   id: '1',
@@ -45,31 +48,33 @@ export const createMockProject = (overrides: Partial<ProjectResource> = {}): Pro
   ...overrides,
 })
 
-export const createMockTag = (overrides: Partial<TagResource> = {}): TagResource => ({
-  id: '1',
-  internal_name: 'Test Tag',
-  backward_compatibility: null,
-  description: 'Test tag description',
-  created_at: '2023-01-01T00:00:00Z',
-  updated_at: '2023-01-01T00:00:00Z',
-  ...overrides,
-})
+export const createMockTag = (overrides: Partial<TagResource> = {}): TagResource =>
+  ({
+    id: '1',
+    internal_name: 'Test Tag',
+    backward_compatibility: null,
+    description: 'Test tag description',
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
+    ...overrides,
+  }) as TagResource
 
-export const createMockPicture = (overrides: Partial<PictureResource> = {}): PictureResource => ({
-  id: '1',
-  internal_name: 'Test Picture',
-  backward_compatibility: null,
-  path: '/images/test.jpg',
-  copyright_text: 'Test Copyright',
-  copyright_url: 'https://example.com',
-  upload_name: 'test.jpg',
-  upload_extension: 'jpg',
-  upload_mime_type: 'image/jpeg',
-  upload_size: 12345,
-  created_at: '2023-01-01T00:00:00Z',
-  updated_at: '2023-01-01T00:00:00Z',
-  ...overrides,
-})
+export const createMockPicture = (overrides: Partial<ItemImageResource> = {}): ItemImageResource =>
+  ({
+    id: '1',
+    internal_name: 'Test Picture',
+    backward_compatibility: null,
+    path: '/images/test.jpg',
+    copyright_text: 'Test Copyright',
+    copyright_url: 'https://example.com',
+    upload_name: 'test.jpg',
+    upload_extension: 'jpg',
+    upload_mime_type: 'image/jpeg',
+    upload_size: 12345,
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
+    ...overrides,
+  }) as ItemImageResource
 
 export const createMockCountry = (overrides: Partial<CountryResource> = {}): CountryResource => ({
   id: '1',
@@ -100,11 +105,6 @@ export const createMockContext = (overrides: Partial<ContextResource> = {}): Con
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
   ...overrides,
-})
-
-// API Response helpers
-export const createApiResponse = <T>(data: T): ApiResponse<T> => ({
-  data,
 })
 
 export const createAxiosResponse = <T>(data: T, status = 200, statusText = 'OK') => ({

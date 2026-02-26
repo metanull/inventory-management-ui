@@ -64,6 +64,9 @@ describe('Project Store Integration Tests', () => {
       }
 
       const createResult = await store.createProject(newProject)
+      if (!createResult) {
+        throw new Error('Project creation failed: createResult is null')
+      }
       expect(createResult).toBeDefined()
       expect(typeof createResult).toBe('object')
       expect(createResult.internal_name).toBe(newProject.internal_name)
@@ -85,6 +88,9 @@ describe('Project Store Integration Tests', () => {
           backward_compatibility: `updated-test-${Date.now()}`,
         }
         const updateResult = await store.updateProject(createdProject.id, updateData)
+        if (!updateResult) {
+          throw new Error('Project update failed: updateResult is null')
+        }
         expect(updateResult).toBeDefined()
         expect(typeof updateResult).toBe('object')
         expect(updateResult.internal_name).toBe(updateData.internal_name)

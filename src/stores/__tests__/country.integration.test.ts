@@ -126,6 +126,9 @@ describe('Country Store Integration Tests', () => {
 
       // Create the country first
       const createdCountry = await countryStore.createCountry(testCountryData)
+      if (!createdCountry) {
+        throw new Error('Country creation failed: createdCountry is null')
+      }
       expect(createdCountry.id).toBe('DUP')
       console.log('First country created successfully')
 

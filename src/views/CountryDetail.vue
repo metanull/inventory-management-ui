@@ -2,7 +2,7 @@
   <!-- Unified Country Detail View -->
   <DetailView
     :store-loading="countryStore.loading"
-    :resource="mode === 'create' ? null : country"
+    :resource="(mode === 'create' ? null : country) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"
@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import type {
     StoreCountryRequest,
@@ -270,6 +270,7 @@
   // Initialize data on mount
   onMounted(async () => {
     if (mode.value === 'create') {
+      countryStore.clearCurrent()
       editForm.value = {
         id: '',
         internal_name: '',
@@ -286,6 +287,7 @@
     async newId => {
       if (newId === 'new') {
         mode.value = 'create'
+        countryStore.clearCurrent()
         editForm.value = {
           id: '',
           internal_name: '',
@@ -312,4 +314,8 @@
     },
     { immediate: true }
   )
+
+  onUnmounted(() => {
+    countryStore.clearCurrent()
+  })
 </script>

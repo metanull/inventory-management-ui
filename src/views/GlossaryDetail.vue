@@ -2,7 +2,7 @@
   <!-- Unified Glossary Detail View -->
   <DetailView
     :store-loading="glossaryStore.loading"
-    :resource="mode === 'create' ? null : glossaryEntry"
+    :resource="(mode === 'create' ? null : glossaryEntry) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"

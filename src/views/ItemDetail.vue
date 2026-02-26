@@ -2,7 +2,7 @@
   <!-- Unified Item Detail View -->
   <DetailView
     :store-loading="itemStore.loading"
-    :resource="mode === 'create' ? null : item"
+    :resource="(mode === 'create' ? null : item) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"

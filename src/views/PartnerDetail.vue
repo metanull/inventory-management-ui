@@ -2,7 +2,7 @@
   <!-- Unified Partner Detail View -->
   <DetailView
     :store-loading="partnerStore.loading"
-    :resource="mode === 'create' ? null : partner"
+    :resource="(mode === 'create' ? null : partner) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"

@@ -2,7 +2,7 @@
   <!-- Unified Language Detail View -->
   <DetailView
     :store-loading="languageStore.loading"
-    :resource="mode === 'create' ? null : language"
+    :resource="(mode === 'create' ? null : language) ?? null"
     :mode="mode"
     :save-disabled="!hasUnsavedChanges"
     :has-unsaved-changes="hasUnsavedChanges"

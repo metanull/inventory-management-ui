@@ -80,7 +80,7 @@ describe('SearchControl', () => {
     await input.setValue('test search')
 
     expect(wrapper.emitted()['update:modelValue']).toBeTruthy()
-    expect(wrapper.emitted()['update:modelValue'][0]).toEqual(['test search'])
+    expect(wrapper.emitted()['update:modelValue']?.[0]).toEqual(['test search'])
   })
 
   it('emits search event on enter key', async () => {
@@ -94,7 +94,7 @@ describe('SearchControl', () => {
     await input.trigger('keydown.enter')
 
     expect(wrapper.emitted().search).toBeTruthy()
-    expect(wrapper.emitted().search[0]).toEqual(['search term'])
+    expect(wrapper.emitted().search?.[0]).toEqual(['search term'])
   })
 
   it('emits search event on button click', async () => {
@@ -108,7 +108,7 @@ describe('SearchControl', () => {
     await button.trigger('click')
 
     expect(wrapper.emitted().search).toBeTruthy()
-    expect(wrapper.emitted().search[0]).toEqual(['button search'])
+    expect(wrapper.emitted().search?.[0]).toEqual(['button search'])
   })
 
   it('renders search button with correct styling', () => {
@@ -159,11 +159,11 @@ describe('SearchControl', () => {
 
     await input.setValue('first')
     expect(wrapper.emitted()['update:modelValue']).toHaveLength(1)
-    expect(wrapper.emitted()['update:modelValue'][0]).toEqual(['first'])
+    expect(wrapper.emitted()['update:modelValue']?.[0]).toEqual(['first'])
 
     await input.setValue('second')
     expect(wrapper.emitted()['update:modelValue']).toHaveLength(2)
-    expect(wrapper.emitted()['update:modelValue'][1]).toEqual(['second'])
+    expect(wrapper.emitted()['update:modelValue']?.[1]).toEqual(['second'])
   })
 
   it('handles search with empty value', async () => {
@@ -173,7 +173,7 @@ describe('SearchControl', () => {
     await button.trigger('click')
 
     expect(wrapper.emitted().search).toBeTruthy()
-    expect(wrapper.emitted().search[0]).toEqual([''])
+    expect(wrapper.emitted().search?.[0]).toEqual([''])
   })
 
   it('has relative positioning for input container', () => {
