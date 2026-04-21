@@ -4118,6 +4118,9 @@
                   "method_for_provenance": {
                     "type": ["string", "null"]
                   },
+                  "provenance": {
+                    "type": ["string", "null"]
+                  },
                   "obtention": {
                     "type": ["string", "null"]
                   },
@@ -4294,6 +4297,9 @@
                     "type": ["string", "null"]
                   },
                   "method_for_provenance": {
+                    "type": ["string", "null"]
+                  },
+                  "provenance": {
                     "type": ["string", "null"]
                   },
                   "obtention": {
@@ -9508,6 +9514,9 @@
           "method_for_provenance": {
             "type": ["string", "null"]
           },
+          "provenance": {
+            "type": ["string", "null"]
+          },
           "obtention": {
             "type": ["string", "null"]
           },
@@ -9582,6 +9591,7 @@
           "place_of_production",
           "method_for_datation",
           "method_for_provenance",
+          "provenance",
           "obtention",
           "bibliography",
           "author_id",
