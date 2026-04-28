@@ -340,7 +340,7 @@
               <DisplayText v-else>{{ itemTranslation?.method_for_provenance }}</DisplayText>
             </DescriptionDetail>
           </DescriptionRow>
-          <DescriptionRow>
+          <!-- <DescriptionRow>
             <DescriptionTerm>Provenance</DescriptionTerm>
             <DescriptionDetail>
               <FormInput
@@ -350,7 +350,7 @@
               />
               <DisplayText v-else>{{ itemTranslation?.provenance }}</DisplayText>
             </DescriptionDetail>
-          </DescriptionRow>
+          </DescriptionRow> -->
           <DescriptionRow>
             <DescriptionTerm>Obtention</DescriptionTerm>
             <DescriptionDetail>
@@ -499,7 +499,7 @@
     place_of_production: string
     method_for_datation: string
     method_for_provenance: string
-    provenance: string
+    // provenance: string
     obtention: string
     bibliography: string
     author_id: string
@@ -612,7 +612,7 @@
     place_of_production: '',
     method_for_datation: '',
     method_for_provenance: '',
-    provenance: '',
+    // provenance: '',
     obtention: '',
     bibliography: '',
     author_id: '',
