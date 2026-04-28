@@ -66,7 +66,7 @@ export const useItemTranslationStore = defineStore('itemTranslation', () => {
       'Failed to fetch all translations',
       true
     )
-    allItemTranslations.value = result || [];
+    allItemTranslations.value = result || []
     return allItemTranslations.value
   }
 
@@ -95,10 +95,7 @@ export const useItemTranslationStore = defineStore('itemTranslation', () => {
     return res?.data?.data || null
   }
 
-  const updateItemTranslationEntry = async (
-    id: string,
-    data: UpdateItemTranslationRequest
-  ) => {
+  const updateItemTranslationEntry = async (id: string, data: UpdateItemTranslationRequest) => {
     const res = await useApiCall(
       'updateItemTranslationEntry',
       () => getApi().itemTranslationUpdate(id, data),
@@ -148,7 +145,6 @@ export const useItemTranslationStore = defineStore('itemTranslation', () => {
     createItemTranslationEntry,
     updateItemTranslationEntry,
     deleteItemTranslationEntry,
-    findItemTranslationEntryById: (id: string) =>
-      itemTranslations.value.find(g => g.id === id),
+    findItemTranslationEntryById: (id: string) => itemTranslations.value.find(g => g.id === id),
   }
 })

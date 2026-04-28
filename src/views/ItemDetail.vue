@@ -144,6 +144,7 @@
           <DescriptionDetail>
             <button
               v-for="context in itemContexts"
+              :key="context.id"
               type="button"
               class="px-3 py-1 mr-4 bg-blue-600 text-white rounded hover:bg-blue-700"
               @click="assignCurrentContext(context)"
@@ -155,12 +156,17 @@
         <div v-if="translationMode !== 'hide'">
           <DescriptionRow>
             <DescriptionDetail>
-              <template v-for="translation in contextTranslations">
+              <template v-for="translation in contextTranslations" :key="translation.id">
                 <button
                   v-if="translation.language"
                   type="button"
                   class="px-3 py-1 mr-4 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  @click="assignContextCurrentLanguage({ id: translation.language.id, internal_name: translation.language.internal_name })"
+                  @click="
+                    assignContextCurrentLanguage({
+                      id: translation.language.id,
+                      internal_name: translation.language.internal_name,
+                    })
+                  "
                 >
                   {{ translation.language?.internal_name }}
                 </button>
@@ -188,147 +194,227 @@
             </DescriptionDetail> -->
             Edit button to be added later
           </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Name</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.name" type="text" :maxlength="255" />
-                <DisplayText v-else>{{ itemTranslation?.name }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Alternate Name</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.alternate_name" type="text" :maxlength="255" />
-                <DisplayText v-else>{{ itemTranslation?.alternate_name }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Description</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.description" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.description }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Type</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.type" type="text" :maxlength="255" />
-                <DisplayText v-else>{{ itemTranslation?.type }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Holder</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.holder" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.holder }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Owner</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.owner" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.owner }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Initial Owner</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.initial_owner" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.initial_owner }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Dates</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.dates" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.dates }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Location</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.location" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.location }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Dimensions</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.dimensions" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.dimensions }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Place of Production</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.place_of_production" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.place_of_production }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Method for Datation</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.method_for_datation" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.method_for_datation }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Method for Provenance</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.method_for_provenance" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.method_for_provenance }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Provenance</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.provenance" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.provenance }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Obtention</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.obtention" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.obtention }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Bibliography</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.bibliography" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.bibliography }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Author</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.author_id" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.author_id }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Translator</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.translator_id" type="text" />
-                <DisplayText v-else>{{ itemTranslation?.translator_id }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <DescriptionRow>
-              <DescriptionTerm>Backward Compatibility</DescriptionTerm>
-              <DescriptionDetail>
-                <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.backward_compatibility" type="text" :maxlength="255" />
-                <DisplayText v-else>{{ itemTranslation?.backward_compatibility }}</DisplayText>
-              </DescriptionDetail>
-            </DescriptionRow>
-            <!-- <DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Name</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.name"
+                type="text"
+                :maxlength="255"
+              />
+              <DisplayText v-else>{{ itemTranslation?.name }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Alternate Name</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.alternate_name"
+                type="text"
+                :maxlength="255"
+              />
+              <DisplayText v-else>{{ itemTranslation?.alternate_name }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Description</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.description"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.description }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Type</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.type"
+                type="text"
+                :maxlength="255"
+              />
+              <DisplayText v-else>{{ itemTranslation?.type }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Holder</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.holder"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.holder }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Owner</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.owner"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.owner }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Initial Owner</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.initial_owner"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.initial_owner }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Dates</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.dates"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.dates }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Location</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.location"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.location }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Dimensions</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.dimensions"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.dimensions }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Place of Production</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.place_of_production"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.place_of_production }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Method for Datation</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.method_for_datation"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.method_for_datation }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Method for Provenance</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.method_for_provenance"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.method_for_provenance }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Provenance</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.provenance"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.provenance }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Obtention</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.obtention"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.obtention }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Bibliography</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.bibliography"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.bibliography }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Author</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.author_id"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.author_id }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Translator</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.translator_id"
+                type="text"
+              />
+              <DisplayText v-else>{{ itemTranslation?.translator_id }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>Backward Compatibility</DescriptionTerm>
+            <DescriptionDetail>
+              <FormInput
+                v-if="mode === 'edit' || mode === 'create'"
+                v-model="translationForm.backward_compatibility"
+                type="text"
+                :maxlength="255"
+              />
+              <DisplayText v-else>{{ itemTranslation?.backward_compatibility }}</DisplayText>
+            </DescriptionDetail>
+          </DescriptionRow>
+          <!-- <DescriptionRow>
               <DescriptionTerm>Extra</DescriptionTerm>
               <DescriptionDetail>
                 <FormInput v-if="mode === 'edit' || mode === 'create'" v-model="translationForm.extra" type="text" />
                 <DisplayText v-else>{{ itemTranslation?.extra }}</DisplayText>
               </DescriptionDetail>
             </DescriptionRow> -->
-          </div>
+        </div>
       </DescriptionList>
     </template>
   </DetailView>
@@ -337,11 +423,11 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import type { 
-    StoreItemRequest, 
+  import type {
+    StoreItemRequest,
     UpdateItemRequest,
-    StoreItemTranslationRequest,
-    UpdateItemTranslationRequest,
+    // StoreItemTranslationRequest,
+    // UpdateItemTranslationRequest,
   } from '@metanull/inventory-app-api-client'
   import {
     StoreItemRequestTypeEnum,
@@ -349,14 +435,14 @@
   } from '@metanull/inventory-app-api-client'
   import { useItemStore } from '@/stores/item'
   import { useItemTranslationStore } from '@/stores/itemTranslation'
-  import type { ItemTranslationResource } from '@metanull/inventory-app-api-client'
+  // import type { ItemTranslationResource } from '@metanull/inventory-app-api-client'
   import { useLoadingOverlayStore } from '@/stores/loadingOverlay'
   import { useCancelChangesConfirmationStore } from '@/stores/cancelChangesConfirmation'
   import { useDeleteConfirmationStore } from '@/stores/deleteConfirmation'
   import { useErrorDisplayStore } from '@/stores/errorDisplay'
   import { usePartnerStore } from '@/stores/partner'
   import { useProjectStore } from '@/stores/project'
-  import { useLanguageStore } from '@/stores/language'
+  // import { useLanguageStore } from '@/stores/language'
   import { useContextStore } from '@/stores/context'
   import DetailView from '@/components/layout/detail/DetailView.vue'
   import DescriptionList from '@/components/format/description/DescriptionList.vue'
@@ -372,9 +458,9 @@
 
   // Types
   type Mode = 'view' | 'edit' | 'create'
-  type ContextMode = 'view' | 'create'
+  // type ContextMode = 'view' | 'create'
   type TranslationMode = 'view' | 'hide' | 'edit' | 'create'
-  
+
   interface LanguageSelection {
     id: string
     internal_name: string
@@ -434,7 +520,7 @@
   const errorStore = useErrorDisplayStore()
   const partnerStore = usePartnerStore()
   const projectStore = useProjectStore()
-  const languageStore = useLanguageStore()
+  // const languageStore = useLanguageStore()
   const contextStore = useContextStore()
 
   // Route params
@@ -445,16 +531,16 @@
 
   // Mode determination
   const mode = ref<Mode>('view')
-  const contextMode = ref<ContextMode>('view')
+  // const contextMode = ref<ContextMode>('view')
   const translationMode = ref<TranslationMode>('hide')
   const currentLanguage = ref<LanguageSelection>({
     id: '',
     internal_name: '',
   })
-  const newLanguage = ref<LanguageSelection>({
-    id: '',
-    internal_name: '',
-  })
+  // const newLanguage = ref<LanguageSelection>({
+  //   id: '',
+  //   internal_name: '',
+  // })
   const currentContext = ref<ContextSelection>({
     id: '',
     internal_name: '',
@@ -471,21 +557,21 @@
   const itemTranslation = computed(() => itemTranslationStore.currentEntry)
   const partnersList = computed(() => partnerStore.allPartners)
   const projects = computed(() => projectStore.category)
-  const languages = computed(() => languageStore.allLanguages)
+  // const languages = computed(() => languageStore.allLanguages)
   const contexts = computed(() => contextStore.allContexts)
 
   const itemContexts = computed(() => {
-    const translations = itemTranslations.value || [];
-    const contextIDs = new Set(translations.map(t => t.context_id));
-    return contexts.value.filter(context => contextIDs.has(context.id));
+    const translations = itemTranslations.value || []
+    const contextIDs = new Set(translations.map(t => t.context_id))
+    return contexts.value.filter(context => contextIDs.has(context.id))
   })
   const contextTranslations = computed(() => {
     if (!itemTranslations.value || !currentContext.value) {
-      return [];
+      return []
     }
-    return itemTranslations.value.filter(translation => 
-      translation.context_id === currentContext.value.id
-    );
+    return itemTranslations.value.filter(
+      translation => translation.context_id === currentContext.value.id
+    )
   })
 
   const types = Object.entries(StoreItemRequestTypeEnum).map(([key, value]) => ({
@@ -569,16 +655,18 @@
   // Methods
   const assignCurrentContext = (context: ContextSelection): void => {
     currentContext.value = context
-    const firstEntry = contextTranslations.value?.[0];
-    if (!firstEntry) return;
+    const firstEntry = contextTranslations.value?.[0]
+    if (!firstEntry) return
     fetchItemTranslation(firstEntry.id)
     translationMode.value = 'view'
   }
 
   const assignContextCurrentLanguage = (language: LanguageSelection): void => {
     currentLanguage.value = language
-    const entry = contextTranslations.value.find(translation => translation.language_id === currentLanguage.value.id)
-    if (!entry) return;
+    const entry = contextTranslations.value.find(
+      translation => translation.language_id === currentLanguage.value.id
+    )
+    if (!entry) return
     fetchItemTranslation(entry.id)
   }
 
@@ -594,52 +682,48 @@
   const fetchItemTranslations = async (): Promise<void> => {
     if (mode.value === 'create') return
     if (!itemId.value || itemId.value === 'new') return
-    await itemTranslationStore.fetchAllItemTranslations(
-      itemId.value,
-    )
+    await itemTranslationStore.fetchAllItemTranslations(itemId.value)
   }
 
   const fetchItemTranslation = async (id: string): Promise<void> => {
     if (mode.value === 'create') return
-    await itemTranslationStore.fetchItemTranslationEntry(
-      id,
-    )
+    await itemTranslationStore.fetchItemTranslationEntry(id)
   }
 
-  const handleEditTranslation = async (translationToEdit: ItemTranslationResource) => {
-    await itemTranslationStore.fetchItemTranslationEntry(translationToEdit.id)
-    if (item.value) {
-      translationForm.value = {
-        id: translationToEdit.id,
-        item_id: translationToEdit.item_id,
-        language_id: translationToEdit.language_id,
-        context_id: translationToEdit.context_id,
-        name: translationToEdit.name,
-        alternate_name: translationToEdit.alternate_name || '',
-        description: translationToEdit.description || '',
-        type: translationToEdit.type || '',
-        holder: translationToEdit.holder || '',
-        owner: translationToEdit.owner || '',
-        initial_owner: translationToEdit.initial_owner || '',
-        dates: translationToEdit.dates || '',
-        location: translationToEdit.location || '',
-        dimensions: translationToEdit.dimensions || '',
-        place_of_production: translationToEdit.place_of_production || '',
-        method_for_datation: translationToEdit.method_for_datation || '',
-        method_for_provenance: translationToEdit.method_for_provenance || '',
-        provenance: translationToEdit.provenance || '',
-        obtention: translationToEdit.obtention || '',
-        bibliography: translationToEdit.bibliography || '',
-        author_id: translationToEdit.author_id || '',
-        text_copy_editor_id: translationToEdit.text_copy_editor_id || '',
-        translator_id: translationToEdit.translator_id || '',
-        translation_copy_editor_id: translationToEdit.translation_copy_editor_id || '',
-        backward_compatibility: translationToEdit.backward_compatibility || '',
-        extra: {},
-      }
-    }
-    translationMode.value = 'edit'
-  }
+  // const handleEditTranslation = async (translationToEdit: ItemTranslationResource) => {
+  //   await itemTranslationStore.fetchItemTranslationEntry(translationToEdit.id)
+  //   if (item.value) {
+  //     translationForm.value = {
+  //       id: translationToEdit.id,
+  //       item_id: translationToEdit.item_id,
+  //       language_id: translationToEdit.language_id,
+  //       context_id: translationToEdit.context_id,
+  //       name: translationToEdit.name,
+  //       alternate_name: translationToEdit.alternate_name || '',
+  //       description: translationToEdit.description || '',
+  //       type: translationToEdit.type || '',
+  //       holder: translationToEdit.holder || '',
+  //       owner: translationToEdit.owner || '',
+  //       initial_owner: translationToEdit.initial_owner || '',
+  //       dates: translationToEdit.dates || '',
+  //       location: translationToEdit.location || '',
+  //       dimensions: translationToEdit.dimensions || '',
+  //       place_of_production: translationToEdit.place_of_production || '',
+  //       method_for_datation: translationToEdit.method_for_datation || '',
+  //       method_for_provenance: translationToEdit.method_for_provenance || '',
+  //       provenance: translationToEdit.provenance || '',
+  //       obtention: translationToEdit.obtention || '',
+  //       bibliography: translationToEdit.bibliography || '',
+  //       author_id: translationToEdit.author_id || '',
+  //       text_copy_editor_id: translationToEdit.text_copy_editor_id || '',
+  //       translator_id: translationToEdit.translator_id || '',
+  //       translation_copy_editor_id: translationToEdit.translation_copy_editor_id || '',
+  //       backward_compatibility: translationToEdit.backward_compatibility || '',
+  //       extra: {},
+  //     }
+  //   }
+  //   translationMode.value = 'edit'
+  // }
 
   const enterEditMode = (): void => {
     if (!item.value) return
@@ -737,87 +821,90 @@
     }
   }
 
-  const saveTranslation = async (): Promise<void> => {
-    try {
-      loadingStore.show('Saving translation...')
-      if (mode.value === 'create') {
-        return
-      } else if (mode.value === 'edit' && itemTranslation.value) {
-        const updateData: UpdateItemTranslationRequest = {
-          name: translationForm.value.name,
-          alternate_name: translationForm.value.alternate_name,
-          description: translationForm.value.description,
-          type: translationForm.value.type,
-          holder: translationForm.value.holder,
-          owner: translationForm.value.owner,
-          initial_owner: translationForm.value.initial_owner,
-          dates: translationForm.value.dates,
-          location: translationForm.value.location,
-          dimensions: translationForm.value.dimensions,
-          place_of_production: translationForm.value.place_of_production,
-          method_for_datation: translationForm.value.method_for_datation,
-          method_for_provenance: translationForm.value.method_for_provenance,
-          provenance: translationForm.value.provenance,
-          obtention: translationForm.value.obtention,
-          bibliography: translationForm.value.bibliography,
-          author_id: translationForm.value.author_id,
-          translator_id: translationForm.value.translator_id,
-          backward_compatibility: translationForm.value.backward_compatibility || undefined,
-        }
-        const updatedTranslationEntry = 
-          await itemTranslationStore.updateItemTranslationEntry(itemTranslation.value.id, updateData)
-        if (updatedTranslationEntry) {
-          errorStore.addMessage('info', 'Translation updated successfully.')
-          await fetchItemTranslation()
-          mode.value = 'view'
-        }
-      } else if (mode.value === 'edit' && item.value && !itemTranslation.value) {
-        const createData: StoreItemTranslationRequest = {
-          item_id: item.value.id,
-          language_id: 'aar', // change
-          context_id: '019ac159-6887-73d4-a1d9-3b216a857fed', // change
-          name: translationForm.value.name,
-          // alternate_name: translationForm.value.alternate_name,
-          // description: translationForm.value.description,
-          // type: translationForm.value.type,
-          // holder: translationForm.value.holder,
-          // owner: translationForm.value.owner,
-          // initial_owner: translationForm.value.initial_owner,
-          // dates: translationForm.value.dates,
-          // location: translationForm.value.location,
-          // dimensions: translationForm.value.dimensions,
-          // place_of_production: translationForm.value.place_of_production,
-          // method_for_datation: translationForm.value.method_for_datation,
-          // method_for_provenance: translationForm.value.method_for_provenance,
-          // provenance: translationForm.value.provenance,
-          // obtention: translationForm.value.obtention,
-          // bibliography: translationForm.value.bibliography,
-          // author_id: translationForm.value.author_id,
-          // translator_id: translationForm.value.translator_id,
-          // backward_compatibility: translationForm.value.backward_compatibility || undefined,
-        }
-        const newTranslationEntry = await itemTranslationStore.createItemTranslationEntry(createData)
-        if (newTranslationEntry) {
-          errorStore.addMessage('info', 'Translation created successfully.')
-          await fetchItemTranslation()
-          mode.value = 'view'
-        }
-      }
-    } catch {
-      errorStore.addMessage('error', 'Failed to save translation. Please try again.')
-    } finally {
-      loadingStore.hide()
-    }
-  }
+  // const saveTranslation = async (): Promise<void> => {
+  //   try {
+  //     loadingStore.show('Saving translation...')
+  //     if (mode.value === 'create') {
+  //       return
+  //     } else if (mode.value === 'edit' && itemTranslation.value) {
+  //       const updateData: UpdateItemTranslationRequest = {
+  //         name: translationForm.value.name,
+  //         alternate_name: translationForm.value.alternate_name,
+  //         description: translationForm.value.description,
+  //         type: translationForm.value.type,
+  //         holder: translationForm.value.holder,
+  //         owner: translationForm.value.owner,
+  //         initial_owner: translationForm.value.initial_owner,
+  //         dates: translationForm.value.dates,
+  //         location: translationForm.value.location,
+  //         dimensions: translationForm.value.dimensions,
+  //         place_of_production: translationForm.value.place_of_production,
+  //         method_for_datation: translationForm.value.method_for_datation,
+  //         method_for_provenance: translationForm.value.method_for_provenance,
+  //         provenance: translationForm.value.provenance,
+  //         obtention: translationForm.value.obtention,
+  //         bibliography: translationForm.value.bibliography,
+  //         author_id: translationForm.value.author_id,
+  //         translator_id: translationForm.value.translator_id,
+  //         backward_compatibility: translationForm.value.backward_compatibility || undefined,
+  //       }
+  //       const updatedTranslationEntry = await itemTranslationStore.updateItemTranslationEntry(
+  //         itemTranslation.value.id,
+  //         updateData
+  //       )
+  //       if (updatedTranslationEntry) {
+  //         errorStore.addMessage('info', 'Translation updated successfully.')
+  //         await fetchItemTranslation()
+  //         mode.value = 'view'
+  //       }
+  //     } else if (mode.value === 'edit' && item.value && !itemTranslation.value) {
+  //       const createData: StoreItemTranslationRequest = {
+  //         item_id: item.value.id,
+  //         language_id: 'aar', // change
+  //         context_id: '019ac159-6887-73d4-a1d9-3b216a857fed', // change
+  //         name: translationForm.value.name,
+  //         // alternate_name: translationForm.value.alternate_name,
+  //         // description: translationForm.value.description,
+  //         // type: translationForm.value.type,
+  //         // holder: translationForm.value.holder,
+  //         // owner: translationForm.value.owner,
+  //         // initial_owner: translationForm.value.initial_owner,
+  //         // dates: translationForm.value.dates,
+  //         // location: translationForm.value.location,
+  //         // dimensions: translationForm.value.dimensions,
+  //         // place_of_production: translationForm.value.place_of_production,
+  //         // method_for_datation: translationForm.value.method_for_datation,
+  //         // method_for_provenance: translationForm.value.method_for_provenance,
+  //         // provenance: translationForm.value.provenance,
+  //         // obtention: translationForm.value.obtention,
+  //         // bibliography: translationForm.value.bibliography,
+  //         // author_id: translationForm.value.author_id,
+  //         // translator_id: translationForm.value.translator_id,
+  //         // backward_compatibility: translationForm.value.backward_compatibility || undefined,
+  //       }
+  //       const newTranslationEntry =
+  //         await itemTranslationStore.createItemTranslationEntry(createData)
+  //       if (newTranslationEntry) {
+  //         errorStore.addMessage('info', 'Translation created successfully.')
+  //         await fetchItemTranslation()
+  //         mode.value = 'view'
+  //       }
+  //     }
+  //   } catch {
+  //     errorStore.addMessage('error', 'Failed to save translation. Please try again.')
+  //   } finally {
+  //     loadingStore.hide()
+  //   }
+  // }
 
   const getInternalName = <T extends { id: string; internal_name: string }>(
-    id: string, 
+    id: string,
     search: T[]
   ): string => {
-    const match = search.find((item) => item.id === id);
-    console.log(match);
-    return match ? match.internal_name : '';
-  };
+    const match = search.find(item => item.id === id)
+    console.log(match)
+    return match ? match.internal_name : ''
+  }
 
   // Initialize data on mount
   onMounted(async () => {
@@ -871,7 +958,7 @@
       } else if (typeof newId === 'string') {
         mode.value = 'view'
         await fetchItem()
-        await fetchItemTranslation()
+        // await fetchItemTranslation()
       }
     }
   )

@@ -38,12 +38,12 @@ export async function useApiCall<T>(
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       if (err.response?.status === 422) {
-        console.error(`Error:`, err.response.data.errors);
-        errorRef.value = err.response.data.message || errorMessage;
+        console.error(`Error:`, err.response.data.errors)
+        errorRef.value = err.response.data.message || errorMessage
       }
     } else {
-      console.error('Error:', err);
-      errorRef.value = errorMessage;
+      console.error('Error:', err)
+      errorRef.value = errorMessage
     }
     errorRef.value = errorMessage
     ErrorHandler.handleError(err, actionName)
