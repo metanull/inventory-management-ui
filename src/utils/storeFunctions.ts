@@ -2,6 +2,7 @@ import { Configuration } from '@metanull/inventory-app-api-client'
 import { useAuthStore } from '@/stores/auth'
 import { ErrorHandler } from '@/utils/errorHandler'
 import { ref } from 'vue'
+import axios from 'axios'
 import { type PageLinks, type PageMeta } from '@/composables/usePagination'
 
 export const getBaseUrl = (): string => {
@@ -34,7 +35,16 @@ export async function useApiCall<T>(
   errorRef.value = null
   try {
     return await apiCall()
-  } catch (err) {
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      if (err.response?.status === 422) {
+        console.error(`Error:`, err.response.data.errors)
+        errorRef.value = err.response.data.message || errorMessage
+      }
+    } else {
+      console.error('Error:', err)
+      errorRef.value = errorMessage
+    }
     errorRef.value = errorMessage
     ErrorHandler.handleError(err, actionName)
     if (rethrow) throw err
