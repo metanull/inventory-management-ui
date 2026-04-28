@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { ContextApi, type ContextResource } from '@metanull/inventory-app-api-client'
 import { createApiConfig, useApiCall, createPaginatedStoreState } from '@/utils/storeFunctions'
 
@@ -27,6 +27,9 @@ export const useContextStore = defineStore('context', () => {
     loading,
     error,
   } = state
+
+  const allContexts = ref<ContextResource[]>([])
+
   const getApi = () => new ContextApi(createApiConfig())
 
   // Computed
@@ -52,6 +55,38 @@ export const useContextStore = defineStore('context', () => {
       pageMeta.value = res.data.meta || null
     }
     return contexts.value
+  }
+
+  const fetchAllContexts = async () => {
+    const fullList: ContextResource[] = []
+    let currentPage = 1
+    let hasMorePages = true
+
+    const res = await useApiCall(
+      'fetchAllContexts',
+      async () => {
+        while (hasMorePages) {
+          const response = await getApi().contextIndex(currentPage, 100)
+          const data = response.data.data || []
+          const meta = response.data.meta
+          fullList.push(...data)
+          if (meta && meta.current_page < meta.last_page) currentPage++
+          else hasMorePages = false
+        }
+        return fullList
+      },
+      loading,
+      error,
+      'Failed to fetch all contexts',
+      true
+    )
+
+    if (res) {
+      allContexts.value = [...res].sort((a, b) =>
+        (a.internal_name || '').localeCompare(b.internal_name || '')
+      )
+    }
+    return allContexts.value
   }
 
   const fetchContext = async (id: string) => {
@@ -165,11 +200,13 @@ export const useContextStore = defineStore('context', () => {
   return {
     ...state,
     contexts,
+    allContexts,
     currentContext,
     defaultContext,
     defaultContexts,
     sortedContexts,
     fetchContexts,
+    fetchAllContexts,
     fetchContext,
     createContext,
     updateContext,

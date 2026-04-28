@@ -19,15 +19,17 @@ export const useItemTranslationStore = defineStore('itemTranslation', () => {
     error,
   } = state
 
+  const allItemTranslations = ref<ItemTranslationResource[]>([])
+
   const item = ref<ItemTranslationResource[]>([])
 
   const getApi = () => new ItemTranslationApi(createApiConfig())
 
   // Actions
-  const fetchItemTranslations = async (page: number = 1, perPage: number = 10) => {
+  const fetchItemTranslations = async (page: number = 1, perPage: number = 10, itemId: string) => {
     const res = await useApiCall(
       'fetchItemTranslations',
-      () => getApi().itemTranslationIndex(page, perPage),
+      () => getApi().itemTranslationIndex(page, perPage, itemId),
       loading,
       error,
       'Failed to fetch item translations',
@@ -39,6 +41,33 @@ export const useItemTranslationStore = defineStore('itemTranslation', () => {
       pageMeta.value = res.data.meta || null
     }
     return itemTranslations.value
+  }
+
+  const fetchAllItemTranslations = async (itemId: string) => {
+    const fullList: ItemTranslationResource[] = []
+    let currentPage = 1
+    let hasMorePages = true
+
+    const result = await useApiCall(
+      'fetchAllItemTranslations',
+      async () => {
+        while (hasMorePages) {
+          const response = await getApi().itemTranslationIndex(currentPage, 100, itemId)
+          const data = response.data.data || []
+          const meta = response.data.meta
+          fullList.push(...data)
+          if (meta && meta.current_page < meta.last_page) currentPage++
+          else hasMorePages = false
+        }
+        return fullList
+      },
+      loading,
+      error,
+      'Failed to fetch all translations',
+      true
+    )
+    allItemTranslations.value = result || [];
+    return allItemTranslations.value
   }
 
   const fetchItemTranslationEntry = async (id: string) => {
@@ -107,12 +136,14 @@ export const useItemTranslationStore = defineStore('itemTranslation', () => {
   return {
     ...state,
     item,
+    allItemTranslations,
 
     // Computed
     itemTranslationsEntriesCount: computed(() => itemTranslations.value.length),
 
     // Actions
     fetchItemTranslations,
+    fetchAllItemTranslations,
     fetchItemTranslationEntry,
     createItemTranslationEntry,
     updateItemTranslationEntry,
